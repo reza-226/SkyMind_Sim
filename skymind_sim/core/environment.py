@@ -1,94 +1,104 @@
 # skymind_sim/core/environment.py
 
+from typing import Tuple, Set, List
 from .drone import Drone
-from typing import List, Tuple
+
+# تعریف نوع برای مختصات برای خوانایی بهتر
+Position = Tuple[int, int]
 
 class Environment:
     """
-    این کلاس نمایانگر محیط شبیه‌سازی دو بعدی است.
-    محیط یک اندازه مشخص دارد و می‌تواند شامل موانع و پهپادها باشد.
+    نماینده دنیای شبیه‌سازی، شامل نقشه، موانع و پهپادها.
     """
     def __init__(self, width: int, height: int):
-        """
-        سازنده کلاس محیط.
+        self.width = width
+        self.height = height
+        self.obstacles: Set[Position] = set()
+        self.drones: List[Drone] = []
+        # دیکشنری برای نگهداری موقعیت پهپادها و شناسه آن‌ها
+        # به ما اجازه می‌دهد چند پهپاد در یک نقطه داشته باشیم
+        self.drone_locations: dict[Position, Set[str]] = {}
 
-        Args:
-            width (int): عرض محیط (اندازه در محور x).
-            height (int): ارتفاع محیط (اندازه در محور y).
-        """
-        if width <= 0 or height <= 0:
-            raise ValueError("Environment width and height must be positive integers.")
-            
-        self.width: int = width
-        self.height: int = height
-        self.obstacles: List[Tuple[int, int]] = []  # لیستی از مختصات موانع (x, y)
-        self.drones: List[Drone] = []  # لیستی از اشیاء پهپاد در محیط
+    def is_valid_position(self, pos: Position) -> bool:
+        """بررسی می‌کند که آیا یک موقعیت در محدوده نقشه است یا خیر."""
+        x, y = pos
+        return 0 <= x < self.width and 0 <= y < self.height
 
-    def add_drone(self, drone: Drone):
-        """
-        یک پهپاد جدید را به محیط اضافه می‌کند.
-        بررسی می‌کند که آیا موقعیت اولیه پهپاد معتبر است یا خیر.
-        """
-        if not self.is_valid_position(drone.position):
-            raise ValueError(f"Cannot add drone '{drone.id}' at invalid position {drone.position}.")
-        
-        print(f"[Environment] Adding drone '{drone.id}' at {drone.position}.")
-        self.drones.append(drone)
-
-    def add_obstacle(self, position: Tuple[int, int]):
-        """ یک مانع را در یک موقعیت مشخص به محیط اضافه می‌کند. """
-        if self.is_valid_position(position):
-            if position not in self.obstacles:
-                self.obstacles.append(position)
-                print(f"[Environment] Added obstacle at {position}.")
-            else:
-                print(f"[Environment] Obstacle already exists at {position}.")
+    def add_obstacle(self, pos: Position):
+        """یک مانع را به محیط اضافه می‌کند."""
+        if self.is_valid_position(pos):
+            self.obstacles.add(pos)
+            print(f"[Environment] Added obstacle at {pos}.")
         else:
-            print(f"[Warning] Cannot add obstacle outside of environment bounds: {position}.")
+            print(f"[Warning] Obstacle position {pos} is out of bounds.")
 
-
-    def is_valid_position(self, position: Tuple[int, int]) -> bool:
-        """
-        بررسی می‌کند که آیا یک موقعیت داخل مرزهای محیط است و یک مانع نیست.
-        """
-        x, y = position
-        # چک کردن مرزها
-        within_bounds = (0 <= x < self.width) and (0 <= y < self.height)
-        if not within_bounds:
+    def add_drone(self, drone: Drone) -> bool:
+        """یک پهپاد را به محیط اضافه می‌کند."""
+        pos = drone.position
+        if not self.is_valid_position(pos):
+            print(f"[Error] Drone start position {pos} is out of bounds.")
+            return False
+        if pos in self.obstacles:
+            print(f"[Error] Cannot place drone at {pos}, an obstacle is present.")
             return False
         
-        # چک کردن موانع
-        if position in self.obstacles:
-            return False
-            
+        # استفاده از drone.drone_id به جای drone.id
+        print(f"[Environment] Adding drone '{drone.drone_id}' at {drone.position}.")
+        self.drones.append(drone)
+        
+        if pos not in self.drone_locations:
+            self.drone_locations[pos] = set()
+        
+        # استفاده از drone.drone_id به جای drone.id
+        self.drone_locations[pos].add(drone.drone_id)
         return True
 
-    def display(self):
+    def update_drone_position(self, drone: Drone):
         """
-        یک نمایش متنی ساده از محیط و موقعیت پهپادها را چاپ می‌کند.
-        '.' برای فضای خالی، 'D' برای پهپاد، 'X' برای مانع.
-        (برای محیط‌های بزرگ مناسب نیست، اما برای تست عالی است)
+        موقعیت یک پهپاد خاص را روی نقشه داخلی محیط به‌روز می‌کند.
+        این تابع فرض می‌کند که موقعیت جدید معتبر است.
         """
-        print(f"\n--- Environment Display ({self.width}x{self.height}) ---")
+        drone_id_to_remove = drone.drone_id
+        # ابتدا موقعیت قبلی پهپاد را از دیکشنری پاک می‌کنیم
+        for pos, drone_ids in list(self.drone_locations.items()):
+            if drone_id_to_remove in drone_ids:
+                drone_ids.remove(drone_id_to_remove)
+                if not drone_ids: # اگر این آخرین پهپاد در این نقطه بود، کلید را پاک کن
+                    del self.drone_locations[pos]
+                break # چون هر پهپاد فقط در یک مکان است، پس از یافتن، حلقه را می‌شکنیم
         
-        # یک دیکشنری برای دسترسی سریع به موقعیت‌ها ایجاد می‌کنیم
-        drone_positions = {drone.position: drone.id for drone in self.drones}
+        # افزودن پهپاد به موقعیت جدیدش
+        new_pos = drone.position
+        if new_pos not in self.drone_locations:
+            self.drone_locations[new_pos] = set()
+        self.drone_locations[new_pos].add(drone.drone_id)
 
-        # برای اینکه محور y مثل نمودارهای ریاضی از پایین به بالا باشد، برعکس چاپ می‌کنیم
-        for y in range(self.height - 1, -1, -1):
-            row_str = f"{y:2d} | "
-            for x in range(self.width):
-                pos = (x, y)
-                if pos in drone_positions:
-                    row_str += "D " # نمایش پهپاد
-                elif pos in self.obstacles:
-                    row_str += "X " # نمایش مانع
-                else:
-                    row_str += ". " # نمایش فضای خالی
-            print(row_str)
+    def display(self):
+        """محیط را در ترمینال نمایش می‌دهد."""
+        print("\n" + "="*20 + " Environment Map " + "="*20)
+        # ایجاد یک گرید خالی
+        grid = [['.' for _ in range(self.width)] for _ in range(self.height)]
+
+        # قرار دادن موانع در گرید
+        for obs_pos in self.obstacles:
+            x, y = obs_pos
+            if self.is_valid_position(obs_pos):
+                grid[y][x] = 'X'
         
-        # چاپ خط افقی و شماره محور x
-        print("   +" + "--" * self.width)
-        x_axis = "     " + " ".join([f"{i:<2}" for i in range(self.width)])
-        print(x_axis)
-        print("-" * 25)
+        # قرار دادن پهپادها در گرید
+        for drone_pos, drone_ids in self.drone_locations.items():
+            x, y = drone_pos
+            if self.is_valid_position(drone_pos):
+                # اگر بیش از یک پهپاد در یک نقطه بود، عدد نمایش بده
+                display_char = 'D' if len(drone_ids) == 1 else str(len(drone_ids))
+                grid[y][x] = display_char
+
+        # چاپ گرید به همراه محورها
+        # چاپ از بالا به پایین (y از height-1 تا 0) تا مبدا مختصات پایین-چپ باشد
+        for y in range(self.height - 1, -1, -1):
+            row_str = " ".join(grid[y])
+            print(f"{y:2d}| {row_str}")
+        
+        print("  +" + "-" * (self.width * 2 - 1))
+        print("   " + " ".join([f"{x:<1d}" for x in range(self.width)]))
+        print("="*57 + "\n")

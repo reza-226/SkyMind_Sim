@@ -61,16 +61,20 @@ class Simulation:
         print("=========================================")
 
 
+        # در فایل skymind_sim/core/simulation.py
+
     def update_entities(self):
         """
         وضعیت تمام موجودیت‌ها را برای تیک فعلی به‌روز می‌کند.
-        (در حال حاضر کار خاصی انجام نمی‌دهد، اما در آینده منطق حرکت پهپادها اینجا خواهد بود)
         """
         print("[Simulation] Updating all entities...")
         for drone in self.environment.drones:
-            # در آینده، متد update() خود پهپاد اینجا فراخوانی می‌شود
-            # drone.update() 
-            drone.report_status() # فعلا فقط وضعیت را گزارش می‌کنیم
+            # فراخوانی متد update خود پهپاد
+            drone.update()
+            
+            # همگام‌سازی موقعیت پهپاد با نقشه محیط
+            self.environment.update_drone_position(drone)
+
 
     def check_termination_conditions(self) -> bool:
         """
