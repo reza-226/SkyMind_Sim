@@ -1,2 +1,13 @@
-"venv/" 
-"__pycache__/" 
+# Python temporary files
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+
+# Data files (optional, if they are large)
+/data/simulation_logs/
+
+# IDE-specific files
+.vscode/
+.idea/
