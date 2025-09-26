@@ -3,11 +3,11 @@ __pycache__/
 *.py[cod]
 
 # Virtual environment
-venv/
-
-# Data files (optional, if they are large)
-/data/simulation_logs/
+/venv/
 
 # IDE-specific files
 .vscode/
 .idea/
+
+# Data logs (optional, good practice)
+/data/simulation_logs/
