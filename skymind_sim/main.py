@@ -1,49 +1,43 @@
 # skymind_sim/main.py
 
-# این بخش برای وارد کردن ماژول‌های دیگر پروژه در آینده است.
-# برای مثال، ممکن است کلاس‌های Simulation, Environment و Drone را وارد کنیم.
+# کلاس Drone را از ماژول drone در همان پکیج وارد می‌کنیم.
+# نقطه قبل از core به معنای "از داخل همین پکیج (skymind_sim)" است.
+from .core.drone import Drone 
+
 # from .core.simulation import Simulation
 # from .core.environment import Environment
-# from .core.drone import Drone
 
 def run_simulation():
     """
     نقطه ورود اصلی برای اجرای شبیه‌سازی.
-    در حال حاضر، این تابع فقط یک پیام خوشامدگویی چاپ می‌کند.
-    در آینده، تمام منطق اصلی شبیه‌سازی از اینجا شروع می‌شود.
     """
     print("=========================================")
     print("  Initializing SkyMind Simulation...")
     print("=========================================")
 
-    # -- مراحل آینده --
-    # 1. بارگذاری تنظیمات شبیه‌سازی
-    # print("Step 1: Loading simulation configuration...")
+    # -- ایجاد و تست یک نمونه از پهپاد --
+    print("\n--- Testing Drone Class ---")
     
-    # 2. ایجاد محیط شبیه‌سازی
-    # env = Environment(map_file="data/maps/sample_map.json")
-    # print(f"Step 2: Environment '{env.name}' created.")
+    # یک پهپاد جدید با شناسه 'Alpha-1' در موقعیت (0, 0) ایجاد می‌کنیم.
+    try:
+        drone1 = Drone(drone_id="Alpha-1", start_position=(0, 0))
+        
+        # وضعیت اولیه پهپاد را با استفاده از متد __str__ که خودمان نوشتیم، چاپ می‌کنیم.
+        print(f"Successfully created drone: {drone1}")
 
-    # 3. ایجاد و افزودن پهپادها به محیط
-    # drone1 = Drone(id="Alpha-1", start_position=(10, 10))
-    # env.add_drone(drone1)
-    # print(f"Step 3: Drone '{drone1.id}' added to environment.")
+        # دستور حرکت به پهپاد می‌دهیم.
+        drone1.move_to(new_position=(10, 15))
 
-    # 4. ایجاد و اجرای شبیه‌ساز
-    # sim = Simulation(environment=env)
-    # print("Step 4: Starting simulation loop...")
-    # sim.run()
+        # وضعیت نهایی پهپاد را گزارش می‌کنیم.
+        print("\nFinal status check:")
+        drone1.report_status()
 
-    # 5. نمایش نتایج
-    # print("\nSimulation finished.")
-    # print("Final results:")
-    # sim.show_results()
-    
-    print("\n[INFO] Basic structure is running correctly. Ready for more features!")
+    except ValueError as e:
+        print(f"[ERROR] Failed to create drone: {e}")
 
 
-# این ساختار استاندارد در پایتون است.
-# کد داخل این بلوک if فقط زمانی اجرا می‌شود که این فایل (main.py)
-# به صورت مستقیم اجرا شود، نه زمانی که به عنوان ماژول در فایل دیگری import شود.
+    print("\n[INFO] Basic drone class functionality is working. Ready for the next step!")
+
+
 if __name__ == "__main__":
     run_simulation()
