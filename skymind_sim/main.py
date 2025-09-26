@@ -4,52 +4,52 @@ import time
 from .core.environment import Environment
 from .core.drone import Drone
 from .core.simulation import Simulation
+from .utils.pathfinding import a_star_search
+from .utils.logger import setup_logger
 
-def run_simulation():
+def main():
     """
-    تابع اصلی برای تنظیم و اجرای شبیه‌سازی.
+    تابع اصلی برای اجرای شبیه‌سازی.
     """
-    print("=========================================")
-    print("  Setting up Simulation Scenario...")
-    print("=========================================")
-
-    # 1. ساخت محیط شبیه‌سازی
-    sim_environment = Environment(width=15, height=10)
-
-    # 2. افزودن موانع
-    # ایجاد یک دیوار عمودی
-    for y in range(3, 7):
-        sim_environment.add_obstacle((7, y))
+    try:
+        print("--- SkyMind Simulation Initializing ---")
         
-    # 3. ساخت و افزودن پهپادها
-    # موقعیت اولیه Alpha-1 با توجه به خروجی شما (1,1) در نظر گرفته شد.
-    drone1 = Drone(drone_id="Alpha-1", start_position=(1, 1), speed=1)
-    drone2 = Drone(drone_id="Beta-2", start_position=(13, 8), speed=1)
-    
-    sim_environment.add_drone(drone1)
-    sim_environment.add_drone(drone2)
-    
-    print("\n--- Initial Environment State ---")
-    sim_environment.display()
+        # راه‌اندازی لاگر
+        logger = setup_logger("simulation_log", "data/simulation_logs/sim.log")
+        logger.info("Simulation started.")
 
-    # 4. ساخت موتور شبیه‌سازی
-    simulation_engine = Simulation(sim_environment)
+        # ایجاد محیط از روی فایل نقشه
+        # آرگومان‌های width و height حذف شده‌اند چون از فایل خوانده می‌شوند
+        env = Environment(map_file_path="data/maps/complex_map_01.txt")
+        logger.info(f"Environment loaded with map: data/maps/complex_map_01.txt")
 
-    # 5. دادن دستورات اولیه به پهپادها
-    # یک پهپاد را برای دادن دستور پیدا می‌کنیم
-    alpha_drone = None
-    for drone in sim_environment.drones:
-        if drone.drone_id == 'Alpha-1':
-            alpha_drone = drone
-            break
-    
-    if alpha_drone:
-        # دستور حرکت به مقصد جدید
-        alpha_drone.move_to((12, 8))
-    
-    # 6. اجرای شبیه‌سازی
-    simulation_engine.run(max_ticks=25, tick_duration=0.3)
+        # ایجاد پهپاد و افزودن آن به محیط
+        drone1 = Drone(drone_id="Alpha-1", position=env.start_pos)
+        env.add_drone(drone1)
+        logger.info(f"Drone '{drone1.drone_id}' created at position {drone1.position}")
 
+        # پیدا کردن مسیر با استفاده از A*
+        path = a_star_search(env.grid, env.start_pos, env.end_pos)
+        
+        if not path:
+            print("No path found from Start to End!")
+            logger.warning("Pathfinding failed. No path found.")
+            return
+        
+        print(f"Path found with {len(path)} steps.")
+        logger.info(f"Path found from {env.start_pos} to {env.end_pos} with {len(path)} steps.")
+        drone1.set_path(path)
+
+        # ایجاد و اجرای شبیه‌سازی
+        sim = Simulation(env)
+        sim.run()
+
+        logger.info("Simulation finished successfully.")
+
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        if 'logger' in locals():
+            logger.error(f"An unexpected error occurred: {e}", exc_info=True)
 
 if __name__ == "__main__":
-    run_simulation()
+    main()

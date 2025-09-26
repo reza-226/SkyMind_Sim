@@ -1,92 +1,88 @@
 # skymind_sim/core/simulation.py
 
+import os
 import time
-from .environment import Environment
+import logging
+from typing import TYPE_CHECKING
+
+# این بلوک برای جلوگیری از خطاهای واردات چرخه‌ای (circular import) است.
+if TYPE_CHECKING:
+    from .environment import Environment
+
+# لاگر را در سطح ماژول دریافت می‌کنیم. main.py آن را پیکربندی خواهد کرد.
+logger = logging.getLogger("simulation_log")
 
 class Simulation:
     """
-    موتور اصلی شبیه‌سازی. این کلاس حلقه اصلی، مدیریت زمان و به‌روزرسانی
-    وضعیت تمام موجودیت‌های داخل محیط را بر عهده دارد.
+    کلاس اصلی برای مدیریت و اجرای حلقه شبیه‌سازی.
     """
-    def __init__(self, environment: Environment):
+    def __init__(self, env: 'Environment', refresh_rate: float = 0.5):
         """
         سازنده کلاس شبیه‌سازی.
 
-        Args:
-            environment (Environment): محیطی که شبیه‌سازی در آن اجرا می‌شود.
+        :param env: شیء محیط شبیه‌سازی.
+        :param refresh_rate: نرخ به‌روزرسانی نمایش در ثانیه (مثلاً 0.5 یعنی هر نیم ثانیه).
         """
-        self.environment: Environment = environment
-        self.current_tick: int = 0
-        self.is_running: bool = False
+        self.env = env
+        self.refresh_rate = refresh_rate
+        self.is_running = False
+        self.step_count = 0
 
-    def run(self, max_ticks: int = 100, tick_duration: float = 0.1):
+    def run(self):
         """
         حلقه اصلی شبیه‌سازی را اجرا می‌کند.
-
-        Args:
-            max_ticks (int): حداکثر تعداد تیک‌هایی که شبیه‌سازی اجرا می‌شود.
-            tick_duration (float): مدت زمان واقعی هر تیک به ثانیه (برای کنترل سرعت نمایش).
         """
-        print("\n=========================================")
-        print("    ▶️  Starting Simulation Run ▶️")
-        print("=========================================")
         self.is_running = True
+        logger.info("Simulation loop started.")
         
-        for tick in range(max_ticks):
-            if not self.is_running:
-                print("Simulation stopped manually.")
-                break
+        try:
+            while self.is_running:
+                self._update()
+                self._render()
                 
-            self.current_tick = tick
-            print(f"\n--- Tick: {self.current_tick} ---")
-            
-            # 1. به‌روزرسانی تمام موجودیت‌ها در محیط
-            self.update_entities()
-            
-            # 2. نمایش وضعیت فعلی محیط
-            self.environment.display()
-            
-            # 3. بررسی شرایط پایان
-            if self.check_termination_conditions():
-                print("Termination condition met. Ending simulation.")
-                self.is_running = False
-                break
-            
-            # مکث کوتاه برای کنترل سرعت شبیه‌سازی
-            time.sleep(tick_duration)
-            
-        print("\n=========================================")
-        print("    ⏹️  Simulation Run Finished ⏹️")
-        print(f"    Total Ticks: {self.current_tick + 1}")
-        print("=========================================")
+                # بررسی شرط پایان شبیه‌سازی
+                if not any(drone.is_active for drone in self.env.drones):
+                    self.is_running = False
+                    print("\nAll drones have completed their paths. Simulation finished.")
+                    logger.info("All drones reached their destinations.")
+                else:
+                    time.sleep(self.refresh_rate)
 
+        except KeyboardInterrupt:
+            self.is_running = False
+            print("\nSimulation interrupted by user (Ctrl+C).")
+            logger.warning("Simulation interrupted by user.")
+            
+        except Exception as e:
+            self.is_running = False
+            logger.error(f"An error occurred during simulation run: {e}", exc_info=True)
+            raise # خطا را مجدداً پرتاب می‌کنیم تا در main.py مدیریت شود
 
-        # در فایل skymind_sim/core/simulation.py
-
-    def update_entities(self):
+    def _update(self):
         """
-        وضعیت تمام موجودیت‌ها را برای تیک فعلی به‌روز می‌کند.
+        وضعیت تمام عناصر شبیه‌سازی را به‌روز می‌کند.
         """
-        print("[Simulation] Updating all entities...")
-        for drone in self.environment.drones:
-            # فراخوانی متد update خود پهپاد
-            drone.update()
+        self.step_count += 1
+        logger.debug(f"Simulation step: {self.step_count}")
+        for drone in self.env.drones:
+            if drone.is_active:
+                drone.follow_path()
+                logger.info(f"Drone '{drone.drone_id}' moved to {drone.position} at step {self.step_count}")
+
+    def _render(self):
+        """
+        وضعیت فعلی شبیه‌سازی را در ترمینال نمایش می‌دهد.
+        """
+        # پاک کردن صفحه ترمینال (برای ویندوز 'cls' و برای لینوکس/مک 'clear')
+        os.system('cls' if os.name == 'nt' else 'clear')
+
+        print("--- SkyMind Real-time Simulation ---")
+        print(f"Step: {self.step_count} | Active Drones: {sum(1 for d in self.env.drones if d.is_active)}")
+        print("-" * 35)
+
+        display_grid = self.env.get_display_grid()
+        for row in display_grid:
+            print(" ".join(row))
             
-            # همگام‌سازی موقعیت پهپاد با نقشه محیط
-            self.environment.update_drone_position(drone)
-
-
-    def check_termination_conditions(self) -> bool:
-        """
-        بررسی می‌کند که آیا شبیه‌سازی باید پایان یابد یا خیر.
-        (فعلاً همیشه False برمی‌گرداند تا به max_ticks برسد)
-        """
-        # مثال برای آینده: اگر همه پهپادها به مقصد رسیدند
-        # all_idle = all(d.status == 'IDLE' for d in self.environment.drones)
-        # if all_idle and self.current_tick > 0:
-        #     return True
-        return False
-
-    def stop(self):
-        """ شبیه‌سازی را متوقف می‌کند. """
-        self.is_running = False
+        print("-" * 35)
+        print("Legend: S=Start, E=End, D=Drone, #=Obstacle")

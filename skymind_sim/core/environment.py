@@ -1,104 +1,111 @@
 # skymind_sim/core/environment.py
 
-from typing import Tuple, Set, List
+import numpy as np
+from typing import Tuple, List, Optional
 from .drone import Drone
-
-# تعریف نوع برای مختصات برای خوانایی بهتر
-Position = Tuple[int, int]
 
 class Environment:
     """
-    نماینده دنیای شبیه‌سازی، شامل نقشه، موانع و پهپادها.
+    کلاسی برای نمایش و مدیریت محیط شبیه‌سازی (نقشه).
     """
-    def __init__(self, width: int, height: int):
-        self.width = width
-        self.height = height
-        self.obstacles: Set[Position] = set()
+    def __init__(self, map_file_path: str):
+        """
+        سازنده کلاس محیط.
+        """
+        self.grid, self.start_pos, self.end_pos = self._load_map(map_file_path)
+        if self.grid is None:
+            raise ValueError(f"Map file could not be loaded or is invalid: {map_file_path}")
+        
+        self.height, self.width = self.grid.shape
         self.drones: List[Drone] = []
-        # دیکشنری برای نگهداری موقعیت پهپادها و شناسه آن‌ها
-        # به ما اجازه می‌دهد چند پهپاد در یک نقطه داشته باشیم
-        self.drone_locations: dict[Position, Set[str]] = {}
+        print(f"Environment loaded from '{map_file_path}' ({self.width}x{self.height}).")
+        print(f"Start: {self.start_pos}, End: {self.end_pos}")
 
-    def is_valid_position(self, pos: Position) -> bool:
-        """بررسی می‌کند که آیا یک موقعیت در محدوده نقشه است یا خیر."""
-        x, y = pos
-        return 0 <= x < self.width and 0 <= y < self.height
+# در فایل skymind_sim/core/environment.py
 
-    def add_obstacle(self, pos: Position):
-        """یک مانع را به محیط اضافه می‌کند."""
-        if self.is_valid_position(pos):
-            self.obstacles.add(pos)
-            print(f"[Environment] Added obstacle at {pos}.")
-        else:
-            print(f"[Warning] Obstacle position {pos} is out of bounds.")
+    def _load_map(self, file_path: str) -> Tuple[Optional[np.ndarray], Optional[Tuple[int, int]], Optional[Tuple[int, int]]]:
+        """
+        نقشه را از یک فایل متنی بارگذاری می‌کند، خطوط خالی را نادیده می‌گیرد
+        و کاراکترهای خاص را مدیریت می‌کند.
+        """
+        try:
+            processed_lines = []
+            with open(file_path, 'r') as f:
+                for line in f:
+                    stripped_line = line.rstrip('\n')
+                    if not stripped_line:
+                        continue # نادیده گرفتن خطوط خالی
 
-    def add_drone(self, drone: Drone) -> bool:
-        """یک پهپاد را به محیط اضافه می‌کند."""
-        pos = drone.position
-        if not self.is_valid_position(pos):
-            print(f"[Error] Drone start position {pos} is out of bounds.")
-            return False
-        if pos in self.obstacles:
-            print(f"[Error] Cannot place drone at {pos}, an obstacle is present.")
-            return False
-        
-        # استفاده از drone.drone_id به جای drone.id
-        print(f"[Environment] Adding drone '{drone.drone_id}' at {drone.position}.")
+                    # جایگزینی کاراکتر '.' با فضای خالی ' ' برای مسیریابی
+                    processed_line = list(stripped_line.replace('.', ' '))
+                    processed_lines.append(processed_line)
+            
+            if not processed_lines:
+                print("Error loading map: Map file is empty or contains only whitespace.")
+                return None, None, None
+
+            # بررسی یکسان بودن طول خطوط
+            first_line_len = len(processed_lines[0])
+            if not all(len(line) == first_line_len for line in processed_lines):
+                 print("Error loading map: Not all lines have the same length.")
+                 # برای دیباگ کردن بهتر، طول خطوط نابرابر را چاپ می‌کنیم
+                 for i, line in enumerate(processed_lines):
+                     if len(line) != first_line_len:
+                         print(f"  -> Line {i+1} has length {len(line)}, expected {first_line_len}.")
+                 return None, None, None
+
+            grid = np.array(processed_lines)
+            start_pos, end_pos = None, None
+            
+            # پیدا کردن S و E در گرید نهایی
+            start_coords = np.where(grid == 'S')
+            end_coords = np.where(grid == 'E')
+
+            if start_coords[0].size > 0:
+                start_pos = (start_coords[0][0], start_coords[1][0])
+            if end_coords[0].size > 0:
+                end_pos = (end_coords[0][0], end_coords[1][0])
+            
+            if start_pos is None or end_pos is None:
+                print("Error loading map: Start 'S' or End 'E' position not found in map.")
+                return None, None, None
+
+            return grid, start_pos, end_pos
+        except FileNotFoundError:
+            print(f"Error: Map file not found at '{file_path}'")
+            return None, None, None
+        except Exception as e:
+            print(f"An unexpected error occurred while loading the map: {e}")
+            return None, None, None
+
+
+    def add_drone(self, drone: Drone):
+        """
+        یک پهپاد به محیط اضافه می‌کند.
+        """
         self.drones.append(drone)
-        
-        if pos not in self.drone_locations:
-            self.drone_locations[pos] = set()
-        
-        # استفاده از drone.drone_id به جای drone.id
-        self.drone_locations[pos].add(drone.drone_id)
-        return True
+        drone.set_environment(self)
 
-    def update_drone_position(self, drone: Drone):
+    def is_obstacle(self, position: Tuple[int, int]) -> bool:
         """
-        موقعیت یک پهپاد خاص را روی نقشه داخلی محیط به‌روز می‌کند.
-        این تابع فرض می‌کند که موقعیت جدید معتبر است.
+        بررسی می‌کند که آیا یک موقعیت مانع است یا خیر.
         """
-        drone_id_to_remove = drone.drone_id
-        # ابتدا موقعیت قبلی پهپاد را از دیکشنری پاک می‌کنیم
-        for pos, drone_ids in list(self.drone_locations.items()):
-            if drone_id_to_remove in drone_ids:
-                drone_ids.remove(drone_id_to_remove)
-                if not drone_ids: # اگر این آخرین پهپاد در این نقطه بود، کلید را پاک کن
-                    del self.drone_locations[pos]
-                break # چون هر پهپاد فقط در یک مکان است، پس از یافتن، حلقه را می‌شکنیم
-        
-        # افزودن پهپاد به موقعیت جدیدش
-        new_pos = drone.position
-        if new_pos not in self.drone_locations:
-            self.drone_locations[new_pos] = set()
-        self.drone_locations[new_pos].add(drone.drone_id)
+        r, c = position
+        if not (0 <= r < self.height and 0 <= c < self.width):
+            return True # خارج از محدوده نقشه به عنوان مانع در نظر گرفته می‌شود
+        return self.grid[r, c] == '#'
 
-    def display(self):
-        """محیط را در ترمینال نمایش می‌دهد."""
-        print("\n" + "="*20 + " Environment Map " + "="*20)
-        # ایجاد یک گرید خالی
-        grid = [['.' for _ in range(self.width)] for _ in range(self.height)]
-
-        # قرار دادن موانع در گرید
-        for obs_pos in self.obstacles:
-            x, y = obs_pos
-            if self.is_valid_position(obs_pos):
-                grid[y][x] = 'X'
+    def get_display_grid(self) -> np.ndarray:
+        """
+        یک کپی از گرید نمایشی را برای استفاده در شبیه‌ساز برمی‌گرداند.
+        """
+        display_grid = np.copy(self.grid)
         
-        # قرار دادن پهپادها در گرید
-        for drone_pos, drone_ids in self.drone_locations.items():
-            x, y = drone_pos
-            if self.is_valid_position(drone_pos):
-                # اگر بیش از یک پهپاد در یک نقطه بود، عدد نمایش بده
-                display_char = 'D' if len(drone_ids) == 1 else str(len(drone_ids))
-                grid[y][x] = display_char
-
-        # چاپ گرید به همراه محورها
-        # چاپ از بالا به پایین (y از height-1 تا 0) تا مبدا مختصات پایین-چپ باشد
-        for y in range(self.height - 1, -1, -1):
-            row_str = " ".join(grid[y])
-            print(f"{y:2d}| {row_str}")
+        for drone in self.drones:
+            if drone.is_active:
+                r, c = drone.position
+                # فقط در صورتی کاراکتر پهپاد را جایگزین کن که نقطه شروع یا پایان نباشد
+                if display_grid[r, c] not in ('S', 'E'):
+                    display_grid[r, c] = 'D'
         
-        print("  +" + "-" * (self.width * 2 - 1))
-        print("   " + " ".join([f"{x:<1d}" for x in range(self.width)]))
-        print("="*57 + "\n")
+        return display_grid
