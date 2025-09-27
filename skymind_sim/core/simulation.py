@@ -1,88 +1,100 @@
 # skymind_sim/core/simulation.py
 
-import os
 import time
 import logging
-from typing import TYPE_CHECKING
+import os
 
-# این بلوک برای جلوگیری از خطاهای واردات چرخه‌ای (circular import) است.
-if TYPE_CHECKING:
-    from .environment import Environment
-
-# لاگر را در سطح ماژول دریافت می‌کنیم. main.py آن را پیکربندی خواهد کرد.
 logger = logging.getLogger("simulation_log")
 
 class Simulation:
     """
-    کلاس اصلی برای مدیریت و اجرای حلقه شبیه‌سازی.
+    Controls the main simulation loop and orchestrates the updates.
     """
-    def __init__(self, env: 'Environment', refresh_rate: float = 0.5):
-        """
-        سازنده کلاس شبیه‌سازی.
-
-        :param env: شیء محیط شبیه‌سازی.
-        :param refresh_rate: نرخ به‌روزرسانی نمایش در ثانیه (مثلاً 0.5 یعنی هر نیم ثانیه).
-        """
-        self.env = env
-        self.refresh_rate = refresh_rate
-        self.is_running = False
-        self.step_count = 0
+    def __init__(self, environment, time_step=0.3):
+        self.environment = environment
+        self.time_step = time_step
+        self.tick_count = 0
+        self.running = False
+        logger.info(f"Simulation initialized with a time step of {self.time_step}s.")
 
     def run(self):
         """
-        حلقه اصلی شبیه‌سازی را اجرا می‌کند.
+        Starts and runs the main simulation loop.
         """
-        self.is_running = True
-        logger.info("Simulation loop started.")
+        self.running = True
+        logger.info("Simulation started.")
         
         try:
-            while self.is_running:
+            while self.running:
+                self.tick_count += 1
+                logger.info(f"--- Simulation Tick {self.tick_count} ---")
+                
                 self._update()
                 self._render()
                 
-                # بررسی شرط پایان شبیه‌سازی
-                if not any(drone.is_active for drone in self.env.drones):
-                    self.is_running = False
-                    print("\nAll drones have completed their paths. Simulation finished.")
-                    logger.info("All drones reached their destinations.")
-                else:
-                    time.sleep(self.refresh_rate)
+                # Check for completion
+                if self._all_drones_finished():
+                    self.running = False
+                    logger.info("All drones have completed their paths. Simulation finished.")
+                
+                time.sleep(self.time_step)
 
         except KeyboardInterrupt:
-            self.is_running = False
-            print("\nSimulation interrupted by user (Ctrl+C).")
-            logger.warning("Simulation interrupted by user.")
-            
+            logger.info("Simulation interrupted by user (Ctrl+C).")
+            self.running = False
         except Exception as e:
-            self.is_running = False
-            logger.error(f"An error occurred during simulation run: {e}", exc_info=True)
-            raise # خطا را مجدداً پرتاب می‌کنیم تا در main.py مدیریت شود
+            logger.critical(f"An unexpected critical error occurred: {e}", exc_info=True)
+            print("\nA critical error occurred. The simulation has been aborted.")
+            self.running = False
 
     def _update(self):
         """
-        وضعیت تمام عناصر شبیه‌سازی را به‌روز می‌کند.
+        Updates the state of all drones in the environment.
         """
-        self.step_count += 1
-        logger.debug(f"Simulation step: {self.step_count}")
-        for drone in self.env.drones:
-            if drone.is_active:
-                drone.follow_path()
-                logger.info(f"Drone '{drone.drone_id}' moved to {drone.position} at step {self.step_count}")
+        if not self.environment.drones:
+            logger.warning("No drones in the simulation to update.")
+            self.running = False
+            return
+        
+        # --- FIX: Iterate directly over the list of drones ---
+        # The environment.drones is a list, not a dictionary.
+        for drone in self.environment.drones:
+            if not drone.has_finished():
+                drone.move()
 
     def _render(self):
         """
-        وضعیت فعلی شبیه‌سازی را در ترمینال نمایش می‌دهد.
+        Renders the current state of the simulation to the console.
         """
-        # پاک کردن صفحه ترمینال (برای ویندوز 'cls' و برای لینوکس/مک 'clear')
+        # Create a deep copy of the grid to draw on
+        render_grid = [row[:] for row in self.environment.grid]
+        
+        # Draw drones on the grid
+        for drone in self.environment.drones:
+            r, c = drone.position
+            # Ensure drone is within bounds before drawing
+            if 0 <= r < self.environment.height and 0 <= c < self.environment.width:
+                render_grid[r][c] = drone.char
+
+        # Clear console and print the grid
         os.system('cls' if os.name == 'nt' else 'clear')
+        
+        print(f"SkyMind_Sim - Tick: {self.tick_count}")
+        for row in render_grid:
+            print("".join(row))
+        
+        # Print status of each drone
+        print("\n--- Drone Status ---")
+        for drone in self.environment.drones:
+            status = "Finished" if drone.has_finished() else f"Moving (Path len: {len(drone.path)})"
+            print(f"- {drone.id} at {drone.position}: {status}")
+        print("--------------------")
 
-        print("--- SkyMind Real-time Simulation ---")
-        print(f"Step: {self.step_count} | Active Drones: {sum(1 for d in self.env.drones if d.is_active)}")
-        print("-" * 35)
-
-        display_grid = self.env.get_display_grid()
-        for row in display_grid:
-            print(" ".join(row))
-            
-        print("-" * 35)
-        print("Legend: S=Start, E=End, D=Drone, #=Obstacle")
+    def _all_drones_finished(self):
+        """
+        Checks if all drones in the simulation have finished their paths.
+        """
+        if not self.environment.drones:
+            return True # If there are no drones, we consider it "finished"
+        
+        return all(drone.has_finished() for drone in self.environment.drones)

@@ -1,55 +1,89 @@
 # skymind_sim/main.py
 
-import time
-from .core.environment import Environment
-from .core.drone import Drone
-from .core.simulation import Simulation
-from .utils.pathfinding import a_star_search
-from .utils.logger import setup_logger
+import logging
+import uuid
+from skymind_sim.core.drone import Drone
+from skymind_sim.core.environment import Environment
+from skymind_sim.core.simulation import Simulation
 
+# --- Basic Logger Configuration ---
+# Create a logger
+logger = logging.getLogger("simulation_log")
+logger.setLevel(logging.INFO) # Set the lowest level of messages to handle
+
+# Create handlers
+# Console handler for printing logs to the screen
+c_handler = logging.StreamHandler()
+c_handler.setLevel(logging.INFO) # Only INFO and above will be shown in console
+
+# File handler for saving logs to a file
+f_handler = logging.FileHandler('data/simulation_logs/sim_run.log', mode='w')
+f_handler.setLevel(logging.DEBUG) # DEBUG and above will be saved to the file
+
+# Create formatters and add it to handlers
+log_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+c_handler.setFormatter(log_format)
+f_handler.setFormatter(log_format)
+
+# Add handlers to the logger
+if not logger.handlers:
+    logger.addHandler(c_handler)
+    logger.addHandler(f_handler)
+
+# --- Main Simulation Setup ---
 def main():
     """
-    تابع اصلی برای اجرای شبیه‌سازی.
+    Sets up and runs a multi-drone simulation scenario.
     """
+    logger.info("Setting up the simulation scenario.")
+
     try:
-        print("--- SkyMind Simulation Initializing ---")
+        # 1. Initialize the Environment with a map
+        # The environment is now the central manager of the grid and drones.
+        map_path = 'data/maps/map1.txt'
+        environment = Environment(map_file=map_path)
+
+        # 2. Create and Add Drones to the Environment
+        # We create multiple drone instances and add them one by one.
+        # The environment will handle path calculation for each.
         
-        # راه‌اندازی لاگر
-        logger = setup_logger("simulation_log", "data/simulation_logs/sim.log")
-        logger.info("Simulation started.")
+        # Drone Alpha
+        drone_alpha = Drone(
+            drone_id=f"alpha-{str(uuid.uuid4())[:4]}",
+            start_pos=(1, 1),
+            char='A'
+        )
+        environment.add_drone(drone_alpha, end_pos=(5, 17)) # Corrected end position
 
-        # ایجاد محیط از روی فایل نقشه
-        # آرگومان‌های width و height حذف شده‌اند چون از فایل خوانده می‌شوند
-        env = Environment(map_file_path="data/maps/complex_map_01.txt")
-        logger.info(f"Environment loaded with map: data/maps/complex_map_01.txt")
+        # Drone Bravo
+        drone_bravo = Drone(
+            drone_id=f"bravo-{str(uuid.uuid4())[:4]}",
+            start_pos=(8, 1),
+            char='B'
+        )
+        environment.add_drone(drone_bravo, end_pos=(1, 15))
 
-        # ایجاد پهپاد و افزودن آن به محیط
-        drone1 = Drone(drone_id="Alpha-1", position=env.start_pos)
-        env.add_drone(drone1)
-        logger.info(f"Drone '{drone1.drone_id}' created at position {drone1.position}")
+        # Drone Charlie
+        drone_charlie = Drone(
+            drone_id=f"charlie-{str(uuid.uuid4())[:4]}",
+            start_pos=(3, 3),
+            char='C'
+        )
+        environment.add_drone(drone_charlie, end_pos=(8, 12))
 
-        # پیدا کردن مسیر با استفاده از A*
-        path = a_star_search(env.grid, env.start_pos, env.end_pos)
-        
-        if not path:
-            print("No path found from Start to End!")
-            logger.warning("Pathfinding failed. No path found.")
-            return
-        
-        print(f"Path found with {len(path)} steps.")
-        logger.info(f"Path found from {env.start_pos} to {env.end_pos} with {len(path)} steps.")
-        drone1.set_path(path)
+        # 3. Initialize the Simulation Engine
+        # The simulation engine now takes the whole environment.
+        simulation = Simulation(environment, time_step=0.3)
 
-        # ایجاد و اجرای شبیه‌سازی
-        sim = Simulation(env)
-        sim.run()
+        # 4. Run the simulation
+        simulation.run()
 
-        logger.info("Simulation finished successfully.")
-
+    except (FileNotFoundError, ValueError) as e:
+        logger.error(f"Failed to initialize simulation: {e}")
+        print(f"Error: Could not set up the simulation. Please check logs for details.")
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-        if 'logger' in locals():
-            logger.error(f"An unexpected error occurred: {e}", exc_info=True)
+        logger.critical(f"An unexpected critical error occurred: {e}", exc_info=True)
+        print("A critical error occurred. The simulation has been aborted.")
 
 if __name__ == "__main__":
     main()

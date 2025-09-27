@@ -1,111 +1,134 @@
 # skymind_sim/core/environment.py
 
-import numpy as np
-from typing import Tuple, List, Optional
-from .drone import Drone
+import logging
+import heapq  # For the priority queue in A*
+
+logger = logging.getLogger("simulation_log")
 
 class Environment:
     """
-    کلاسی برای نمایش و مدیریت محیط شبیه‌سازی (نقشه).
+    Manages the simulation grid, obstacles, and all drones.
+    Responsible for pathfinding.
     """
-    def __init__(self, map_file_path: str):
-        """
-        سازنده کلاس محیط.
-        """
-        self.grid, self.start_pos, self.end_pos = self._load_map(map_file_path)
-        if self.grid is None:
-            raise ValueError(f"Map file could not be loaded or is invalid: {map_file_path}")
-        
-        self.height, self.width = self.grid.shape
-        self.drones: List[Drone] = []
-        print(f"Environment loaded from '{map_file_path}' ({self.width}x{self.height}).")
-        print(f"Start: {self.start_pos}, End: {self.end_pos}")
-
-# در فایل skymind_sim/core/environment.py
-
-    def _load_map(self, file_path: str) -> Tuple[Optional[np.ndarray], Optional[Tuple[int, int]], Optional[Tuple[int, int]]]:
-        """
-        نقشه را از یک فایل متنی بارگذاری می‌کند، خطوط خالی را نادیده می‌گیرد
-        و کاراکترهای خاص را مدیریت می‌کند.
-        """
+    def __init__(self, map_file):
+        self.grid = []
+        self.width = 0
+        self.height = 0
+        self.drones = []
         try:
-            processed_lines = []
-            with open(file_path, 'r') as f:
-                for line in f:
-                    stripped_line = line.rstrip('\n')
-                    if not stripped_line:
-                        continue # نادیده گرفتن خطوط خالی
+            self._load_map(map_file)
+            logger.info(f"Environment initialized with map '{map_file}' ({self.height}x{self.width}).")
+        except (ValueError, FileNotFoundError) as e:
+            # The errors are already logged in _load_map. We just re-raise to halt execution.
+            raise SystemExit(f"Halting due to critical error in map loading: {e}") from e
 
-                    # جایگزینی کاراکتر '.' با فضای خالی ' ' برای مسیریابی
-                    processed_line = list(stripped_line.replace('.', ' '))
-                    processed_lines.append(processed_line)
+    def _load_map(self, map_file):
+        """Loads the map from a text file."""
+        try:
+            with open(map_file, 'r') as f:
+                lines = [line.strip('\n') for line in f.readlines()]
+
+            if not lines:
+                raise ValueError("Map file is empty.")
+
+            # Validate that all lines have the same length
+            self.width = len(lines[0])
+            for i, line in enumerate(lines):
+                if len(line) != self.width:
+                    error_msg = f"Map line length mismatch. Expected {self.width}, but line {i+1} has {len(line)}."
+                    logger.error(error_msg)
+                    raise ValueError(error_msg)
             
-            if not processed_lines:
-                print("Error loading map: Map file is empty or contains only whitespace.")
-                return None, None, None
+            self.grid = [list(line) for line in lines]
+            self.height = len(self.grid)
+            logger.info(f"Map '{map_file}' loaded successfully.")
 
-            # بررسی یکسان بودن طول خطوط
-            first_line_len = len(processed_lines[0])
-            if not all(len(line) == first_line_len for line in processed_lines):
-                 print("Error loading map: Not all lines have the same length.")
-                 # برای دیباگ کردن بهتر، طول خطوط نابرابر را چاپ می‌کنیم
-                 for i, line in enumerate(processed_lines):
-                     if len(line) != first_line_len:
-                         print(f"  -> Line {i+1} has length {len(line)}, expected {first_line_len}.")
-                 return None, None, None
-
-            grid = np.array(processed_lines)
-            start_pos, end_pos = None, None
-            
-            # پیدا کردن S و E در گرید نهایی
-            start_coords = np.where(grid == 'S')
-            end_coords = np.where(grid == 'E')
-
-            if start_coords[0].size > 0:
-                start_pos = (start_coords[0][0], start_coords[1][0])
-            if end_coords[0].size > 0:
-                end_pos = (end_coords[0][0], end_coords[1][0])
-            
-            if start_pos is None or end_pos is None:
-                print("Error loading map: Start 'S' or End 'E' position not found in map.")
-                return None, None, None
-
-            return grid, start_pos, end_pos
         except FileNotFoundError:
-            print(f"Error: Map file not found at '{file_path}'")
-            return None, None, None
-        except Exception as e:
-            print(f"An unexpected error occurred while loading the map: {e}")
-            return None, None, None
+            logger.error(f"Map file not found at '{map_file}'")
+            raise
 
-
-    def add_drone(self, drone: Drone):
-        """
-        یک پهپاد به محیط اضافه می‌کند.
-        """
-        self.drones.append(drone)
-        drone.set_environment(self)
-
-    def is_obstacle(self, position: Tuple[int, int]) -> bool:
-        """
-        بررسی می‌کند که آیا یک موقعیت مانع است یا خیر.
-        """
-        r, c = position
-        if not (0 <= r < self.height and 0 <= c < self.width):
-            return True # خارج از محدوده نقشه به عنوان مانع در نظر گرفته می‌شود
-        return self.grid[r, c] == '#'
-
-    def get_display_grid(self) -> np.ndarray:
-        """
-        یک کپی از گرید نمایشی را برای استفاده در شبیه‌ساز برمی‌گرداند.
-        """
-        display_grid = np.copy(self.grid)
+    def add_drone(self, drone, end_pos):
+        """Adds a drone to the environment and calculates its path."""
+        logger.info(f"Adding drone '{drone.id}' to environment. Start: {drone.position}, End: {end_pos}")
         
-        for drone in self.drones:
-            if drone.is_active:
-                r, c = drone.position
-                # فقط در صورتی کاراکتر پهپاد را جایگزین کن که نقطه شروع یا پایان نباشد
-                if display_grid[r, c] not in ('S', 'E'):
-                    display_grid[r, c] = 'D'
+        path = self._find_path(drone.position, end_pos)
         
-        return display_grid
+        if path:
+            drone.path = path
+            self.drones.append(drone) # Only add the drone if a path is found
+            logger.info(f"Path found for drone '{drone.id}' with {len(path)} steps. Drone added.")
+        else:
+            logger.warning(f"No path could be found for drone '{drone.id}' from {drone.position} to {end_pos}. Drone not added to simulation.")
+
+    def _is_valid(self, pos):
+        """Check if a position is within grid bounds and not an obstacle."""
+        row, col = pos
+        if not (0 <= row < self.height and 0 <= col < self.width):
+            return False
+        if self.grid[row][col] == '#':
+            return False
+        return True
+
+    def _heuristic(self, a, b):
+        """Manhattan distance heuristic for A*."""
+        (x1, y1) = a
+        (x2, y2) = b
+        return abs(x1 - x2) + abs(y1 - y2)
+
+    def _find_path(self, start, end):
+        """
+        Corrected A* pathfinding algorithm implementation.
+        """
+        if not self._is_valid(start) or not self._is_valid(end):
+            logger.warning(f"Start {start} or End {end} is not a valid position.")
+            return []
+
+        open_set = []
+        heapq.heappush(open_set, (0, start)) # (f_score, position)
+        
+        came_from = {}
+        
+        g_score = { (r, c): float('inf') for r in range(self.height) for c in range(self.width) }
+        g_score[start] = 0
+        
+        f_score = { (r, c): float('inf') for r in range(self.height) for c in range(self.width) }
+        f_score[start] = self._heuristic(start, end)
+
+        open_set_hash = {start}
+
+        while open_set:
+            _, current = heapq.heappop(open_set)
+            
+            if current == end:
+                # Reconstruct path. The path is from start to end.
+                # The returned path does not include the start position itself,
+                # as the drone is already there. It contains the sequence of
+                # cells to move to.
+                path = []
+                temp = current
+                while temp in came_from:
+                    path.append(temp)
+                    temp = came_from[temp]
+                path.reverse() # Path is now from start's neighbor to end
+                return path
+
+            open_set_hash.remove(current)
+
+            row, col = current
+            neighbors = [(row + 1, col), (row - 1, col), (row, col + 1), (row, col - 1)]
+            
+            for neighbor in neighbors:
+                if not self._is_valid(neighbor):
+                    continue
+                
+                tentative_g_score = g_score[current] + 1
+                
+                if tentative_g_score < g_score.get(neighbor, float('inf')):
+                    came_from[neighbor] = current
+                    g_score[neighbor] = tentative_g_score
+                    f_score[neighbor] = tentative_g_score + self._heuristic(neighbor, end)
+                    if neighbor not in open_set_hash:
+                        heapq.heappush(open_set, (f_score[neighbor], neighbor))
+                        open_set_hash.add(neighbor)
+        
+        return [] # Return empty list if no path is found

@@ -1,13 +1,25 @@
-# Python temporary files
-__pycache__/
-*.py[cod]
+    # Byte-compiled / optimized / DLL files
+    __pycache__/
+    *.pyc
+    *.pyo
+    *.pyd
 
-# Virtual environment
-/venv/
-
-# IDE-specific files
-.vscode/
-.idea/
-
-# Data logs (optional, good practice)
-/data/simulation_logs/
+    # Virtual environment
+    venv/
+    .venv/
+    env/
+    .env/
+    
+    # Distribution / packaging
+    .eggs/
+    *.egg-info/
+    *.egg
+    dist/
+    build/
+    
+    # Log files
+    *.log
+    
+    # IDE-specific files
+    .vscode/
+    .idea/

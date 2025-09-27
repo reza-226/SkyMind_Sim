@@ -1,0 +1,44 @@
+2025-09-26 20:23:21,271 - simulation_log - INFO - Setting up the simulation scenario.
+2025-09-26 20:23:21,272 - simulation_log - INFO - Map 'data/maps/map1.txt' loaded successfully.
+2025-09-26 20:23:21,272 - simulation_log - INFO - Environment initialized with map 'data/maps/map1.txt' (11x20).
+2025-09-26 20:23:21,272 - simulation_log - INFO - Drone 'alpha-892d' created at position (1, 1).
+2025-09-26 20:23:21,272 - simulation_log - INFO - Adding drone 'alpha-892d' to environment. Start: (1, 1), End: (5, 17)
+2025-09-26 20:23:21,274 - simulation_log - INFO - Path found for drone 'alpha-892d' with 26 steps. Drone added.
+2025-09-26 20:23:21,274 - simulation_log - INFO - Drone 'bravo-2dd7' created at position (8, 1).
+2025-09-26 20:23:21,275 - simulation_log - INFO - Adding drone 'bravo-2dd7' to environment. Start: (8, 1), End: (1, 15)
+2025-09-26 20:23:21,275 - simulation_log - INFO - Path found for drone 'bravo-2dd7' with 21 steps. Drone added.
+2025-09-26 20:23:21,275 - simulation_log - INFO - Drone 'charlie-8146' created at position (3, 3).
+2025-09-26 20:23:21,276 - simulation_log - INFO - Adding drone 'charlie-8146' to environment. Start: (3, 3), End: (8, 12)
+2025-09-26 20:23:21,276 - simulation_log - INFO - Path found for drone 'charlie-8146' with 14 steps. Drone added.
+2025-09-26 20:23:21,276 - simulation_log - INFO - Simulation initialized with a time step of 0.3s.
+2025-09-26 20:23:21,277 - simulation_log - INFO - Simulation started.
+2025-09-26 20:23:21,277 - simulation_log - INFO - --- Simulation Tick 1 ---
+2025-09-26 20:23:21,608 - simulation_log - INFO - --- Simulation Tick 2 ---
+2025-09-26 20:23:21,971 - simulation_log - INFO - --- Simulation Tick 3 ---
+2025-09-26 20:23:22,319 - simulation_log - INFO - --- Simulation Tick 4 ---
+2025-09-26 20:23:22,674 - simulation_log - INFO - --- Simulation Tick 5 ---
+2025-09-26 20:23:23,030 - simulation_log - INFO - --- Simulation Tick 6 ---
+2025-09-26 20:23:23,378 - simulation_log - INFO - --- Simulation Tick 7 ---
+2025-09-26 20:23:23,724 - simulation_log - INFO - --- Simulation Tick 8 ---
+2025-09-26 20:23:24,079 - simulation_log - INFO - --- Simulation Tick 9 ---
+2025-09-26 20:23:24,427 - simulation_log - INFO - --- Simulation Tick 10 ---
+2025-09-26 20:23:24,773 - simulation_log - INFO - --- Simulation Tick 11 ---
+2025-09-26 20:23:25,113 - simulation_log - INFO - --- Simulation Tick 12 ---
+2025-09-26 20:23:25,467 - simulation_log - INFO - --- Simulation Tick 13 ---
+2025-09-26 20:23:25,813 - simulation_log - INFO - --- Simulation Tick 14 ---
+2025-09-26 20:23:25,814 - simulation_log - INFO - Drone 'charlie-8146' has reached its destination at (8, 12).
+2025-09-26 20:23:26,159 - simulation_log - INFO - --- Simulation Tick 15 ---
+2025-09-26 20:23:26,513 - simulation_log - INFO - --- Simulation Tick 16 ---
+2025-09-26 20:23:26,858 - simulation_log - INFO - --- Simulation Tick 17 ---
+2025-09-26 20:23:27,208 - simulation_log - INFO - --- Simulation Tick 18 ---
+2025-09-26 20:23:27,565 - simulation_log - INFO - --- Simulation Tick 19 ---
+2025-09-26 20:23:27,920 - simulation_log - INFO - --- Simulation Tick 20 ---
+2025-09-26 20:23:28,267 - simulation_log - INFO - --- Simulation Tick 21 ---
+2025-09-26 20:23:28,268 - simulation_log - INFO - Drone 'bravo-2dd7' has reached its destination at (1, 15).
+2025-09-26 20:23:28,615 - simulation_log - INFO - --- Simulation Tick 22 ---
+2025-09-26 20:23:28,953 - simulation_log - INFO - --- Simulation Tick 23 ---
+2025-09-26 20:23:29,309 - simulation_log - INFO - --- Simulation Tick 24 ---
+2025-09-26 20:23:29,664 - simulation_log - INFO - --- Simulation Tick 25 ---
+2025-09-26 20:23:30,010 - simulation_log - INFO - --- Simulation Tick 26 ---
+2025-09-26 20:23:30,011 - simulation_log - INFO - Drone 'alpha-892d' has reached its destination at (5, 17).
+2025-09-26 20:23:30,072 - simulation_log - INFO - All drones have completed their paths. Simulation finished.

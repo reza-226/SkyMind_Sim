@@ -1,62 +1,52 @@
 # skymind_sim/core/drone.py
 
-from typing import Tuple, List, TYPE_CHECKING
+import logging
 
-# این بلوک برای جلوگیری از خطاهای واردات چرخه‌ای (circular import) است.
-if TYPE_CHECKING:
-    from .environment import Environment
+logger = logging.getLogger("simulation_log")
 
 class Drone:
     """
-    کلاسی برای نمایش و مدیریت وضعیت یک پهپاد.
+    Represents a single drone in the simulation.
+    
+    Manages its own state, including ID, position, and path.
     """
-    def __init__(self, drone_id: str, position: Tuple[int, int]):
+    def __init__(self, drone_id, start_pos, char='D'):
+        self.id = drone_id
+        self.position = start_pos  # Current position as a tuple (row, col)
+        self.char = char           # Character to represent the drone on the map
+        self.path = []             # List of coordinates (tuples) to follow
+        self.finished = False      # Flag to indicate if the drone has reached its destination
+        logger.info(f"Drone '{self.id}' created at position {self.position}.")
+
+    def move(self):
         """
-        سازنده کلاس پهپاد.
+        Moves the drone one step along its path.
         
-        :param drone_id: شناسه منحصر به فرد پهپاد.
-        :param position: موقعیت اولیه پهپاد (row, col).
+        If the path is not empty, it pops the next coordinate from the path
+        and updates its current position. If the path becomes empty after moving,
+        it marks itself as finished.
         """
-        self.drone_id = drone_id
-        self.position = position
-        self.path: List[Tuple[int, int]] = []
-        self.path_index = 0
-        self.is_active = False # پهپاد تا زمانی که مسیر نداشته باشد فعال نیست
-        self.env: 'Environment' = None
-
-    def set_environment(self, env: 'Environment'):
-        """
-        محیطی که پهپاد در آن قرار دارد را تنظیم می‌کند.
-        """
-        self.env = env
-
-    def set_path(self, path: List[Tuple[int, int]]):
-        """
-        مسیر حرکت پهپاد را تنظیم می‌کند.
-        """
-        self.path = path
-        self.path_index = 0
-        # اگر مسیر معتبر و دارای حداقل یک گام باشد، پهپاد فعال می‌شود
-        if self.path and len(self.path) > 0:
-            self.is_active = True
-        else:
-            self.is_active = False
+        if self.path and not self.finished:
+            # Get the next position from the path
+            next_pos = self.path.pop(0)
+            self.position = next_pos
+            logger.debug(f"Drone '{self.id}' moved to {self.position}.")
             
-    def follow_path(self):
-        """
-        پهپاد را یک گام در مسیر تعیین شده به جلو می‌برد.
-        """
-        if not self.is_active:
-            return
+            # If the path is now empty, the drone has reached its destination
+            if not self.path:
+                self.finished = True
+                logger.info(f"Drone '{self.id}' has reached its destination at {self.position}.")
+        elif self.finished:
+            logger.debug(f"Drone '{self.id}' has already finished its path.")
+        else:
+            # This case happens if a drone was created but never given a path
+            logger.warning(f"Drone '{self.id}' has no path to follow. It remains at {self.position}.")
 
-        if self.path_index < len(self.path):
-            # به موقعیت بعدی در مسیر حرکت کن
-            self.position = self.path[self.path_index]
-            self.path_index += 1
-        
-        if self.path_index >= len(self.path):
-            self.is_active = False
-            print(f"Drone {self.drone_id} has reached its destination at {self.position}.")
+    def has_finished(self):
+        """
+        Returns True if the drone has completed its path.
+        """
+        return self.finished
 
-    def __repr__(self) -> str:
-        return f"Drone(id='{self.drone_id}', pos={self.position})"
+    def __repr__(self):
+        return f"Drone(id={self.id}, pos={self.position})"

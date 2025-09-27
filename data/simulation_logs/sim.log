@@ -1,0 +1,50 @@
+2025-09-26 18:51:44,922 - simulation_log - INFO - Simulation started.
+2025-09-26 18:51:44,923 - simulation_log - ERROR - An unexpected error occurred: Map file could not be loaded or is invalid: data/maps/complex_map_01.txt
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\main.py", line 23, in main
+    env = Environment(map_file_path="data/maps/complex_map_01.txt")
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\core\environment.py", line 17, in __init__
+    raise ValueError(f"Map file could not be loaded or is invalid: {map_file_path}")
+ValueError: Map file could not be loaded or is invalid: data/maps/complex_map_01.txt
+2025-09-26 18:54:08,511 - simulation_log - INFO - Simulation started.
+2025-09-26 18:54:08,514 - simulation_log - ERROR - An unexpected error occurred: Map file could not be loaded or is invalid: data/maps/complex_map_01.txt
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\main.py", line 23, in main
+    env = Environment(map_file_path="data/maps/complex_map_01.txt")
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\core\environment.py", line 17, in __init__
+    raise ValueError(f"Map file could not be loaded or is invalid: {map_file_path}")
+ValueError: Map file could not be loaded or is invalid: data/maps/complex_map_01.txt
+2025-09-26 18:56:09,971 - simulation_log - INFO - Simulation started.
+2025-09-26 18:56:09,972 - simulation_log - INFO - Environment loaded with map: data/maps/complex_map_01.txt
+2025-09-26 18:56:09,973 - simulation_log - INFO - Drone 'Alpha-1' created at position (np.int64(1), np.int64(1))
+2025-09-26 18:56:09,976 - simulation_log - INFO - Path found from (np.int64(1), np.int64(1)) to (np.int64(10), np.int64(18)) with 27 steps.
+2025-09-26 18:56:09,976 - simulation_log - INFO - Simulation loop started.
+2025-09-26 18:56:09,976 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(1), np.int64(1)) at step 1
+2025-09-26 18:56:10,513 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(1), np.int64(2)) at step 2
+2025-09-26 18:56:11,061 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(1), np.int64(3)) at step 3
+2025-09-26 18:56:11,616 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(1), np.int64(4)) at step 4
+2025-09-26 18:56:12,172 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(1), np.int64(5)) at step 5
+2025-09-26 18:56:12,715 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(1), np.int64(6)) at step 6
+2025-09-26 18:56:13,268 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(1), np.int64(7)) at step 7
+2025-09-26 18:56:13,813 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(1), np.int64(8)) at step 8
+2025-09-26 18:56:14,358 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(1), np.int64(9)) at step 9
+2025-09-26 18:56:14,916 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(1), np.int64(10)) at step 10
+2025-09-26 18:56:15,461 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(1), np.int64(11)) at step 11
+2025-09-26 18:56:16,007 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(1), np.int64(12)) at step 12
+2025-09-26 18:56:16,550 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(1), np.int64(13)) at step 13
+2025-09-26 18:56:17,103 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(1), np.int64(14)) at step 14
+2025-09-26 18:56:17,647 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(1), np.int64(15)) at step 15
+2025-09-26 18:56:18,196 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(1), np.int64(16)) at step 16
+2025-09-26 18:56:18,744 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(1), np.int64(17)) at step 17
+2025-09-26 18:56:19,297 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(1), np.int64(18)) at step 18
+2025-09-26 18:56:19,851 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(2), np.int64(18)) at step 19
+2025-09-26 18:56:20,388 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(3), np.int64(18)) at step 20
+2025-09-26 18:56:20,941 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(4), np.int64(18)) at step 21
+2025-09-26 18:56:21,498 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(5), np.int64(18)) at step 22
+2025-09-26 18:56:22,051 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(6), np.int64(18)) at step 23
+2025-09-26 18:56:22,605 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(7), np.int64(18)) at step 24
+2025-09-26 18:56:23,150 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(8), np.int64(18)) at step 25
+2025-09-26 18:56:23,703 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(9), np.int64(18)) at step 26
+2025-09-26 18:56:24,251 - simulation_log - INFO - Drone 'Alpha-1' moved to (np.int64(10), np.int64(18)) at step 27
+2025-09-26 18:56:24,298 - simulation_log - INFO - All drones reached their destinations.
+2025-09-26 18:56:24,298 - simulation_log - INFO - Simulation finished successfully.
