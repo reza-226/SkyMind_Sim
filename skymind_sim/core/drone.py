@@ -1,78 +1,53 @@
 # skymind_sim/core/drone.py
 
-import logging
-
-logger = logging.getLogger(__name__)
-
 class Drone:
     """
     Represents a single drone in the simulation.
-    Manages its own state, position, and pathfinding.
     """
-    def __init__(self, drone_id, start_pos, goal_pos, environment):
+    def __init__(self, drone_id: int, initial_position: tuple = (0, 0, 0)):
         """
-        Initializes a Drone instance.
+        Initializes a new Drone.
 
         Args:
-            drone_id (str): A unique identifier for the drone (e.g., 'A').
-            start_pos (tuple): The starting (row, col) coordinates.
-            goal_pos (tuple): The goal (row, col) coordinates.
-            environment (Environment): A reference to the simulation environment.
+            drone_id (int): The unique identifier for the drone.
+            initial_position (tuple): The starting (x, y, z) position of the drone.
         """
-        self.drone_id = drone_id
-        self.start_pos = start_pos
-        self.goal_pos = goal_pos
-        self.environment = environment  # Store a reference to the environment
+        if not isinstance(drone_id, int):
+            raise TypeError("Drone ID must be an integer.")
+        if not (isinstance(initial_position, tuple) and len(initial_position) == 3):
+            raise ValueError("Initial position must be a tuple of (x, y, z).")
 
-        # --- Drone State ---
-        self.current_pos = start_pos
-        self.path = []  # The calculated path to the goal
-        self.status = "IDLE"  # Can be IDLE, MOVING, FINISHED, FAILED
+        self.id = drone_id
+        self.position = initial_position
+        self.velocity = (0, 0, 0)  # Starting with zero velocity
+        self.status = 'IDLE'       # Initial status
 
-        logger.info(
-            f"Drone {self.drone_id} initialized. Start: {self.start_pos}, "
-            f"Goal: {self.goal_pos}, Status: {self.status}"
-        )
-
-    def calculate_path(self):
+    def __repr__(self) -> str:
         """
-        Calculates the path from the current position to the goal.
-        (This will be implemented with an algorithm like A* later).
+        Provides a developer-friendly string representation of the drone.
         """
-        logger.info(f"Drone {self.drone_id}: Calculating path (placeholder)...")
-        # For now, we'll use a placeholder path.
-        # In a real scenario, this would involve a complex algorithm.
-        self.path = [self.start_pos, self.goal_pos] # Simple straight line for now
-        self.status = "READY"
-        logger.info(f"Drone {self.drone_id}: Path calculated. Status set to {self.status}.")
+        return (f"Drone(id={self.id}, position={self.position}, "
+                f"status='{self.status}')")
 
-    def move(self):
+    def move(self, new_position: tuple):
         """
-        Moves the drone one step along its calculated path.
+        Updates the drone's position.
+        In a real simulation, this would involve physics, but for now, we just teleport.
         """
-        if self.status not in ["READY", "MOVING"]:
-            logger.warning(f"Drone {self.drone_id} cannot move in status {self.status}.")
-            return
+        print(f"Drone {self.id}: Moving from {self.position} to {new_position}")
+        self.position = new_position
+        self.update_status('FLYING')
 
-        if not self.path:
-            logger.info(f"Drone {self.drone_id} has reached its destination.")
-            self.status = "FINISHED"
-            return
+    def land(self):
+        """
+        Lands the drone, setting its status to IDLE.
+        """
+        print(f"Drone {self.id}: Landing at position {self.position}.")
+        self.update_status('IDLE')
 
-        # Move to the next point in the path
-        # In a real simulation, we'd pop the *next* step, not the start.
-        # For now, let's just simulate the process.
-        if self.current_pos == self.start_pos: # First move
-            self.status = "MOVING"
-
-        next_pos = self.path.pop(0)
-        self.current_pos = next_pos
-        logger.info(f"Drone {self.drone_id} moved to {self.current_pos}.")
-
-        if not self.path:
-            logger.info(f"Drone {self.drone_id} has reached its destination {self.goal_pos}.")
-            self.status = "FINISHED"
-
-    def __repr__(self):
-        return (f"Drone(ID='{self.drone_id}', Pos={self.current_pos}, "
-                f"Status='{self.status}')")
+    def update_status(self, new_status: str):
+        """
+        Updates the drone's status.
+        """
+        print(f"Drone {self.id}: Status changed from '{self.status}' to '{new_status}'.")
+        self.status = new_status
