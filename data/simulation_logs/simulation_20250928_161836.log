@@ -1,0 +1,18 @@
+2025-09-28 16:18:36,464 - root - INFO - Logging configured successfully.
+2025-09-28 16:18:36,465 - root - INFO - Log file created at: data/simulation_logs\simulation_20250928_161836.log
+2025-09-28 16:18:36,465 - __main__ - INFO - Starting SkyMind Simulator...
+2025-09-28 16:18:36,465 - __main__ - INFO - Loading map from: data\maps\multi_drone_map.txt
+2025-09-28 16:18:36,466 - skymind_sim.core.environment - INFO - Attempting to load map from data\maps\multi_drone_map.txt
+2025-09-28 16:18:36,466 - skymind_sim.core.environment - INFO - Map loaded successfully. Dimensions: 9x20
+2025-09-28 16:18:36,467 - skymind_sim.core.environment - INFO - Found drone pair 'A': start at (1, 1), goal at (5, 2)
+2025-09-28 16:18:36,467 - skymind_sim.core.environment - INFO - Found drone pair 'B': start at (4, 14), goal at (5, 14)
+2025-09-28 16:18:36,467 - __main__ - CRITICAL - An unexpected critical error occurred: Drone.__init__() takes from 3 to 4 positional arguments but 5 were given
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\main.py", line 29, in main
+    sim = Simulation(env)
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\core\simulation.py", line 21, in __init__
+    self._initialize_drones()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\core\simulation.py", line 33, in _initialize_drones
+    drone = Drone(drone_id, start, goal, self.environment)
+TypeError: Drone.__init__() takes from 3 to 4 positional arguments but 5 were given

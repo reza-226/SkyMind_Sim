@@ -1,0 +1,20 @@
+2025-09-28 16:35:19,058 - root - INFO - Logging configured successfully.
+2025-09-28 16:35:19,058 - root - INFO - Log file created at: data/simulation_logs\simulation_20250928_163519.log
+2025-09-28 16:35:19,059 - __main__ - INFO - Starting SkyMind Simulator...
+2025-09-28 16:35:19,059 - __main__ - INFO - Loading map from: data\maps\multi_drone_map.txt
+2025-09-28 16:35:19,059 - skymind_sim.core.environment - INFO - Attempting to load map from data\maps\multi_drone_map.txt
+2025-09-28 16:35:19,060 - skymind_sim.core.environment - INFO - Map loaded successfully. Dimensions: 9x20
+2025-09-28 16:35:19,060 - skymind_sim.core.environment - INFO - Found drone pair 'A': start at (1, 1), goal at (5, 2)
+2025-09-28 16:35:19,061 - skymind_sim.core.environment - INFO - Found drone pair 'B': start at (4, 14), goal at (5, 14)
+2025-09-28 16:35:19,061 - skymind_sim.core.simulation - INFO - Initializing drones...
+2025-09-28 16:35:19,062 - __main__ - CRITICAL - An unexpected critical error occurred: 'Environment' object has no attribute 'drone_definitions'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\main.py", line 29, in main
+    sim = Simulation(env)
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\core\simulation.py", line 26, in __init__
+    self._initialize_drones()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\core\simulation.py", line 37, in _initialize_drones
+    for drone_def in self.environment.drone_definitions:
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Environment' object has no attribute 'drone_definitions'. Did you mean: 'drone_positions'?

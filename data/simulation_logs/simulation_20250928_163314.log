@@ -1,0 +1,20 @@
+2025-09-28 16:33:14,267 - root - INFO - Logging configured successfully.
+2025-09-28 16:33:14,267 - root - INFO - Log file created at: data/simulation_logs\simulation_20250928_163314.log
+2025-09-28 16:33:14,267 - __main__ - INFO - Starting SkyMind Simulator...
+2025-09-28 16:33:14,268 - __main__ - INFO - Loading map from: data\maps\multi_drone_map.txt
+2025-09-28 16:33:14,268 - skymind_sim.core.environment - INFO - Attempting to load map from data\maps\multi_drone_map.txt
+2025-09-28 16:33:14,269 - skymind_sim.core.environment - INFO - Map loaded successfully. Dimensions: 9x20
+2025-09-28 16:33:14,269 - skymind_sim.core.environment - INFO - Found drone pair 'A': start at (1, 1), goal at (5, 2)
+2025-09-28 16:33:14,269 - skymind_sim.core.environment - INFO - Found drone pair 'B': start at (4, 14), goal at (5, 14)
+2025-09-28 16:33:14,270 - skymind_sim.core.simulation - INFO - Initializing drones...
+2025-09-28 16:33:14,270 - __main__ - CRITICAL - An unexpected critical error occurred: 'list' object has no attribute 'items'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\main.py", line 29, in main
+    sim = Simulation(env)
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\core\simulation.py", line 26, in __init__
+    self._initialize_drones()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\core\simulation.py", line 37, in _initialize_drones
+    for drone_map_id, positions in self.environment.drone_positions.items():
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'items'

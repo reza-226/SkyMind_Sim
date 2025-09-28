@@ -1,0 +1,9 @@
+2025-09-28 16:09:57,568 - root - INFO - Logging configured successfully.
+2025-09-28 16:09:57,568 - root - INFO - Log file created at: data/simulation_logs\simulation_20250928_160957.log
+2025-09-28 16:09:57,569 - __main__ - INFO - Starting SkyMind Simulator...
+2025-09-28 16:09:57,569 - __main__ - INFO - Loading map from: data\maps\multi_drone_map.txt
+2025-09-28 16:09:57,569 - __main__ - CRITICAL - An unexpected critical error occurred: Environment.__init__() got an unexpected keyword argument 'map_file_path'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\main.py", line 26, in main
+    env = Environment(map_file_path=map_file_path)
+TypeError: Environment.__init__() got an unexpected keyword argument 'map_file_path'

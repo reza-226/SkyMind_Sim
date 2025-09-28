@@ -1,0 +1,26 @@
+2025-09-28 16:29:29,994 - root - INFO - Logging configured successfully.
+2025-09-28 16:29:29,994 - root - INFO - Log file created at: data/simulation_logs\simulation_20250928_162929.log
+2025-09-28 16:29:29,994 - __main__ - INFO - Starting SkyMind Simulator...
+2025-09-28 16:29:29,995 - __main__ - INFO - Loading map from: data\maps\multi_drone_map.txt
+2025-09-28 16:29:29,995 - skymind_sim.core.environment - INFO - Attempting to load map from data\maps\multi_drone_map.txt
+2025-09-28 16:29:29,996 - skymind_sim.core.environment - INFO - Map loaded successfully. Dimensions: 9x20
+2025-09-28 16:29:29,996 - skymind_sim.core.environment - INFO - Found drone pair 'A': start at (1, 1), goal at (5, 2)
+2025-09-28 16:29:30,027 - skymind_sim.core.environment - INFO - Found drone pair 'B': start at (4, 14), goal at (5, 14)
+2025-09-28 16:29:30,027 - skymind_sim.core.drone - INFO - Drone Drone-1 initialized. Start: (1, 1), Goal: (5, 2), Status: IDLE
+2025-09-28 16:29:30,027 - skymind_sim.core.simulation - INFO - Initialized Drone-1 with start (1, 1) and goal (5, 2).
+2025-09-28 16:29:30,028 - skymind_sim.core.drone - INFO - Drone Drone-2 initialized. Start: (4, 14), Goal: (5, 14), Status: IDLE
+2025-09-28 16:29:30,028 - skymind_sim.core.simulation - INFO - Initialized Drone-2 with start (4, 14) and goal (5, 14).
+2025-09-28 16:29:30,028 - skymind_sim.core.simulation - INFO - Starting simulation run for 2 drones.
+2025-09-28 16:29:30,029 - skymind_sim.core.drone - INFO - Drone Drone-1: Calculating path (placeholder)...
+2025-09-28 16:29:30,029 - skymind_sim.core.drone - INFO - Drone Drone-1: Path calculated. Status set to READY.
+2025-09-28 16:29:30,029 - skymind_sim.core.drone - INFO - Drone Drone-2: Calculating path (placeholder)...
+2025-09-28 16:29:30,029 - skymind_sim.core.drone - INFO - Drone Drone-2: Path calculated. Status set to READY.
+2025-09-28 16:29:30,030 - __main__ - CRITICAL - An unexpected critical error occurred: 'Drone' object has no attribute 'id'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\main.py", line 30, in main
+    sim.run()
+    ~~~~~~~^^
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\core\simulation.py", line 50, in run
+    logger.info(f"--- Simulating movement for {drone.id} ---")
+                                               ^^^^^^^^
+AttributeError: 'Drone' object has no attribute 'id'

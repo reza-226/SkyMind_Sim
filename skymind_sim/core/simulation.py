@@ -1,100 +1,94 @@
 # skymind_sim/core/simulation.py
 
-import time
 import logging
-import os
+import time
 
-logger = logging.getLogger("simulation_log")
+from skymind_sim.core.drone import Drone
+
+logger = logging.getLogger(__name__)
 
 class Simulation:
     """
-    Controls the main simulation loop and orchestrates the updates.
+    Manages the main simulation loop and the interaction between drones and the environment.
     """
-    def __init__(self, environment, time_step=0.3):
+    def __init__(self, environment):
+        """
+        Initializes the Simulation.
+
+        Args:
+            environment (Environment): The simulation environment, containing the map and drone start/goal points.
+        """
         self.environment = environment
-        self.time_step = time_step
-        self.tick_count = 0
-        self.running = False
-        logger.info(f"Simulation initialized with a time step of {self.time_step}s.")
+        self.drones = []
+        self.time_step = 0
+        self.max_steps = 100  # A safety limit to prevent infinite loops
+
+        self._initialize_drones()
+
+    def _initialize_drones(self):
+        """
+        Creates Drone objects based on the data from the environment.
+        """
+        logger.info("Initializing drones...")
+        # This code is now guaranteed to work with the updated Environment class
+        for drone_def in self.environment.drone_definitions:
+            drone = Drone(
+                drone_id=drone_def['id'],
+                start_pos=drone_def['start'],
+                goal_pos=drone_def['goal'],
+                environment=self.environment
+            )
+            self.drones.append(drone)
+            logger.info(
+                f"Initialized Drone '{drone_def['id']}' with start {drone_def['start']} and goal {drone_def['goal']}."
+            )
 
     def run(self):
         """
-        Starts and runs the main simulation loop.
+        Runs the main simulation loop.
         """
-        self.running = True
-        logger.info("Simulation started.")
-        
-        try:
-            while self.running:
-                self.tick_count += 1
-                logger.info(f"--- Simulation Tick {self.tick_count} ---")
-                
-                self._update()
-                self._render()
-                
-                # Check for completion
-                if self._all_drones_finished():
-                    self.running = False
-                    logger.info("All drones have completed their paths. Simulation finished.")
-                
-                time.sleep(self.time_step)
+        logger.info(f"Starting simulation run for {len(self.drones)} drones.")
 
-        except KeyboardInterrupt:
-            logger.info("Simulation interrupted by user (Ctrl+C).")
-            self.running = False
-        except Exception as e:
-            logger.critical(f"An unexpected critical error occurred: {e}", exc_info=True)
-            print("\nA critical error occurred. The simulation has been aborted.")
-            self.running = False
+        # --- 1. Path Calculation Phase ---
+        logger.info("=== Phase 1: Path Calculation ===")
+        for drone in self.drones:
+            drone.calculate_path()
+        logger.info("All drone paths calculated.")
 
-    def _update(self):
-        """
-        Updates the state of all drones in the environment.
-        """
-        if not self.environment.drones:
-            logger.warning("No drones in the simulation to update.")
-            self.running = False
-            return
-        
-        # --- FIX: Iterate directly over the list of drones ---
-        # The environment.drones is a list, not a dictionary.
-        for drone in self.environment.drones:
-            if not drone.has_finished():
-                drone.move()
+        # --- 2. Movement Phase ---
+        logger.info("=== Phase 2: Coordinated Movement ===")
+        while self.time_step < self.max_steps:
+            logger.info(f"--- Time Step: {self.time_step} ---")
 
-    def _render(self):
-        """
-        Renders the current state of the simulation to the console.
-        """
-        # Create a deep copy of the grid to draw on
-        render_grid = [row[:] for row in self.environment.grid]
-        
-        # Draw drones on the grid
-        for drone in self.environment.drones:
-            r, c = drone.position
-            # Ensure drone is within bounds before drawing
-            if 0 <= r < self.environment.height and 0 <= c < self.environment.width:
-                render_grid[r][c] = drone.char
+            if all(d.status == "FINISHED" for d in self.drones):
+                logger.info("All drones have reached their destinations. Simulation successful.")
+                break
 
-        # Clear console and print the grid
-        os.system('cls' if os.name == 'nt' else 'clear')
-        
-        print(f"SkyMind_Sim - Tick: {self.tick_count}")
-        for row in render_grid:
-            print("".join(row))
-        
-        # Print status of each drone
-        print("\n--- Drone Status ---")
-        for drone in self.environment.drones:
-            status = "Finished" if drone.has_finished() else f"Moving (Path len: {len(drone.path)})"
-            print(f"- {drone.id} at {drone.position}: {status}")
-        print("--------------------")
+            for drone in self.drones:
+                if drone.status != "FINISHED":
+                    logger.info(f"--- Simulating movement for Drone '{drone.drone_id}' ---")
+                    drone.move()
 
-    def _all_drones_finished(self):
+            self.time_step += 1
+            time.sleep(0.1)
+
+        if self.time_step >= self.max_steps:
+            logger.warning("Simulation reached max steps limit. Ending.")
+
+        logger.info("Simulation run finished.")
+
+    def get_results(self):
         """
-        Checks if all drones in the simulation have finished their paths.
+        Returns the final state of the simulation.
         """
-        if not self.environment.drones:
-            return True # If there are no drones, we consider it "finished"
-        
-        return all(drone.has_finished() for drone in self.environment.drones)
+        return {
+            "total_time_steps": self.time_step,
+            "drones": [
+                {
+                    "id": d.drone_id,
+                    "status": d.status,
+                    "final_position": d.current_pos
+                }
+                for d in self.drones
+            ]
+        }

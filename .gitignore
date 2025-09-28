@@ -1,25 +1,19 @@
-    # Byte-compiled / optimized / DLL files
+    # Python virtual environment
+    venv/
+    
+    # Python cache files
     __pycache__/
     *.pyc
-    *.pyo
-    *.pyd
-
-    # Virtual environment
-    venv/
-    .venv/
-    env/
-    .env/
     
-    # Distribution / packaging
-    .eggs/
-    *.egg-info/
-    *.egg
-    dist/
-    build/
+    # Simulation logs and data outputs
+    # We want to keep the maps, but ignore the logs.
+    data/simulation_logs/
     
-    # Log files
-    *.log
-    
-    # IDE-specific files
+    # IDE and editor specific files
     .vscode/
     .idea/
+    
+    # Build artifacts
+    dist/
+    build/
+    *.egg-info/

@@ -1,0 +1,17 @@
+2025-09-28 16:14:40,135 - root - INFO - Logging configured successfully.
+2025-09-28 16:14:40,136 - root - INFO - Log file created at: data/simulation_logs\simulation_20250928_161440.log
+2025-09-28 16:14:40,136 - __main__ - INFO - Starting SkyMind Simulator...
+2025-09-28 16:14:40,137 - __main__ - INFO - Loading map from: data\maps\multi_drone_map.txt
+2025-09-28 16:14:40,137 - skymind_sim.core.environment - INFO - Attempting to load map from data\maps\multi_drone_map.txt
+2025-09-28 16:14:40,137 - skymind_sim.core.environment - INFO - Map loaded successfully. Dimensions: 8x20
+2025-09-28 16:14:40,140 - skymind_sim.core.environment - CRITICAL - Critical error in map loading: Map line length mismatch. Line 2 has length 5, expected 20.
+2025-09-28 16:14:40,141 - __main__ - CRITICAL - An unexpected critical error occurred: Map line length mismatch. Line 2 has length 5, expected 20.
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\main.py", line 26, in main
+    env = Environment(map_file_path=map_file_path)
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\core\environment.py", line 22, in __init__
+    self._load_map(map_file_path)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\core\environment.py", line 48, in _load_map
+    raise ValueError(f"Map line length mismatch. Line {r+1} has length {len(row)}, expected {self.width}.")
+ValueError: Map line length mismatch. Line 2 has length 5, expected 20.

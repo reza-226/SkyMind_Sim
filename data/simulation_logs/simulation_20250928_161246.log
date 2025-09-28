@@ -1,0 +1,7 @@
+2025-09-28 16:12:46,456 - root - INFO - Logging configured successfully.
+2025-09-28 16:12:46,456 - root - INFO - Log file created at: data/simulation_logs\simulation_20250928_161246.log
+2025-09-28 16:12:46,457 - __main__ - INFO - Starting SkyMind Simulator...
+2025-09-28 16:12:46,457 - __main__ - INFO - Loading map from: data\maps\multi_drone_map.txt
+2025-09-28 16:12:46,457 - skymind_sim.core.environment - INFO - Attempting to load map from data\maps\multi_drone_map.txt
+2025-09-28 16:12:46,458 - skymind_sim.core.environment - ERROR - Map file not found at 'data\maps\multi_drone_map.txt'
+2025-09-28 16:12:46,458 - __main__ - ERROR - Error: Map file not found at 'data\maps\multi_drone_map.txt'. Please check the path.

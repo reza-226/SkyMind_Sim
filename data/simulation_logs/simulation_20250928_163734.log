@@ -1,0 +1,37 @@
+2025-09-28 16:37:34,204 - root - INFO - Logging configured successfully.
+2025-09-28 16:37:34,204 - root - INFO - Log file created at: data/simulation_logs\simulation_20250928_163734.log
+2025-09-28 16:37:34,205 - __main__ - INFO - Starting SkyMind Simulator...
+2025-09-28 16:37:34,205 - __main__ - INFO - Loading map from: data\maps\multi_drone_map.txt
+2025-09-28 16:37:34,205 - skymind_sim.core.environment - INFO - Attempting to load map from data\maps\multi_drone_map.txt
+2025-09-28 16:37:34,206 - skymind_sim.core.environment - INFO - Map loaded successfully. Dimensions: 9x20
+2025-09-28 16:37:34,207 - skymind_sim.core.environment - INFO - Found drone pair 'A': start at (5, 2), goal at (1, 1)
+2025-09-28 16:37:34,208 - skymind_sim.core.environment - INFO - Found drone pair 'B': start at (5, 14), goal at (4, 14)
+2025-09-28 16:37:34,208 - skymind_sim.core.simulation - INFO - Initializing drones...
+2025-09-28 16:37:34,208 - skymind_sim.core.drone - INFO - Drone A initialized. Start: (5, 2), Goal: (1, 1), Status: IDLE
+2025-09-28 16:37:34,208 - skymind_sim.core.simulation - INFO - Initialized Drone 'A' with start (5, 2) and goal (1, 1).
+2025-09-28 16:37:34,209 - skymind_sim.core.drone - INFO - Drone B initialized. Start: (5, 14), Goal: (4, 14), Status: IDLE
+2025-09-28 16:37:34,209 - skymind_sim.core.simulation - INFO - Initialized Drone 'B' with start (5, 14) and goal (4, 14).
+2025-09-28 16:37:34,209 - skymind_sim.core.simulation - INFO - Starting simulation run for 2 drones.
+2025-09-28 16:37:34,210 - skymind_sim.core.simulation - INFO - === Phase 1: Path Calculation ===
+2025-09-28 16:37:34,210 - skymind_sim.core.drone - INFO - Drone A: Calculating path (placeholder)...
+2025-09-28 16:37:34,210 - skymind_sim.core.drone - INFO - Drone A: Path calculated. Status set to READY.
+2025-09-28 16:37:34,210 - skymind_sim.core.drone - INFO - Drone B: Calculating path (placeholder)...
+2025-09-28 16:37:34,211 - skymind_sim.core.drone - INFO - Drone B: Path calculated. Status set to READY.
+2025-09-28 16:37:34,211 - skymind_sim.core.simulation - INFO - All drone paths calculated.
+2025-09-28 16:37:34,211 - skymind_sim.core.simulation - INFO - === Phase 2: Coordinated Movement ===
+2025-09-28 16:37:34,211 - skymind_sim.core.simulation - INFO - --- Time Step: 0 ---
+2025-09-28 16:37:34,212 - skymind_sim.core.simulation - INFO - --- Simulating movement for Drone 'A' ---
+2025-09-28 16:37:34,212 - skymind_sim.core.drone - INFO - Drone A moved to (5, 2).
+2025-09-28 16:37:34,212 - skymind_sim.core.simulation - INFO - --- Simulating movement for Drone 'B' ---
+2025-09-28 16:37:34,212 - skymind_sim.core.drone - INFO - Drone B moved to (5, 14).
+2025-09-28 16:37:34,313 - skymind_sim.core.simulation - INFO - --- Time Step: 1 ---
+2025-09-28 16:37:34,314 - skymind_sim.core.simulation - INFO - --- Simulating movement for Drone 'A' ---
+2025-09-28 16:37:34,314 - skymind_sim.core.drone - INFO - Drone A moved to (1, 1).
+2025-09-28 16:37:34,315 - skymind_sim.core.drone - INFO - Drone A has reached its destination (1, 1).
+2025-09-28 16:37:34,315 - skymind_sim.core.simulation - INFO - --- Simulating movement for Drone 'B' ---
+2025-09-28 16:37:34,316 - skymind_sim.core.drone - INFO - Drone B moved to (4, 14).
+2025-09-28 16:37:34,317 - skymind_sim.core.drone - INFO - Drone B has reached its destination (4, 14).
+2025-09-28 16:37:34,418 - skymind_sim.core.simulation - INFO - --- Time Step: 2 ---
+2025-09-28 16:37:34,418 - skymind_sim.core.simulation - INFO - All drones have reached their destinations. Simulation successful.
+2025-09-28 16:37:34,419 - skymind_sim.core.simulation - INFO - Simulation run finished.
+2025-09-28 16:37:34,420 - __main__ - INFO - Simulation finished successfully.
