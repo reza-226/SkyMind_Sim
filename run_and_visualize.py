@@ -3,110 +3,90 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.animation import FuncAnimation
 
-from skymind_sim.core.drone import Drone, DroneStatus
-from skymind_sim.core.environment import Environment
-from skymind_sim.core.simulation import Simulation
+from skymind_sim.core import Environment, Drone, Simulation
 
-def setup_scenario():
-    """یک سناریو با پهپادهای هوشمند که به سمت مقصد حرکت می‌کنند."""
-    env = Environment(width=200, height=200, depth=100)
-    
-    # پهپاد ۱: از یک گوشه به گوشه دیگر پرواز می‌کند
-    drone1 = Drone(drone_id=1)
-    drone1.move_to(np.array([10.0, 10.0, 10.0]))
-    drone1.set_destination(np.array([180.0, 180.0, 60.0]), speed=15.0) # سرعت بالا
-    
-    # پهپاد ۲: یک مسیر کوتاه افقی را طی می‌کند
-    drone2 = Drone(drone_id=2)
-    drone2.move_to(np.array([100.0, 180.0, 80.0]))
-    drone2.set_destination(np.array([100.0, 20.0, 80.0]), speed=10.0) # سرعت متوسط
-    
-    # پهپاد ۳: یک صعود عمودی انجام می‌دهد
-    drone3 = Drone(drone_id=3)
-    drone3.move_to(np.array([50.0, 50.0, 20.0]))
-    drone3.set_destination(np.array([50.0, 50.0, 90.0]), speed=5.0) # سرعت کم
-    
-    # پهپاد ۴: از ابتدا بیکار است و حرکتی نمی‌کند
-    drone4 = Drone(drone_id=4)
-    drone4.move_to(np.array([150.0, 100.0, 50.0]))
-    # چون مقصدی برایش تنظیم نمی‌کنیم، وضعیت آن FLYING نخواهد شد و ثابت می‌ماند
-    drone4.status = DroneStatus.IDLE
-
-    env.add_drone(drone1)
-    env.add_drone(drone2)
-    env.add_drone(drone3)
-    env.add_drone(drone4)
-    
-    return env
-
-def visualize_simulation_3d(simulation: Simulation):
+def plot_drone_paths(history, dimensions):
     """
-    یک انیمیشن سه‌بعدی از مسیر حرکت پهپادها ایجاد می‌کند.
+    Plots the 3D paths of all drones from the simulation history.
     """
-    history = simulation.history
-    if not history:
-        print("History is empty. Cannot visualize.")
-        return
-
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(111, projection='3d')
 
-    ax.set_xlim(0, simulation.environment.width)
-    ax.set_ylim(0, simulation.environment.height)
-    ax.set_zlim(0, simulation.environment.depth)
-    ax.set_xlabel("X-axis (meters)")
-    ax.set_ylabel("Y-axis (meters)")
-    ax.set_zlabel("Z-axis (Height)")
-    ax.set_title("3D Drone Simulation with Pathfinding")
-    ax.invert_yaxis()
+    for drone_id, path in history.items():
+        # Unzip the path data
+        times, x_coords, y_coords, z_coords = zip(*path)
+        
+        # Plot the path
+        ax.plot(x_coords, y_coords, z_coords, marker='o', linestyle='-', markersize=2, label=f'Drone {drone_id}')
+        
+        # Mark start (green) and end (red) points
+        ax.scatter(x_coords[0], y_coords[0], z_coords[0], c='green', s=100, label=f'Start D{drone_id}')
+        ax.scatter(x_coords[-1], y_coords[-1], z_coords[-1], c='red', s=100, label=f'End D{drone_id}')
 
-    paths = {}
-    drone_ids_with_history = [drone_id for drone_id, states in history.items() if states]
-    
-    for drone_id in drone_ids_with_history:
-        states = history[drone_id]
-        times, xs, ys, zs = zip(*states)
-        paths[drone_id] = (list(xs), list(ys), list(zs))
-
-    path_plots = {}
-    for drone_id, (xs, ys, zs) in paths.items():
-        path_plots[drone_id] = ax.plot(xs, ys, zs, '--', alpha=0.4)[0]
-
-    points = {drone_id: ax.plot([], [], [], 'o', markersize=6, label=f'Drone {drone_id}')[0] 
-              for drone_id in drone_ids_with_history}
-    
-    def init():
-        for point in points.values():
-            point.set_data([], [])
-            point.set_3d_properties([])
-        return points.values()
-
-    def update(frame):
-        for drone_id, point in points.items():
-            if frame < len(paths[drone_id][0]):
-                x, y, z = paths[drone_id][0][frame], paths[drone_id][1][frame], paths[drone_id][2][frame]
-                point.set_data([x], [y])
-                point.set_3d_properties([z])
-        return points.values()
-
-    num_frames = max((len(s) for s in history.values() if s), default=0)
-    ani = FuncAnimation(fig, update, frames=num_frames,
-                        init_func=init, blit=False, interval=20, repeat=False)
-
+    # Set plot limits and labels
+    w, h, d = dimensions
+    ax.set_xlim(-w / 2, w / 2)
+    ax.set_ylim(-h / 2, h / 2)
+    ax.set_zlim(0, d)
+    ax.set_xlabel('X coordinate')
+    ax.set_ylabel('Y coordinate')
+    ax.set_zlabel('Z coordinate')
+    ax.set_title('Drone Simulation Paths')
     ax.legend()
+    ax.grid(True)
+    
     plt.show()
+
 
 def main():
     """
-    تابع اصلی برای تنظیم، اجرا و بصری‌سازی شبیه‌سازی.
+    Main function to set up and run the simulation.
     """
-    env = setup_scenario()
-    sim = Simulation(environment=env)
-    # افزایش تعداد گام‌ها برای اطمینان از رسیدن پهپادها به مقصد
-    sim.run(num_steps=200, dt=0.2)
-    visualize_simulation_3d(sim)
+    print("--- Setting up the simulation environment ---")
+    
+    # 1. Create Environment
+    dims = (200, 200, 100) # Width, Height, Depth
+    print(f"Creating environment with dimensions (W: {dims[0]}, H: {dims[1]}, D: {dims[2]})...")
+    env = Environment(width=dims[0], height=dims[1], depth=dims[2])
+
+    # 2. Create and Add Drones
+    print("Creating and adding drones to the environment...")
+    
+    # FIX: Remove the `drone_id` argument as it's now auto-generated.
+    pos1 = np.array([50, 50, 10])
+    drone1 = Drone(position=pos1)
+    print(f"Drone {drone1.drone_id} created at position {drone1.position}")
+
+    pos2 = np.array([-20, 30, 5])
+    drone2 = Drone(position=pos2)
+    print(f"Drone {drone2.drone_id} created at position {drone2.position}")
+
+    pos3 = np.array([0, -80, 15])
+    drone3 = Drone(position=pos3)
+    print(f"Drone {drone3.drone_id} created at position {drone3.position}")
+    
+    env.add_drone(drone1)
+    env.add_drone(drone2)
+    env.add_drone(drone3)
+    print("Drones added successfully.")
+
+    # 3. Assign Missions
+    print("Assigning missions to drones...")
+    drone1.set_mission(target=np.array([100, 100, 20]), speed=10.0)
+    drone2.set_mission(target=np.array([-50, -50, 10]), speed=12.0)
+    drone3.set_mission(target=np.array([80, -30, 25]), speed=8.0)
+    
+    print("--- Environment setup complete ---\n")
+
+    # 4. Create and Run Simulation
+    print("--- Running simulation ---")
+    sim = Simulation(env)
+    history = sim.run(num_steps=300, dt=0.2)
+    
+    print("\n--- Visualizing results ---")
+    plot_drone_paths(history, dims)
+
 
 if __name__ == "__main__":
     main()

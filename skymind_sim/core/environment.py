@@ -1,36 +1,44 @@
 # skymind_sim/core/environment.py
 
-from .drone import Drone
+import numpy as np
 
 class Environment:
     """
-    محیط شبیه‌سازی را تعریف می‌کند که شامل پهپادها و ابعاد فیزیکی است.
-    
-    Attributes:
-        width (float): عرض محیط در محور X.
-        height (float): طول محیط در محور Y.
-        depth (float): ارتفاع محیط در محور Z.
-        drones (dict): دیکشنری برای نگهداری پهپادها با استفاده از شناسه آن‌ها به عنوان کلید.
-                       {drone_id: Drone_object}
+    Represents the 3D simulation environment, including its dimensions and the drones within it.
     """
-    
     def __init__(self, width: float, height: float, depth: float):
-        self.width = width
-        self.height = height
-        self.depth = depth
-        self.drones = {} # استفاده از دیکشنری برای دسترسی سریع‌تر
+        """
+        Initializes the environment.
 
-    def add_drone(self, drone: Drone):
-        """یک پهپاد به محیط اضافه می‌کند."""
-        # --- اینجا محل اصلاح است ---
-        if drone.drone_id in self.drones:
-            raise ValueError(f"Drone with ID {drone.drone_id} already exists in the environment.")
-        self.drones[drone.drone_id] = drone
+        Args:
+            width (float): The width of the environment (X-axis).
+            height (float): The height of the environment (Y-axis).
+            depth (float): The depth of the environment (Z-axis).
+        """
+        self.dimensions = np.array([width, height, depth])
+        self.drones = []  # This will store Drone objects
 
-    def get_drone(self, drone_id: int) -> Drone | None:
-        """یک پهپاد را با استفاده از شناسه آن برمی‌گرداند."""
-        return self.drones.get(drone_id)
+    def add_drone(self, drone):
+        """
+        Adds a single drone object to the environment's list of drones.
 
-    def get_all_drones(self) -> list[Drone]:
-        """لیستی از تمام پهپادهای موجود در محیط را برمی‌گرداند."""
-        return list(self.drones.values())
+        Args:
+            drone (Drone): The drone object to add.
+        """
+        # Fix: Append the entire drone object, not just its ID.
+        self.drones.append(drone)
+
+    def get_drone(self, drone_id: int):
+        """
+        Finds and returns a drone by its ID.
+
+        Args:
+            drone_id (int): The ID of the drone to find.
+
+        Returns:
+            Drone: The drone object if found, otherwise None.
+        """
+        for drone in self.drones:
+            if drone.drone_id == drone_id:
+                return drone
+        return None

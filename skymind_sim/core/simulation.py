@@ -1,60 +1,53 @@
 # skymind_sim/core/simulation.py
 
 import numpy as np
+from collections import defaultdict
 from .environment import Environment
-from .drone import Drone, DroneStatus
 
 class Simulation:
-    def __init__(self, environment: Environment):
-        self.environment = environment
+    """
+    Manages the execution of the simulation over time, updating the state of all drones.
+    """
+
+    def __init__(self, env: Environment):
+        """
+        Initializes the simulation.
+
+        Args:
+            env (Environment): The simulation environment containing the drones.
+        """
+        self.environment = env
+        self.history = defaultdict(list)
         self.time = 0.0
-        # --- اصلاح برای خواندن از متد جدید ---
-        self.history = {drone.drone_id: [] for drone in self.environment.get_all_drones()}
 
-    def _record_state(self):
-        """وضعیت فعلی همه پهپادها را ثبت می‌کند."""
-        # --- اصلاح برای خواندن از متد جدید ---
-        for drone in self.environment.get_all_drones():
-            pos = drone.position
-            self.history[drone.drone_id].append(
-                (self.time, pos[0], pos[1], pos[2])
-            )
+    def run(self, num_steps: int, dt: float):
+        """
+        Runs the simulation for a given number of steps.
 
-    def _update_drone_state(self, drone: Drone, dt: float):
-        """منطق هدایت و به‌روزرسانی وضعیت پهپاد را پیاده‌سازی می‌کند."""
-        if drone.status != DroneStatus.FLYING:
-            return
-
-        if drone.destination is None:
-            return
-
-        direction_vector = drone.destination - drone.position
-        distance_to_destination = np.linalg.norm(direction_vector)
-
-        if distance_to_destination < drone.target_speed * dt:
-            drone.move_to(drone.destination)
-            drone.set_velocity(np.zeros(3))
-            drone.status = DroneStatus.HOVERING
-            return
-
-        normalized_direction = direction_vector / distance_to_destination
-        new_velocity = normalized_direction * drone.target_speed
-        drone.set_velocity(new_velocity)
+        Args:
+            num_steps (int): The number of steps to simulate.
+            dt (float): The time delta for each step in seconds.
+        """
+        print(f"Starting simulation for {num_steps} steps with dt={dt}...")
         
-        new_position = drone.position + drone.velocity * dt
-        drone.move_to(new_position)
+        # Record initial positions
+        print(f"Recording initial positions at t={self.time:.1f}s...")
+        for drone in self.environment.drones:
+            # FIX: Append a tuple of (time, x, y, z)
+            # The * operator unpacks the drone.position array [x, y, z] into x, y, z
+            self.history[drone.drone_id].append((self.time, *drone.position))
 
-    def run(self, num_steps: int, dt: float = 0.1):
-        """شبیه‌سازی را برای تعداد مراحل مشخص اجرا می‌کند."""
-        print(f"Running simulation for {num_steps} steps with dt={dt}...")
-        self._record_state() 
-
-        for step in range(num_steps):
+        for step in range(1, num_steps + 1):
             self.time += dt
-            # --- اصلاح برای خواندن از متد جدید ---
-            for drone in self.environment.get_all_drones():
-                self._update_drone_state(drone, dt)
             
-            self._record_state() 
+            for drone in self.environment.drones:
+                drone.update_state(dt)
+                
+                # FIX: Append a tuple of (time, x, y, z) for the new position
+                self.history[drone.drone_id].append((self.time, *drone.position))
+
+            if step % 50 == 0 or step == num_steps:
+                print(f"  ... Step {step}/{num_steps} completed. Current time: {self.time:.2f}s")
         
         print("Simulation finished.")
+        return self.history

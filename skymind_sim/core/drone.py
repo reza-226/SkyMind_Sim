@@ -1,50 +1,80 @@
 # skymind_sim/core/drone.py
 
-from enum import Enum, auto
 import numpy as np
-
-class DroneStatus(Enum):
-    """وضعیت‌های ممکن برای یک پهپاد."""
-    IDLE = auto()      # بیکار و ثابت
-    FLYING = auto()    # در حال پرواز به سمت مقصد
-    HOVERING = auto()  # شناور در یک نقطه (مثلاً پس از رسیدن به مقصد)
-    ERROR = auto()     # وضعیت خطا
 
 class Drone:
     """
-    نشان‌دهنده یک پهپاد در شبیه‌سازی.
-    
-    Attributes:
-        drone_id (int): شناسه منحصر به فرد پهپاد.
-        position (np.ndarray): موقعیت فعلی پهپاد [x, y, z].
-        velocity (np.ndarray): سرعت فعلی پهپاد [vx, vy, vz].
-        status (DroneStatus): وضعیت فعلی پهپاد.
-        destination (np.ndarray | None): موقعیت مقصد [x, y, z].
-        target_speed (float): سرعت مطلوب برای حرکت به سمت مقصد (متر بر ثانیه).
+    Represents a single drone in the simulation.
     """
-    
-    def __init__(self, drone_id: int):
-        self.drone_id = drone_id
-        self.position = np.zeros(3, dtype=float)
-        self.velocity = np.zeros(3, dtype=float)
-        self.status = DroneStatus.IDLE
-        
-        # ویژگی‌های جدید برای هدایت خودکار
-        self.destination: np.ndarray | None = None
-        self.target_speed: float = 5.0 # سرعت پیش‌فرض: 5 متر بر ثانیه
+    _id_counter = 0
 
-    def move_to(self, position: np.ndarray):
-        """موقعیت پهپاد را فوراً به یک نقطه جدید منتقل می‌کند."""
+    @classmethod
+    def _generate_id(cls):
+        cls._id_counter += 1
+        return cls._id_counter
+
+    def __init__(self, position: np.ndarray, velocity: np.ndarray = np.zeros(3)):
+        """
+        Initializes a Drone.
+
+        Args:
+            position (np.ndarray): The initial position [x, y, z] of the drone.
+            velocity (np.ndarray, optional): The initial velocity [vx, vy, vz] of the drone. 
+                                             Defaults to [0, 0, 0].
+        """
+        self.drone_id = self._generate_id()
         self.position = np.array(position, dtype=float)
-
-    def set_velocity(self, velocity: np.ndarray):
-        """سرعت پهپاد را به صورت دستی تنظیم می‌کند."""
         self.velocity = np.array(velocity, dtype=float)
-        
-    def set_destination(self, destination: np.ndarray, speed: float = 5.0):
+        self.target = None
+        self.speed = 0.0
+
+    def set_mission(self, target: np.ndarray, speed: float):
         """
-        یک مقصد برای پهپاد تعیین می‌کند و وضعیت آن را برای پرواز آماده می‌کند.
+        Assigns a simple "fly to target" mission to the drone.
+
+        Args:
+            target (np.ndarray): The destination coordinates [x, y, z].
+            speed (float): The desired speed for the mission.
         """
-        self.destination = np.array(destination, dtype=float)
-        self.target_speed = speed
-        self.status = DroneStatus.FLYING # با تنظیم مقصد، پهپاد آماده پرواز می‌شود
+        self.target = np.array(target, dtype=float)
+        self.speed = float(speed)
+        print(f"  - Drone {self.drone_id} assigned to fly to {self.target} with speed {self.speed}")
+
+    def update_state(self, dt: float):
+        """
+        Updates the drone's position and velocity based on its mission and the time step.
+
+        Args:
+            dt (float): The time delta for this simulation step.
+        """
+        if self.target is None:
+            # If there's no mission, the drone doesn't move.
+            self.velocity = np.zeros(3)
+            return
+
+        # Vector from current position to target
+        direction_vector = self.target - self.position
+        distance_to_target = np.linalg.norm(direction_vector)
+
+        # Check if the drone is already at or very close to the target
+        if distance_to_target < 0.1:  # A small threshold to avoid jittering
+            self.velocity = np.zeros(3)
+            return
+
+        # Normalize the direction vector to get a unit vector
+        direction_unit_vector = direction_vector / distance_to_target
+
+        # Set the velocity vector
+        self.velocity = direction_unit_vector * self.speed
+
+        # Update the position based on the new velocity and time step
+        displacement = self.velocity * dt
+        if np.linalg.norm(displacement) > distance_to_target:
+            # If the next step would overshoot, just move directly to the target
+            self.position = self.target
+        else:
+            self.position += displacement
+
+    def __repr__(self):
+        return (f"Drone(ID={self.drone_id}, Pos={self.position}, Vel={self.velocity}, "
+                f"Target={self.target}, Speed={self.speed})")
