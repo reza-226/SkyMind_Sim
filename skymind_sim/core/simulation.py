@@ -1,94 +1,89 @@
 # skymind_sim/core/simulation.py
 
-import logging
-import time
-
-from skymind_sim.core.drone import Drone
-
-logger = logging.getLogger(__name__)
+import numpy as np
+from .environment import Environment
+from .drone import DroneStatus # Import DroneStatus for type checking
 
 class Simulation:
     """
-    Manages the main simulation loop and the interaction between drones and the environment.
+    Manages the state and progression of the drone simulation.
     """
-    def __init__(self, environment):
-        """
-        Initializes the Simulation.
-
-        Args:
-            environment (Environment): The simulation environment, containing the map and drone start/goal points.
-        """
+    def __init__(self, environment: Environment):
+        if not isinstance(environment, Environment):
+            raise TypeError("The provided environment is not a valid Environment object.")
+        
         self.environment = environment
-        self.drones = []
-        self.time_step = 0
-        self.max_steps = 100  # A safety limit to prevent infinite loops
+        self.history = []
+        self._is_running = False
+        self.time = 0.0
 
-        self._initialize_drones()
-
-    def _initialize_drones(self):
+    def _update_drone_state(self, drone, dt: float):
         """
-        Creates Drone objects based on the data from the environment.
+        Updates a single drone's state based on time delta (dt).
+        This is a simplified physics model.
         """
-        logger.info("Initializing drones...")
-        # This code is now guaranteed to work with the updated Environment class
-        for drone_def in self.environment.drone_definitions:
-            drone = Drone(
-                drone_id=drone_def['id'],
-                start_pos=drone_def['start'],
-                goal_pos=drone_def['goal'],
-                environment=self.environment
-            )
-            self.drones.append(drone)
-            logger.info(
-                f"Initialized Drone '{drone_def['id']}' with start {drone_def['start']} and goal {drone_def['goal']}."
-            )
+        # A simple movement model: position = position + velocity * dt
+        if drone.status == DroneStatus.FLYING:
+            new_position = drone.position + drone.velocity * dt
+            drone.move_to(new_position)
 
-    def run(self):
+    def _record_state(self, step: int, time: float):
         """
-        Runs the main simulation loop.
+        Private method to record the state of all drones at a specific step.
         """
-        logger.info(f"Starting simulation run for {len(self.drones)} drones.")
+        drones_state = []
+        for drone in self.environment.get_drones():
+            drones_state.append({
+                'id': drone.id,  # Correctly uses drone.id
+                'position': drone.position.tolist(), # Convert numpy array to list for serialization
+                'velocity': drone.velocity.tolist(),
+                'status': drone.status.value # Use .value to get the string from Enum
+            })
 
-        # --- 1. Path Calculation Phase ---
-        logger.info("=== Phase 1: Path Calculation ===")
-        for drone in self.drones:
-            drone.calculate_path()
-        logger.info("All drone paths calculated.")
+        self.history.append({
+            'step': step,
+            'time': time,
+            'drones': drones_state
+        })
 
-        # --- 2. Movement Phase ---
-        logger.info("=== Phase 2: Coordinated Movement ===")
-        while self.time_step < self.max_steps:
-            logger.info(f"--- Time Step: {self.time_step} ---")
-
-            if all(d.status == "FINISHED" for d in self.drones):
-                logger.info("All drones have reached their destinations. Simulation successful.")
-                break
-
-            for drone in self.drones:
-                if drone.status != "FINISHED":
-                    logger.info(f"--- Simulating movement for Drone '{drone.drone_id}' ---")
-                    drone.move()
-
-            self.time_step += 1
-            time.sleep(0.1)
-
-        if self.time_step >= self.max_steps:
-            logger.warning("Simulation reached max steps limit. Ending.")
-
-        logger.info("Simulation run finished.")
-
-    def get_results(self):
+    def run(self, num_steps: int, dt: float = 0.1):
         """
-        Returns the final state of the simulation.
+        Runs the simulation for a given number of steps.
+        
+        Args:
+            num_steps (int): The number of simulation steps to execute.
+            dt (float): The time delta for each step in seconds.
         """
-        return {
-            "total_time_steps": self.time_step,
-            "drones": [
-                {
-                    "id": d.drone_id,
-                    "status": d.status,
-                    "final_position": d.current_pos
-                }
-                for d in self.drones
-            ]
-        }
+        if self._is_running:
+            print("Simulation is already running.")
+            return
+
+        print(f"Starting simulation for {num_steps} steps with dt={dt}s...")
+        self._is_running = True
+        
+        # Record initial state (step 0)
+        if not self.history:
+            self._record_state(step=0, time=self.time)
+
+        for i in range(1, num_steps + 1):
+            current_step = len(self.history)
+            self.time += dt
+            
+            # Update each drone in the environment
+            for drone in self.environment.get_drones():
+                self._update_drone_state(drone, dt)
+                
+            # Record the state after updates
+            self._record_state(step=current_step, time=self.time)
+
+        self._is_running = False
+        print("Simulation finished.")
+
+    def reset(self):
+        """Resets the simulation to its initial state."""
+        self.history = []
+        self.time = 0.0
+        self._is_running = False
+        # Note: This does not reset the state of drones in the environment.
+        # A more complex implementation might be needed for that.
+        print("Simulation has been reset.")

@@ -1,53 +1,56 @@
 # skymind_sim/core/drone.py
 
-class Drone:
-    """
-    Represents a single drone in the simulation.
-    """
-    def __init__(self, drone_id: int, initial_position: tuple = (0, 0, 0)):
-        """
-        Initializes a new Drone.
+import numpy as np
+from enum import Enum, auto
 
-        Args:
-            drone_id (int): The unique identifier for the drone.
-            initial_position (tuple): The starting (x, y, z) position of the drone.
-        """
+class DroneStatus(Enum):
+    """Enumeration for drone status."""
+    IDLE = auto()
+    FLYING = auto()
+    LANDING = auto()
+    CHARGING = auto()
+    ERROR = auto()
+    
+    # This makes sure that when we convert it to string (e.g., for JSON),
+    # we get a clean string like "IDLE" instead of "DroneStatus.IDLE".
+    def __str__(self):
+        return self.name
+
+class Drone:
+    """Represents a single drone in the simulation."""
+
+    def __init__(self, drone_id: int):
         if not isinstance(drone_id, int):
             raise TypeError("Drone ID must be an integer.")
-        if not (isinstance(initial_position, tuple) and len(initial_position) == 3):
-            raise ValueError("Initial position must be a tuple of (x, y, z).")
-
+        
         self.id = drone_id
-        self.position = initial_position
-        self.velocity = (0, 0, 0)  # Starting with zero velocity
-        self.status = 'IDLE'       # Initial status
+        self.position = np.array([0.0, 0.0, 0.0])
+        self.velocity = np.array([0.0, 0.0, 0.0])
+        self.status = DroneStatus.IDLE  # Default status
 
-    def __repr__(self) -> str:
-        """
-        Provides a developer-friendly string representation of the drone.
-        """
-        return (f"Drone(id={self.id}, position={self.position}, "
-                f"status='{self.status}')")
-
-    def move(self, new_position: tuple):
+    def move_to(self, new_position: np.ndarray):
         """
         Updates the drone's position.
-        In a real simulation, this would involve physics, but for now, we just teleport.
+        
+        Args:
+            new_position (np.ndarray): The new 3D position vector.
         """
-        print(f"Drone {self.id}: Moving from {self.position} to {new_position}")
+        if new_position.shape != (3,):
+            raise ValueError("Position must be a 3D numpy array.")
         self.position = new_position
-        self.update_status('FLYING')
 
-    def land(self):
+    def set_velocity(self, new_velocity: np.ndarray):
         """
-        Lands the drone, setting its status to IDLE.
+        Updates the drone's velocity.
+        
+        Args:
+            new_velocity (np.ndarray): The new 3D velocity vector.
         """
-        print(f"Drone {self.id}: Landing at position {self.position}.")
-        self.update_status('IDLE')
+        if new_velocity.shape != (3,):
+            raise ValueError("Velocity must be a 3D numpy array.")
+        self.velocity = new_velocity
 
-    def update_status(self, new_status: str):
-        """
-        Updates the drone's status.
-        """
-        print(f"Drone {self.id}: Status changed from '{self.status}' to '{new_status}'.")
-        self.status = new_status
+    def __repr__(self):
+        """Provides a developer-friendly string representation of the drone."""
+        pos = f"[{self.position[0]:.2f}, {self.position[1]:.2f}, {self.position[2]:.2f}]"
+        return f"Drone(id={self.id}, status={self.status.name}, position={pos})"

@@ -1,62 +1,54 @@
 # tests/test_drone.py
 
 import pytest
-from skymind_sim.core.drone import Drone
+import numpy as np
+from skymind_sim.core.drone import Drone, DroneStatus
 
 def test_drone_creation():
-    """
-    Tests if a drone is created with the correct initial attributes.
-    """
-    drone = Drone(drone_id=1, initial_position=(10, 20, 5))
+    """Tests if a drone is created with the correct initial attributes."""
+    drone = Drone(drone_id=1)
+    
     assert drone.id == 1
-    assert drone.position == (10, 20, 5)
-    assert drone.velocity == (0, 0, 0)
-    assert drone.status == 'IDLE'
-    print("\n✅ test_drone_creation: Passed")
+    assert isinstance(drone.id, int)
+    assert np.array_equal(drone.position, np.array([0.0, 0.0, 0.0]))
+    assert np.array_equal(drone.velocity, np.array([0.0, 0.0, 0.0]))
+    assert drone.status == DroneStatus.IDLE
+
+def test_drone_creation_with_wrong_id_type():
+    """Tests that creating a drone with a non-integer ID raises a TypeError."""
+    with pytest.raises(TypeError, match="Drone ID must be an integer"):
+        Drone(drone_id="d1")
 
 def test_drone_representation():
-    """
-    Tests the __repr__ method for a clean output.
-    """
+    """Tests the __repr__ method for a clean output."""
     drone = Drone(drone_id=99)
-    expected_repr = "Drone(id=99, position=(0, 0, 0), status='IDLE')"
+    # The __repr__ in the new Drone class is: f"Drone(id={self.id}, status={self.status.name}, position={pos})"
+    # Example: Drone(id=99, status=IDLE, position=[0.00, 0.00, 0.00])
+    expected_repr = "Drone(id=99, status=IDLE, position=[0.00, 0.00, 0.00])"
     assert repr(drone) == expected_repr
-    print("✅ test_drone_representation: Passed")
 
-def test_drone_move():
-    """
-    Tests the move method and status update.
-    """
+def test_drone_move_to():
+    """Tests the move_to method."""
     drone = Drone(drone_id=2)
-    drone.move(new_position=(50, 50, 50))
-    assert drone.position == (50, 50, 50)
-    assert drone.status == 'FLYING'
-    print("✅ test_drone_move: Passed")
+    new_pos = np.array([50.0, 50.0, 50.0])
+    drone.move_to(new_pos)
+    assert np.array_equal(drone.position, new_pos)
 
-def test_drone_land():
-    """
-    Tests the land method and status update.
-    """
-    drone = Drone(drone_id=3, initial_position=(1, 1, 1))
-    # First, it must be flying to be able to land
-    drone.update_status('FLYING')
-    
-    drone.land()
-    assert drone.status == 'IDLE'
-    print("✅ test_drone_land: Passed")
+def test_set_velocity():
+    """Tests the set_velocity method."""
+    drone = Drone(drone_id=3)
+    new_vel = np.array([5.0, -5.0, 2.0])
+    drone.set_velocity(new_vel)
+    assert np.array_equal(drone.velocity, new_vel)
 
-def test_invalid_drone_id():
-    """
-    Tests that creating a drone with an invalid ID raises a TypeError.
-    """
-    with pytest.raises(TypeError):
-        Drone(drone_id="not-an-int")
-    print("✅ test_invalid_drone_id: Passed")
+def test_invalid_position_in_move_to():
+    """Tests that move_to with an invalid position raises a ValueError."""
+    drone = Drone(drone_id=4)
+    with pytest.raises(ValueError, match="Position must be a 3D numpy array."):
+        drone.move_to(np.array([10, 20])) # Missing z-coordinate
 
-def test_invalid_position():
-    """
-    Tests that creating a drone with an invalid position raises a ValueError.
-    """
-    with pytest.raises(ValueError):
-        Drone(drone_id=4, initial_position=(10, 20)) # Missing z-coordinate
-    print("✅ test_invalid_position: Passed")
+def test_invalid_velocity_in_set_velocity():
+    """Tests that set_velocity with an invalid vector raises a ValueError."""
+    drone = Drone(drone_id=5)
+    with pytest.raises(ValueError, match="Velocity must be a 3D numpy array."):
+        drone.set_velocity(np.array([1, 2, 3, 4])) # Extra coordinate

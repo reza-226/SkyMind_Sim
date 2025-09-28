@@ -1,28 +1,45 @@
-# skymind_sim/core/environment.py (نسخه اصلاح شده)
+# skymind_sim/core/environment.py
 
-from typing import List
-from .drone import Drone
+import numpy as np
 
 class Environment:
-    def __init__(self, width: float, height: float):
-        if not (width > 0 and height > 0):
-            raise ValueError("Environment dimensions must be positive.")
+    """
+    Represents the simulation environment, including its boundaries and the drones within it.
+    """
+
+    def __init__(self, width: float, height: float, depth: float = 100.0):
+        if width <= 0 or height <= 0 or depth <= 0:
+            raise ValueError("Environment dimensions (width, height, depth) must be positive.")
+        
         self.width = width
         self.height = height
-        self.drones: List[Drone] = []
+        self.depth = depth
+        self.drones = {}  # Using a dictionary is better for lookups by ID
 
-    def add_drone(self, drone: Drone):
-        """
-        Adds a drone to the environment.
+    def add_drone(self, drone):
+        """Adds a drone to the environment, checking its initial position."""
+        if drone.id in self.drones:
+            raise ValueError(f"Drone with ID {drone.id} already exists.")
 
-        Args:
-            drone (Drone): The drone instance to be added.
-        """
-        if not (0 <= drone.position[0] < self.width and 0 <= drone.position[1] < self.height):
-            # *** تغییر در این خط ***
-            raise ValueError(f"Drone with ID {drone.id} is outside the environment boundaries.")
-        
-        self.drones.append(drone)
+        pos = drone.position
+        if not (0 <= pos[0] <= self.width and 0 <= pos[1] <= self.height and 0 <= pos[2] <= self.depth):
+            raise ValueError(f"Drone {drone.id} initial position {pos} is outside the environment boundaries.")
 
-    def __repr__(self) -> str:
-        return f"Environment(width={self.width}, height={self.height}, drones_count={len(self.drones)})"
+        self.drones[drone.id] = drone
+
+    def get_drone(self, drone_id: int):
+        """Retrieves a drone by its ID."""
+        return self.drones.get(drone_id)
+
+    def get_drones(self):
+        """Returns a list of all drone objects in the environment."""
+        return list(self.drones.values())
+
+    @property
+    def drones_count(self):
+        """Returns the number of drones in the environment."""
+        return len(self.drones)
+
+    def __repr__(self):
+        """Provides a developer-friendly representation of the environment."""
+        return f"Environment(width={self.width}, height={self.height}, depth={self.depth}, drones_count={self.drones_count})"
