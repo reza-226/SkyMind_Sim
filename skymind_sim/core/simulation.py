@@ -2,88 +2,59 @@
 
 import numpy as np
 from .environment import Environment
-from .drone import DroneStatus # Import DroneStatus for type checking
+from .drone import Drone, DroneStatus
 
 class Simulation:
-    """
-    Manages the state and progression of the drone simulation.
-    """
     def __init__(self, environment: Environment):
-        if not isinstance(environment, Environment):
-            raise TypeError("The provided environment is not a valid Environment object.")
-        
         self.environment = environment
-        self.history = []
-        self._is_running = False
         self.time = 0.0
+        # --- اصلاح برای خواندن از متد جدید ---
+        self.history = {drone.drone_id: [] for drone in self.environment.get_all_drones()}
 
-    def _update_drone_state(self, drone, dt: float):
-        """
-        Updates a single drone's state based on time delta (dt).
-        This is a simplified physics model.
-        """
-        # A simple movement model: position = position + velocity * dt
-        if drone.status == DroneStatus.FLYING:
-            new_position = drone.position + drone.velocity * dt
-            drone.move_to(new_position)
+    def _record_state(self):
+        """وضعیت فعلی همه پهپادها را ثبت می‌کند."""
+        # --- اصلاح برای خواندن از متد جدید ---
+        for drone in self.environment.get_all_drones():
+            pos = drone.position
+            self.history[drone.drone_id].append(
+                (self.time, pos[0], pos[1], pos[2])
+            )
 
-    def _record_state(self, step: int, time: float):
-        """
-        Private method to record the state of all drones at a specific step.
-        """
-        drones_state = []
-        for drone in self.environment.get_drones():
-            drones_state.append({
-                'id': drone.id,  # Correctly uses drone.id
-                'position': drone.position.tolist(), # Convert numpy array to list for serialization
-                'velocity': drone.velocity.tolist(),
-                'status': drone.status.value # Use .value to get the string from Enum
-            })
-
-        self.history.append({
-            'step': step,
-            'time': time,
-            'drones': drones_state
-        })
-
-    def run(self, num_steps: int, dt: float = 0.1):
-        """
-        Runs the simulation for a given number of steps.
-        
-        Args:
-            num_steps (int): The number of simulation steps to execute.
-            dt (float): The time delta for each step in seconds.
-        """
-        if self._is_running:
-            print("Simulation is already running.")
+    def _update_drone_state(self, drone: Drone, dt: float):
+        """منطق هدایت و به‌روزرسانی وضعیت پهپاد را پیاده‌سازی می‌کند."""
+        if drone.status != DroneStatus.FLYING:
             return
 
-        print(f"Starting simulation for {num_steps} steps with dt={dt}s...")
-        self._is_running = True
+        if drone.destination is None:
+            return
+
+        direction_vector = drone.destination - drone.position
+        distance_to_destination = np.linalg.norm(direction_vector)
+
+        if distance_to_destination < drone.target_speed * dt:
+            drone.move_to(drone.destination)
+            drone.set_velocity(np.zeros(3))
+            drone.status = DroneStatus.HOVERING
+            return
+
+        normalized_direction = direction_vector / distance_to_destination
+        new_velocity = normalized_direction * drone.target_speed
+        drone.set_velocity(new_velocity)
         
-        # Record initial state (step 0)
-        if not self.history:
-            self._record_state(step=0, time=self.time)
+        new_position = drone.position + drone.velocity * dt
+        drone.move_to(new_position)
 
-        for i in range(1, num_steps + 1):
-            current_step = len(self.history)
+    def run(self, num_steps: int, dt: float = 0.1):
+        """شبیه‌سازی را برای تعداد مراحل مشخص اجرا می‌کند."""
+        print(f"Running simulation for {num_steps} steps with dt={dt}...")
+        self._record_state() 
+
+        for step in range(num_steps):
             self.time += dt
-            
-            # Update each drone in the environment
-            for drone in self.environment.get_drones():
+            # --- اصلاح برای خواندن از متد جدید ---
+            for drone in self.environment.get_all_drones():
                 self._update_drone_state(drone, dt)
-                
-            # Record the state after updates
-            self._record_state(step=current_step, time=self.time)
-
-        self._is_running = False
+            
+            self._record_state() 
+        
         print("Simulation finished.")
-
-    def reset(self):
-        """Resets the simulation to its initial state."""
-        self.history = []
-        self.time = 0.0
-        self._is_running = False
-        # Note: This does not reset the state of drones in the environment.
-        # A more complex implementation might be needed for that.
-        print("Simulation has been reset.")

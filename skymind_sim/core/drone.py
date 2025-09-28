@@ -1,56 +1,50 @@
 # skymind_sim/core/drone.py
 
-import numpy as np
 from enum import Enum, auto
+import numpy as np
 
 class DroneStatus(Enum):
-    """Enumeration for drone status."""
-    IDLE = auto()
-    FLYING = auto()
-    LANDING = auto()
-    CHARGING = auto()
-    ERROR = auto()
-    
-    # This makes sure that when we convert it to string (e.g., for JSON),
-    # we get a clean string like "IDLE" instead of "DroneStatus.IDLE".
-    def __str__(self):
-        return self.name
+    """وضعیت‌های ممکن برای یک پهپاد."""
+    IDLE = auto()      # بیکار و ثابت
+    FLYING = auto()    # در حال پرواز به سمت مقصد
+    HOVERING = auto()  # شناور در یک نقطه (مثلاً پس از رسیدن به مقصد)
+    ERROR = auto()     # وضعیت خطا
 
 class Drone:
-    """Represents a single drone in the simulation."""
-
+    """
+    نشان‌دهنده یک پهپاد در شبیه‌سازی.
+    
+    Attributes:
+        drone_id (int): شناسه منحصر به فرد پهپاد.
+        position (np.ndarray): موقعیت فعلی پهپاد [x, y, z].
+        velocity (np.ndarray): سرعت فعلی پهپاد [vx, vy, vz].
+        status (DroneStatus): وضعیت فعلی پهپاد.
+        destination (np.ndarray | None): موقعیت مقصد [x, y, z].
+        target_speed (float): سرعت مطلوب برای حرکت به سمت مقصد (متر بر ثانیه).
+    """
+    
     def __init__(self, drone_id: int):
-        if not isinstance(drone_id, int):
-            raise TypeError("Drone ID must be an integer.")
+        self.drone_id = drone_id
+        self.position = np.zeros(3, dtype=float)
+        self.velocity = np.zeros(3, dtype=float)
+        self.status = DroneStatus.IDLE
         
-        self.id = drone_id
-        self.position = np.array([0.0, 0.0, 0.0])
-        self.velocity = np.array([0.0, 0.0, 0.0])
-        self.status = DroneStatus.IDLE  # Default status
+        # ویژگی‌های جدید برای هدایت خودکار
+        self.destination: np.ndarray | None = None
+        self.target_speed: float = 5.0 # سرعت پیش‌فرض: 5 متر بر ثانیه
 
-    def move_to(self, new_position: np.ndarray):
-        """
-        Updates the drone's position.
+    def move_to(self, position: np.ndarray):
+        """موقعیت پهپاد را فوراً به یک نقطه جدید منتقل می‌کند."""
+        self.position = np.array(position, dtype=float)
+
+    def set_velocity(self, velocity: np.ndarray):
+        """سرعت پهپاد را به صورت دستی تنظیم می‌کند."""
+        self.velocity = np.array(velocity, dtype=float)
         
-        Args:
-            new_position (np.ndarray): The new 3D position vector.
+    def set_destination(self, destination: np.ndarray, speed: float = 5.0):
         """
-        if new_position.shape != (3,):
-            raise ValueError("Position must be a 3D numpy array.")
-        self.position = new_position
-
-    def set_velocity(self, new_velocity: np.ndarray):
+        یک مقصد برای پهپاد تعیین می‌کند و وضعیت آن را برای پرواز آماده می‌کند.
         """
-        Updates the drone's velocity.
-        
-        Args:
-            new_velocity (np.ndarray): The new 3D velocity vector.
-        """
-        if new_velocity.shape != (3,):
-            raise ValueError("Velocity must be a 3D numpy array.")
-        self.velocity = new_velocity
-
-    def __repr__(self):
-        """Provides a developer-friendly string representation of the drone."""
-        pos = f"[{self.position[0]:.2f}, {self.position[1]:.2f}, {self.position[2]:.2f}]"
-        return f"Drone(id={self.id}, status={self.status.name}, position={pos})"
+        self.destination = np.array(destination, dtype=float)
+        self.target_speed = speed
+        self.status = DroneStatus.FLYING # با تنظیم مقصد، پهپاد آماده پرواز می‌شود

@@ -1,45 +1,36 @@
 # skymind_sim/core/environment.py
 
-import numpy as np
+from .drone import Drone
 
 class Environment:
     """
-    Represents the simulation environment, including its boundaries and the drones within it.
+    محیط شبیه‌سازی را تعریف می‌کند که شامل پهپادها و ابعاد فیزیکی است.
+    
+    Attributes:
+        width (float): عرض محیط در محور X.
+        height (float): طول محیط در محور Y.
+        depth (float): ارتفاع محیط در محور Z.
+        drones (dict): دیکشنری برای نگهداری پهپادها با استفاده از شناسه آن‌ها به عنوان کلید.
+                       {drone_id: Drone_object}
     """
-
-    def __init__(self, width: float, height: float, depth: float = 100.0):
-        if width <= 0 or height <= 0 or depth <= 0:
-            raise ValueError("Environment dimensions (width, height, depth) must be positive.")
-        
+    
+    def __init__(self, width: float, height: float, depth: float):
         self.width = width
         self.height = height
         self.depth = depth
-        self.drones = {}  # Using a dictionary is better for lookups by ID
+        self.drones = {} # استفاده از دیکشنری برای دسترسی سریع‌تر
 
-    def add_drone(self, drone):
-        """Adds a drone to the environment, checking its initial position."""
-        if drone.id in self.drones:
-            raise ValueError(f"Drone with ID {drone.id} already exists.")
+    def add_drone(self, drone: Drone):
+        """یک پهپاد به محیط اضافه می‌کند."""
+        # --- اینجا محل اصلاح است ---
+        if drone.drone_id in self.drones:
+            raise ValueError(f"Drone with ID {drone.drone_id} already exists in the environment.")
+        self.drones[drone.drone_id] = drone
 
-        pos = drone.position
-        if not (0 <= pos[0] <= self.width and 0 <= pos[1] <= self.height and 0 <= pos[2] <= self.depth):
-            raise ValueError(f"Drone {drone.id} initial position {pos} is outside the environment boundaries.")
-
-        self.drones[drone.id] = drone
-
-    def get_drone(self, drone_id: int):
-        """Retrieves a drone by its ID."""
+    def get_drone(self, drone_id: int) -> Drone | None:
+        """یک پهپاد را با استفاده از شناسه آن برمی‌گرداند."""
         return self.drones.get(drone_id)
 
-    def get_drones(self):
-        """Returns a list of all drone objects in the environment."""
+    def get_all_drones(self) -> list[Drone]:
+        """لیستی از تمام پهپادهای موجود در محیط را برمی‌گرداند."""
         return list(self.drones.values())
-
-    @property
-    def drones_count(self):
-        """Returns the number of drones in the environment."""
-        return len(self.drones)
-
-    def __repr__(self):
-        """Provides a developer-friendly representation of the environment."""
-        return f"Environment(width={self.width}, height={self.height}, depth={self.depth}, drones_count={self.drones_count})"
