@@ -1,0 +1,17 @@
+{
+  "dimensions": [100, 100, 50],
+  "obstacles": [
+    {
+      "type": "box",
+      "min_corner": [40, 40, 0],
+      "max_corner": [60, 60, 25]
+    }
+  ],
+  "drones": [
+    {
+      "id": "drone_1",
+      "start": [5, 5, 5],
+      "goal": [95, 95, 45]
+    }
+  ]
+}

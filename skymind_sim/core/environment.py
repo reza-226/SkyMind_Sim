@@ -1,59 +1,66 @@
 # skymind_sim/core/environment.py
 
+import json
 import numpy as np
-from typing import List, Tuple
-
-# ایمپورت‌های نسبی برای ماژول‌های درون پکیج core
 from .drone import Drone
-from .path_planner import PathPlanner
-
-class Obstacle:
-    """یک کلاس پایه برای همه موانع."""
-    def is_inside(self, point: np.ndarray) -> bool:
-        raise NotImplementedError
-
-class BoxObstacle(Obstacle):
-    """یک مانع مکعبی شکل."""
-    def __init__(self, position: np.ndarray, size: np.ndarray):
-        self.position = position
-        self.size = size
-        self.min_corner = position - size / 2
-        self.max_corner = position + size / 2
-
-    def is_inside(self, point: np.ndarray) -> bool:
-        return np.all(point >= self.min_corner) and np.all(point <= self.max_corner)
+from .obstacles import BoxObstacle # اطمینان از ایمپورت صحیح
 
 class Environment:
     """
-    کلاس محیط شبیه‌سازی که شامل پهپادها و موانع است.
+    این کلاس محیط شبیه‌سازی را مدیریت می‌کند که شامل ابعاد، موانع و پهپادها است.
     """
-    def __init__(self, dimensions: Tuple[float, float, float], obstacles: List[Obstacle] = None):
-        self.dimensions = np.array(dimensions)
+    def __init__(self, dimensions, obstacles, drones):
+        self.dimensions = np.array(dimensions, dtype=float)
         self.obstacles = obstacles if obstacles is not None else []
-        self.drones: List['Drone'] = [] # استفاده از 'Drone' برای جلوگیری از circular import
+        self.drones = drones if drones is not None else []
+
+    @classmethod
+    def from_json_file(cls, file_path):
+        """
+        یک آبجکت Environment از روی یک فایل JSON ایجاد می‌کند.
+        """
+        print(f"Loading map from '{file_path}'...")
+        try:
+            with open(file_path, 'r') as f:
+                data = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            print(f"Error loading or parsing map file: {e}")
+            return None
+
+        # استخراج ابعاد محیط
+        dimensions = data.get("dimensions", [100, 100, 50])
+
+        # استخراج و ساخت آبجکت‌های موانع
+        obstacles = []
+        for obs_data in data.get("obstacles", []):
+            if obs_data.get("type") == "box":
+                obstacle = BoxObstacle(
+                    min_corner=obs_data["min_corner"],
+                    max_corner=obs_data["max_corner"]
+                )
+                obstacles.append(obstacle)
         
-        # ایجاد نمونه مسیریاب با دقت 0.5 متر برای گرید
-        self.path_planner = PathPlanner(self, grid_resolution=0.5)
+        # استخراج و ساخت آبجکت‌های پهپادها
+        drones = []
+        for drone_data in data.get("drones", []):
+            drone = Drone(
+                drone_id=drone_data["id"],
+                start_position=drone_data["start"],
+                goal_position=drone_data["goal"]
+            )
+            drones.append(drone)
 
-    def add_drone(self, drone: 'Drone'):
-        self.drones.append(drone)
-        drone.set_environment(self)
+        # فراخوانی سازنده اصلی کلاس با داده‌های استخراج شده
+        return cls(dimensions=dimensions, obstacles=obstacles, drones=drones)
 
-    def update(self, dt: float):
+    # --- متد جدید که اضافه شده است ---
+    def update(self, dt):
+        """
+        وضعیت تمام اجزای محیط را برای یک گام زمانی dt به‌روز می‌کند.
+        Args:
+            dt (float): گام زمانی (delta time) بر حسب ثانیه.
+        """
+        # در حال حاضر، فقط وضعیت پهپادها را به‌روز می‌کنیم.
         for drone in self.drones:
-            drone.update(dt)
-        self.check_collisions()
-
-    def check_collisions(self):
-        for i, drone1 in enumerate(self.drones):
-            # بررسی برخورد با موانع
-            for obstacle in self.obstacles:
-                if obstacle.is_inside(drone1.position):
-                    print(f"Collision Detected! Drone {drone1.id} hit an obstacle at {drone1.position}.")
-            
-            # بررسی برخورد پهپاد با پهپاد (اختیاری)
-            for j in range(i + 1, len(self.drones)):
-                drone2 = self.drones[j]
-                distance = np.linalg.norm(drone1.position - drone2.position)
-                if distance < (drone1.size + drone2.size):
-                    print(f"Collision Detected! Drone {drone1.id} and Drone {drone2.id} collided.")
+            drone.update(dt, self.obstacles)
+    # --------------------------------

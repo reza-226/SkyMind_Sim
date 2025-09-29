@@ -1,41 +1,53 @@
 # skymind_sim/main.py
 
-import numpy as np
-from .core.drone import Drone
-from .core.environment import Environment, BoxObstacle
+import os
+from .core.environment import Environment
 from .core.simulation import Simulation
+from .core.drone import Drone
+from .core.path_planner import PathPlanner
 
 def main():
     """
-    نقطه ورود اصلی برای اجرای شبیه‌سازی.
+    نقطه ورود اصلی برنامه شبیه‌ساز.
     """
-    # تعریف ابعاد محیط (۱۰x۱۰x۵ متر)
-    env_dims = (10, 10, 5)
-
-    # تعریف موانع
-    obstacles = [
-        BoxObstacle(position=np.array([5, 5, 2.5]), size=np.array([2, 2, 5])),
-        BoxObstacle(position=np.array([2, 8, 2]), size=np.array([3, 1, 4]))
-    ]
-
-    # ایجاد محیط با موانع
-    env = Environment(dimensions=env_dims, obstacles=obstacles)
-
-    # --- تعریف پهپادها با نقاط شروع و پایان ---
-    # این پهپاد باید از مانع بزرگ وسطی عبور کند
-    drone1 = Drone(start_pos=np.array([1, 1, 1]), goal_pos=np.array([9, 9, 1]))
+    print("Loading map from 'data/maps/basic_map.json'...")
     
-    # این پهپاد باید از هر دو مانع عبور کند
-    drone2 = Drone(start_pos=np.array([1, 9, 4]), goal_pos=np.array([9, 1, 4]))
-    # -------------------------------------------
+    # ساخت مسیر کامل به فایل نقشه
+    # این کار باعث می‌شود برنامه از هر جایی که اجرا شود، فایل را پیدا کند.
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    map_path = os.path.join(base_dir, '..', 'data', 'maps', 'basic_map.json')
+    map_path = os.path.normpath(map_path)
+    
+    # ایجاد محیط از روی فایل نقشه
+    env = Environment.from_json_file(map_path)
+    if env is None:
+        print("Failed to create environment. Exiting.")
+        return
+        
+    print("Map loaded successfully.")
 
-    # اضافه کردن پهپادها به محیط
-    env.add_drone(drone1)
-    env.add_drone(drone2)
+    # ایجاد یک نمونه از مسیریاب
+    path_planner = PathPlanner(env)
+
+    # برای هر پهپاد در محیط، یک مسیر پیدا کن (در آینده)
+    for drone in env.drones:
+        print(f"Planning path for Drone ID: {drone.id}...")
+        
+        # --- اصلاح کلیدی در این خط ---
+        # نام متد از plan_path به find_path تغییر کرد
+        path = path_planner.find_path(drone.start_position, drone.goal_position)
+        # -----------------------------
+        
+        # در حال حاضر چون مسیریابی پیاده‌سازی نشده، path همیشه None خواهد بود.
+        # در آینده این بخش کامل‌تر خواهد شد.
 
     # ایجاد و اجرای شبیه‌سازی
     sim = Simulation(env)
+    print(f"Simulation created for {len(env.drones)} drones.")
+    
+    print("Starting simulation...")
     sim.run()
+    print("Simulation finished.")
 
 if __name__ == "__main__":
     main()
