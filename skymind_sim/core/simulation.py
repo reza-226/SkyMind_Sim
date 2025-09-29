@@ -1,53 +1,71 @@
 # skymind_sim/core/simulation.py
 
-import numpy as np
-from collections import defaultdict
-from .environment import Environment
+from skymind_sim.core.environment import Environment
 
 class Simulation:
     """
-    Manages the execution of the simulation over time, updating the state of all drones.
+    موتور اصلی شبیه‌سازی که وضعیت محیط را در طول زمان مدیریت می‌کند.
     """
-
-    def __init__(self, env: Environment):
+    def __init__(self, environment: Environment, total_time: int, time_step: float = 1.0):
         """
-        Initializes the simulation.
-
-        Args:
-            env (Environment): The simulation environment containing the drones.
-        """
-        self.environment = env
-        self.history = defaultdict(list)
-        self.time = 0.0
-
-    def run(self, num_steps: int, dt: float):
-        """
-        Runs the simulation for a given number of steps.
+        سازنده کلاس Simulation.
 
         Args:
-            num_steps (int): The number of steps to simulate.
-            dt (float): The time delta for each step in seconds.
+            environment (Environment): شیء محیط که شبیه‌سازی در آن اجرا می‌شود.
+            total_time (int): کل زمان شبیه‌سازی بر حسب ثانیه.
+            time_step (float): گام زمانی برای هر مرحله از شبیه‌سازی (بر حسب ثانیه).
         """
-        print(f"Starting simulation for {num_steps} steps with dt={dt}...")
-        
-        # Record initial positions
-        print(f"Recording initial positions at t={self.time:.1f}s...")
+        if not isinstance(environment, Environment):
+            raise TypeError("ورودی 'environment' باید یک نمونه از کلاس Environment باشد.")
+        if not isinstance(total_time, (int, float)) or total_time <= 0:
+            raise ValueError("total_time باید یک عدد مثبت باشد.")
+        if not isinstance(time_step, (int, float)) or time_step <= 0:
+            raise ValueError("time_step باید یک عدد مثبت باشد.")
+
+        self._environment = environment
+        self._total_time = total_time
+        self._time_step = time_step
+        self._current_time = 0.0
+
+    @property
+    def environment(self) -> Environment:
+        return self._environment
+
+    @property
+    def total_time(self) -> int:
+        return self._total_time
+
+    @property
+    def time_step(self) -> float:
+        return self._time_step
+
+    @property
+    def current_time(self) -> float:
+        return self._current_time
+
+    def run_step(self):
+        """
+        یک گام از شبیه‌سازی را اجرا می‌کند.
+        """
+        if self._current_time >= self._total_time:
+            # print("پایان شبیه‌سازی.")
+            return
+
+        # حرکت دادن تمام پهپادها
         for drone in self.environment.drones:
-            # FIX: Append a tuple of (time, x, y, z)
-            # The * operator unpacks the drone.position array [x, y, z] into x, y, z
-            self.history[drone.drone_id].append((self.time, *drone.position))
-
-        for step in range(1, num_steps + 1):
-            self.time += dt
-            
-            for drone in self.environment.drones:
-                drone.update_state(dt)
-                
-                # FIX: Append a tuple of (time, x, y, z) for the new position
-                self.history[drone.drone_id].append((self.time, *drone.position))
-
-            if step % 50 == 0 or step == num_steps:
-                print(f"  ... Step {step}/{num_steps} completed. Current time: {self.time:.2f}s")
+            drone.move(self._time_step)
         
-        print("Simulation finished.")
-        return self.history
+        # افزایش زمان
+        self._current_time += self._time_step
+
+    def get_current_positions(self) -> dict:
+        """
+        موقعیت فعلی تمام پهپادها را برمی‌گرداند.
+
+        Returns:
+            dict: دیکشنری که کلید آن شناسه پهپاد و مقدار آن موقعیت فعلی است.
+        """
+        return {drone.drone_id: drone.position for drone in self.environment.drones}
+    
+    def __repr__(self) -> str:
+        return f"Simulation(time={self.current_time:.2f}/{self.total_time}, step={self.time_step})"

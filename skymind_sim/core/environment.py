@@ -1,44 +1,81 @@
 # skymind_sim/core/environment.py
 
 import numpy as np
+from typing import List, Dict, Any
+
+# برای جلوگیری از خطای Circular Import، کلاس Drone را فقط برای Type Hinting وارد می‌کنیم
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from skymind_sim.core.drone import Drone
 
 class Environment:
     """
-    Represents the 3D simulation environment, including its dimensions and the drones within it.
+    محیط شبیه‌سازی را تعریف می‌کند که شامل ابعاد، پهپادها و موانع است.
     """
-    def __init__(self, width: float, height: float, depth: float):
+    def __init__(self, dimensions: np.ndarray):
         """
-        Initializes the environment.
+        سازنده کلاس Environment.
 
         Args:
-            width (float): The width of the environment (X-axis).
-            height (float): The height of the environment (Y-axis).
-            depth (float): The depth of the environment (Z-axis).
+            dimensions (np.ndarray): آرایه NumPy با ابعاد [طول, عرض, ارتفاع] محیط.
         """
-        self.dimensions = np.array([width, height, depth])
-        self.drones = []  # This will store Drone objects
+        if not isinstance(dimensions, np.ndarray) or dimensions.shape != (3,):
+            raise ValueError("dimensions باید یک آرایه NumPy با سه عنصر باشد.")
+        if np.any(dimensions <= 0):
+            raise ValueError("ابعاد محیط باید مقادیر مثبت داشته باشند.")
+            
+        self._dimensions = dimensions
+        self._drones: List['Drone'] = []
+        self._obstacles: List[Dict[str, Any]] = []
 
-    def add_drone(self, drone):
+    @property
+    def dimensions(self) -> np.ndarray:
+        return self._dimensions
+
+    @property
+    def drones(self) -> List['Drone']:
+        return self._drones
+
+    @property
+    def obstacles(self) -> List[Dict[str, Any]]:
+        return self._obstacles
+
+    def add_drone(self, drone: 'Drone'):
+        """یک پهپاد به محیط اضافه می‌کند."""
+        # در آینده می‌توانیم بررسی کنیم که آیا پهپاد از نوع Drone است یا خیر
+        if drone not in self._drones:
+            self._drones.append(drone)
+
+    def add_obstacle(self, center: np.ndarray, radius: float):
+        """یک مانع کروی به محیط اضافه می‌کند."""
+        if not isinstance(center, np.ndarray) or center.shape != (3,):
+            raise ValueError("مرکز مانع باید یک آرایه NumPy سه‌بعدی باشد.")
+        if not isinstance(radius, (int, float)) or radius <= 0:
+            raise ValueError("شعاع مانع باید یک عدد مثبت باشد.")
+            
+        obstacle = {'center': center, 'radius': radius}
+        self._obstacles.append(obstacle)
+
+    def check_collisions(self) -> List[Dict[str, Any]]:
         """
-        Adds a single drone object to the environment's list of drones.
-
-        Args:
-            drone (Drone): The drone object to add.
-        """
-        # Fix: Append the entire drone object, not just its ID.
-        self.drones.append(drone)
-
-    def get_drone(self, drone_id: int):
-        """
-        Finds and returns a drone by its ID.
-
-        Args:
-            drone_id (int): The ID of the drone to find.
+        بررسی می‌کند که آیا هیچ پهپادی با هیچ مانعی برخورد کرده است یا خیر.
 
         Returns:
-            Drone: The drone object if found, otherwise None.
+            لیستی از دیکشنری‌ها، که هر کدام اطلاعات برخورد را شامل می‌شود.
+            مثال: [{'drone_id': 'd1', 'obstacle_index': 0}]
         """
-        for drone in self.drones:
-            if drone.drone_id == drone_id:
-                return drone
-        return None
+        collisions = []
+        for drone in self._drones:
+            for i, obstacle in enumerate(self._obstacles):
+                distance = np.linalg.norm(drone.position - obstacle['center'])
+                if distance <= obstacle['radius']:
+                    collisions.append({
+                        'drone_id': drone.drone_id,
+                        'obstacle_index': i
+                    })
+        return collisions
+        
+    def __repr__(self) -> str:
+        return (f"Environment(dimensions={list(self.dimensions)}, "
+                f"num_drones={len(self.drones)}, "
+                f"num_obstacles={len(self.obstacles)})")

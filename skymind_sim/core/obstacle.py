@@ -4,43 +4,58 @@ import numpy as np
 
 class Obstacle:
     """
-    یک مانع مکعبی شکل در محیط را تعریف می‌کند.
+    کلاسی برای نمایش یک مانع کروی در محیط شبیه‌سازی.
     
-    این مانع با دو نقطه تعریف می‌شود: گوشه با حداقل مختصات (min_corner)
-    و گوشه با حداکثر مختصات (max_corner).
-    
-    Attributes:
-        min_corner (np.ndarray): مختصات [x_min, y_min, z_min] مانع.
-        max_corner (np.ndarray): مختصات [x_max, y_max, z_max] مانع.
-        center (np.ndarray): مرکز هندسی مانع.
-    """
-    def __init__(self, min_corner: list[float] | np.ndarray, max_corner: list[float] | np.ndarray):
-        """
-        یک مانع مکعبی را مقداردهی اولیه می‌کند.
-        
-        Args:
-            min_corner: گوشه‌ای از مکعب با کمترین مقادیر x, y, z.
-            max_corner: گوشه‌ای از مکعب با بیشترین مقادیر x, y, z.
-        """
-        self.min_corner = np.array(min_corner, dtype=float)
-        self.max_corner = np.array(max_corner, dtype=float)
-        
-        if np.any(self.min_corner >= self.max_corner):
-            raise ValueError("min_corner must be strictly less than max_corner in all dimensions.")
-            
-        self.center = (self.min_corner + self.max_corner) / 2.0
+    این کلاس یک مانع را با استفاده از یک نقطه مرکزی و یک شعاع تعریف می‌کند.
+    این مدل ساده برای محاسبات تشخیص برخورد بسیار کارآمد است.
 
-    def check_collision(self, point: np.ndarray) -> bool:
+    Attributes:
+        center (np.ndarray): یک آرایه NumPy با ابعاد (3,) که مختصات [x, y, z] مرکز کره را نگه می‌دارد.
+        radius (float): شعاع مانع کروی.
+    """
+    def __init__(self, center: np.ndarray, radius: float):
+        """
+        سازنده کلاس Obstacle.
+
+        Args:
+            center (np.ndarray): مختصات مرکز مانع به صورت [x, y, z].
+                                 توصیه می‌شود که از نوع np.ndarray با dtype=float باشد.
+            radius (float): شعاع مانع. باید یک عدد مثبت باشد.
+        """
+        # بررسی می‌کنیم که مرکز یک آرایه NumPy با 3 عنصر باشد
+        if not isinstance(center, np.ndarray) or center.shape != (3,):
+            raise ValueError("مرکز مانع (center) باید یک آرایه NumPy با ابعاد (3,) باشد.")
+        
+        # بررسی می‌کنیم که شعاع یک عدد مثبت باشد
+        if not isinstance(radius, (int, float)) or radius <= 0:
+            raise ValueError("شعاع (radius) باید یک عدد مثبت باشد.")
+
+        self.center = center.astype(float)  # اطمینان از اینکه داده‌ها از نوع float هستند
+        self.radius = float(radius)
+
+    def __repr__(self) -> str:
+        """
+        نمایش رشته‌ای خوانا از شیء برای دیباگ کردن.
+        """
+        # np.array2string برای نمایش زیباتر آرایه NumPy استفاده می‌شود
+        center_str = np.array2string(self.center, precision=2, separator=', ')
+        return f"Obstacle(center={center_str}, radius={self.radius:.2f})"
+
+    def is_colliding(self, point: np.ndarray) -> bool:
         """
         بررسی می‌کند که آیا یک نقطه مشخص با این مانع برخورد دارد یا خیر.
         
+        یک نقطه زمانی با یک مانع کروی برخورد می‌کند که فاصله آن از مرکز کره
+        کمتر یا مساوی شعاع کره باشد.
+
         Args:
-            point (np.ndarray): نقطه‌ای که باید بررسی شود.
-            
+            point (np.ndarray): مختصات [x, y, z] نقطه‌ای که می‌خواهیم بررسی کنیم.
+
         Returns:
-            bool: True اگر نقطه داخل مانع باشد، در غیر این صورت False.
+            bool: اگر نقطه داخل یا روی سطح مانع باشد True، در غیر این صورت False.
         """
-        # A point is inside the cube if for all axes (x, y, z),
-        # its coordinate is between min_corner and max_corner.
-        is_inside = np.all((point >= self.min_corner) & (point <= self.max_corner))
-        return is_inside
+        # محاسبه فاصله اقلیدسی بین نقطه و مرکز مانع
+        distance = np.linalg.norm(point - self.center)
+        
+        # اگر فاصله کمتر یا مساوی شعاع بود، برخورد رخ داده است
+        return distance <= self.radius
