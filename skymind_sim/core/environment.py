@@ -1,81 +1,59 @@
 # skymind_sim/core/environment.py
 
 import numpy as np
-from typing import List, Dict, Any
+from typing import List, Tuple
 
-# برای جلوگیری از خطای Circular Import، کلاس Drone را فقط برای Type Hinting وارد می‌کنیم
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from skymind_sim.core.drone import Drone
+# ایمپورت‌های نسبی برای ماژول‌های درون پکیج core
+from .drone import Drone
+from .path_planner import PathPlanner
+
+class Obstacle:
+    """یک کلاس پایه برای همه موانع."""
+    def is_inside(self, point: np.ndarray) -> bool:
+        raise NotImplementedError
+
+class BoxObstacle(Obstacle):
+    """یک مانع مکعبی شکل."""
+    def __init__(self, position: np.ndarray, size: np.ndarray):
+        self.position = position
+        self.size = size
+        self.min_corner = position - size / 2
+        self.max_corner = position + size / 2
+
+    def is_inside(self, point: np.ndarray) -> bool:
+        return np.all(point >= self.min_corner) and np.all(point <= self.max_corner)
 
 class Environment:
     """
-    محیط شبیه‌سازی را تعریف می‌کند که شامل ابعاد، پهپادها و موانع است.
+    کلاس محیط شبیه‌سازی که شامل پهپادها و موانع است.
     """
-    def __init__(self, dimensions: np.ndarray):
-        """
-        سازنده کلاس Environment.
-
-        Args:
-            dimensions (np.ndarray): آرایه NumPy با ابعاد [طول, عرض, ارتفاع] محیط.
-        """
-        if not isinstance(dimensions, np.ndarray) or dimensions.shape != (3,):
-            raise ValueError("dimensions باید یک آرایه NumPy با سه عنصر باشد.")
-        if np.any(dimensions <= 0):
-            raise ValueError("ابعاد محیط باید مقادیر مثبت داشته باشند.")
-            
-        self._dimensions = dimensions
-        self._drones: List['Drone'] = []
-        self._obstacles: List[Dict[str, Any]] = []
-
-    @property
-    def dimensions(self) -> np.ndarray:
-        return self._dimensions
-
-    @property
-    def drones(self) -> List['Drone']:
-        return self._drones
-
-    @property
-    def obstacles(self) -> List[Dict[str, Any]]:
-        return self._obstacles
+    def __init__(self, dimensions: Tuple[float, float, float], obstacles: List[Obstacle] = None):
+        self.dimensions = np.array(dimensions)
+        self.obstacles = obstacles if obstacles is not None else []
+        self.drones: List['Drone'] = [] # استفاده از 'Drone' برای جلوگیری از circular import
+        
+        # ایجاد نمونه مسیریاب با دقت 0.5 متر برای گرید
+        self.path_planner = PathPlanner(self, grid_resolution=0.5)
 
     def add_drone(self, drone: 'Drone'):
-        """یک پهپاد به محیط اضافه می‌کند."""
-        # در آینده می‌توانیم بررسی کنیم که آیا پهپاد از نوع Drone است یا خیر
-        if drone not in self._drones:
-            self._drones.append(drone)
+        self.drones.append(drone)
+        drone.set_environment(self)
 
-    def add_obstacle(self, center: np.ndarray, radius: float):
-        """یک مانع کروی به محیط اضافه می‌کند."""
-        if not isinstance(center, np.ndarray) or center.shape != (3,):
-            raise ValueError("مرکز مانع باید یک آرایه NumPy سه‌بعدی باشد.")
-        if not isinstance(radius, (int, float)) or radius <= 0:
-            raise ValueError("شعاع مانع باید یک عدد مثبت باشد.")
+    def update(self, dt: float):
+        for drone in self.drones:
+            drone.update(dt)
+        self.check_collisions()
+
+    def check_collisions(self):
+        for i, drone1 in enumerate(self.drones):
+            # بررسی برخورد با موانع
+            for obstacle in self.obstacles:
+                if obstacle.is_inside(drone1.position):
+                    print(f"Collision Detected! Drone {drone1.id} hit an obstacle at {drone1.position}.")
             
-        obstacle = {'center': center, 'radius': radius}
-        self._obstacles.append(obstacle)
-
-    def check_collisions(self) -> List[Dict[str, Any]]:
-        """
-        بررسی می‌کند که آیا هیچ پهپادی با هیچ مانعی برخورد کرده است یا خیر.
-
-        Returns:
-            لیستی از دیکشنری‌ها، که هر کدام اطلاعات برخورد را شامل می‌شود.
-            مثال: [{'drone_id': 'd1', 'obstacle_index': 0}]
-        """
-        collisions = []
-        for drone in self._drones:
-            for i, obstacle in enumerate(self._obstacles):
-                distance = np.linalg.norm(drone.position - obstacle['center'])
-                if distance <= obstacle['radius']:
-                    collisions.append({
-                        'drone_id': drone.drone_id,
-                        'obstacle_index': i
-                    })
-        return collisions
-        
-    def __repr__(self) -> str:
-        return (f"Environment(dimensions={list(self.dimensions)}, "
-                f"num_drones={len(self.drones)}, "
-                f"num_obstacles={len(self.obstacles)})")
+            # بررسی برخورد پهپاد با پهپاد (اختیاری)
+            for j in range(i + 1, len(self.drones)):
+                drone2 = self.drones[j]
+                distance = np.linalg.norm(drone1.position - drone2.position)
+                if distance < (drone1.size + drone2.size):
+                    print(f"Collision Detected! Drone {drone1.id} and Drone {drone2.id} collided.")

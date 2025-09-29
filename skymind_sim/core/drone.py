@@ -1,99 +1,98 @@
 # skymind_sim/core/drone.py
 
 import numpy as np
+from typing import Optional, List
 
 class Drone:
     """
-    نمایانگر یک پهپاد در شبیه‌سازی است.
-
-    Attributes:
-        drone_id (str): شناسه منحصر به فرد پهپاد.
-        position (np.ndarray): موقعیت فعلی پهپاد در فضای سه‌بعدی [x, y, z].
-        initial_position (np.ndarray): موقعیت شروع پهپاد.
-        speed (float): سرعت حرکت پهپاد (متر بر ثانیه).
-        movement_path (list): لیستی از نقاط مقصد (np.ndarray) که پهپاد باید طی کند.
-        current_target_index (int): اندیس هدف فعلی در movement_path.
+    کلاسی برای نمایش یک پهپاد در شبیه‌سازی.
+    این پهپاد اکنون از یک مسیریاب برای رسیدن به هدف استفاده می‌کند.
     """
-    def __init__(self, drone_id: str, initial_position: np.ndarray, speed: float = 20.0):
+    _id_counter = 0
+
+    def __init__(self, start_pos: np.ndarray, goal_pos: np.ndarray, velocity: float = 5.0, size: float = 0.5):
         """
         سازنده کلاس Drone.
 
         Args:
-            drone_id (str): شناسه منحصر به فرد برای پهپاد.
-            initial_position (np.ndarray): مختصات موقعیت اولیه [x, y, z].
-            speed (float): سرعت پهپاد بر حسب متر بر ثانیه. پیش‌فرض 20.0 است.
+            start_pos (np.ndarray): موقعیت شروع پهپاد.
+            goal_pos (np.ndarray): موقعیت هدف نهایی پهپاد.
+            velocity (float): سرعت حرکت پهپاد (متر بر ثانیه).
+            size (float): اندازه (شعاع) پهپاد برای تشخیص برخورد.
         """
-        if not isinstance(drone_id, str) or not drone_id:
-            raise ValueError("drone_id باید یک رشته غیرخالی باشد.")
-        if not isinstance(initial_position, np.ndarray) or initial_position.shape != (3,):
-            raise ValueError("initial_position باید یک آرایه NumPy با سه عنصر باشد.")
-        if not isinstance(speed, (int, float)) or speed <= 0:
-            raise ValueError("speed باید یک عدد مثبت باشد.")
+        self.id = Drone._id_counter
+        Drone._id_counter += 1
 
-        self._drone_id = drone_id
-        self._initial_position = initial_position.copy()
-        self._position = initial_position.copy()
-        self._speed = speed
-        self._movement_path = []
-        self._current_target_index = 0
-
-    @property
-    def drone_id(self) -> str:
-        return self._drone_id
-
-    @property
-    def position(self) -> np.ndarray:
-        return self._position
-
-    @property
-    def initial_position(self) -> np.ndarray:
-        return self._initial_position
-
-    @property
-    def speed(self) -> float:
-        return self._speed
-
-    @property
-    def movement_path(self) -> list:
-        return self._movement_path
-
-    def set_movement_path(self, path: list):
-        """
-        یک مسیر حرکتی برای پهپاد تنظیم می‌کند.
+        self.position = np.array(start_pos, dtype=float)
+        self.goal_pos = np.array(goal_pos, dtype=float)
+        self.velocity = velocity
+        self.size = size
         
-        Args:
-            path (list): لیستی از آرایه‌های NumPy که هر کدام یک نقطه مقصد هستند.
-        """
-        if not isinstance(path, list) or not all(isinstance(p, np.ndarray) and p.shape == (3,) for p in path):
-            raise ValueError("مسیر باید لیستی از آرایه‌های NumPy سه‌بعدی باشد.")
-        self._movement_path = path
-        self._current_target_index = 0
+        self.path: Optional[List[np.ndarray]] = None
+        self.current_path_index = 0
+        self.environment = None
+        self.state = "IDLE"  # وضعیت‌ها: IDLE, PLANNING, MOVING, FINISHED
 
-    def move(self, delta_time: float):
+    def set_environment(self, environment):
         """
-        پهپاد را برای یک گام زمانی به سمت هدف بعدی حرکت می‌دهد.
-        
-        Args:
-            delta_time (float): زمان سپری شده از آخرین حرکت (بر حسب ثانیه).
+        محیط را برای پهپاد تنظیم کرده و فرآیند مسیریابی را آغاز می‌کند.
         """
-        if not self._movement_path:
-            return  # اگر مسیری تعریف نشده باشد، حرکتی نکن
+        self.environment = environment
+        self.plan_path()
 
-        target_position = self._movement_path[self._current_target_index]
-        direction_vector = target_position - self._position
-        distance_to_target = np.linalg.norm(direction_vector)
+    def plan_path(self):
+        """
+        از مسیریاب محیط برای یافتن مسیر به سمت هدف استفاده می‌کند.
+        """
+        if self.environment and self.environment.path_planner:
+            print(f"Drone {self.id}: Planning path from {self.position} to {self.goal_pos}...")
+            self.state = "PLANNING"
+            self.path = self.environment.path_planner.find_path(self.position, self.goal_pos)
+            
+            if self.path:
+                print(f"Drone {self.id}: Path found with {len(self.path)} waypoints.")
+                self.current_path_index = 0
+                self.state = "MOVING"
+            else:
+                print(f"Drone {self.id}: Failed to find a path.")
+                self.state = "IDLE" # یا "FAILED"
 
-        if distance_to_target < 1e-6:  # اگر به هدف رسیده‌ایم
-            self._current_target_index = (self._current_target_index + 1) % len(self._movement_path)
+    def update(self, dt: float):
+        """
+        موقعیت پهپاد را بر اساس مسیر محاسبه‌شده به‌روزرسانی می‌کند.
+        """
+        if self.state != "MOVING" or not self.path:
             return
 
-        travel_distance = self._speed * delta_time
+        # اگر به آخرین نقطه مسیر رسیده‌ایم
+        if self.current_path_index >= len(self.path):
+            self.state = "FINISHED"
+            print(f"Drone {self.id} has reached its destination.")
+            return
 
-        if travel_distance >= distance_to_target:
-            self._position = target_position.copy()
-            self._current_target_index = (self._current_target_index + 1) % len(self._movement_path)
+        # استخراج نقطه هدف بعدی در مسیر
+        target_waypoint = self.path[self.current_path_index]
+        
+        direction_vector = target_waypoint - self.position
+        distance_to_target = np.linalg.norm(direction_vector)
+
+        # اگر فاصله تا نقطه بعدی خیلی کم است، به نقطه بعدی در مسیر بروید
+        if distance_to_target < 0.1: # یک آستانه کوچک برای جلوگیری از لرزش
+            self.current_path_index += 1
+            return
+
+        # محاسبه حرکت در این فریم زمانی
+        move_distance = self.velocity * dt
+        
+        # اگر فاصله تا هدف کمتر از مسافت حرکت است، مستقیم به هدف بروید
+        if move_distance >= distance_to_target:
+            self.position = target_waypoint
+            self.current_path_index += 1
         else:
-            self._position += (direction_vector / distance_to_target) * travel_distance
+            # در غیر این صورت، در جهت هدف حرکت کنید
+            normalized_direction = direction_vector / distance_to_target
+            self.position += normalized_direction * move_distance
 
-    def __repr__(self) -> str:
-        return f"Drone(id='{self.drone_id}', position={np.round(self.position, 2)})"
+    def get_history_point(self):
+        """برای رسم مسیر طی شده استفاده می‌شود."""
+        return self.position.copy()

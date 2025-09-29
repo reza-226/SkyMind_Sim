@@ -1,71 +1,125 @@
 # skymind_sim/core/simulation.py
 
-from skymind_sim.core.environment import Environment
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+import numpy as np
+
+# ایمپورت نسبی از ماژول هم‌سطح
+from .drone import Drone
 
 class Simulation:
-    """
-    موتور اصلی شبیه‌سازی که وضعیت محیط را در طول زمان مدیریت می‌کند.
-    """
-    def __init__(self, environment: Environment, total_time: int, time_step: float = 1.0):
-        """
-        سازنده کلاس Simulation.
+    """کلاس برای اجرای و نمایش شبیه‌سازی."""
+    def __init__(self, environment):
+        self.env = environment
+        self.fig = plt.figure(figsize=(10, 8))
+        self.ax = self.fig.add_subplot(111, projection='3d')
+        self.drone_artists = []
+        self.path_artists = []
+        self.history_artists = []
+        self.drone_history = [[] for _ in self.env.drones]
 
-        Args:
-            environment (Environment): شیء محیط که شبیه‌سازی در آن اجرا می‌شود.
-            total_time (int): کل زمان شبیه‌سازی بر حسب ثانیه.
-            time_step (float): گام زمانی برای هر مرحله از شبیه‌سازی (بر حسب ثانیه).
-        """
-        if not isinstance(environment, Environment):
-            raise TypeError("ورودی 'environment' باید یک نمونه از کلاس Environment باشد.")
-        if not isinstance(total_time, (int, float)) or total_time <= 0:
-            raise ValueError("total_time باید یک عدد مثبت باشد.")
-        if not isinstance(time_step, (int, float)) or time_step <= 0:
-            raise ValueError("time_step باید یک عدد مثبت باشد.")
-
-        self._environment = environment
-        self._total_time = total_time
-        self._time_step = time_step
-        self._current_time = 0.0
-
-    @property
-    def environment(self) -> Environment:
-        return self._environment
-
-    @property
-    def total_time(self) -> int:
-        return self._total_time
-
-    @property
-    def time_step(self) -> float:
-        return self._time_step
-
-    @property
-    def current_time(self) -> float:
-        return self._current_time
-
-    def run_step(self):
-        """
-        یک گام از شبیه‌سازی را اجرا می‌کند.
-        """
-        if self._current_time >= self._total_time:
-            # print("پایان شبیه‌سازی.")
+    def _draw_obstacle(self, obstacle):
+        """یک مانع مکعبی را در plot رسم می‌کند."""
+        if not (hasattr(obstacle, 'min_corner') and hasattr(obstacle, 'max_corner')):
             return
 
-        # حرکت دادن تمام پهپادها
-        for drone in self.environment.drones:
-            drone.move(self._time_step)
+        min_c, max_c = obstacle.min_corner, obstacle.max_corner
         
-        # افزایش زمان
-        self._current_time += self._time_step
+        # تعریف ۸ گوشه مکعب برای خوانایی بیشتر
+        p0 = [min_c[0], min_c[1], min_c[2]]
+        p1 = [max_c[0], min_c[1], min_c[2]]
+        p2 = [max_c[0], max_c[1], min_c[2]]
+        p3 = [min_c[0], max_c[1], min_c[2]]
+        p4 = [min_c[0], min_c[1], max_c[2]]
+        p5 = [max_c[0], min_c[1], max_c[2]]
+        p6 = [max_c[0], max_c[1], max_c[2]]
+        p7 = [min_c[0], max_c[1], max_c[2]]
 
-    def get_current_positions(self) -> dict:
-        """
-        موقعیت فعلی تمام پهپادها را برمی‌گرداند.
+        # رسم ۱۲ یال مکعب
+        # کف مکعب
+        self.ax.plot([p0[0], p1[0]], [p0[1], p1[1]], [p0[2], p1[2]], 'r-')
+        self.ax.plot([p1[0], p2[0]], [p1[1], p2[1]], [p1[2], p2[2]], 'r-')
+        self.ax.plot([p2[0], p3[0]], [p2[1], p3[1]], [p2[2], p3[2]], 'r-')
+        self.ax.plot([p3[0], p0[0]], [p3[1], p0[1]], [p3[2], p0[2]], 'r-')
 
-        Returns:
-            dict: دیکشنری که کلید آن شناسه پهپاد و مقدار آن موقعیت فعلی است.
-        """
-        return {drone.drone_id: drone.position for drone in self.environment.drones}
-    
-    def __repr__(self) -> str:
-        return f"Simulation(time={self.current_time:.2f}/{self.total_time}, step={self.time_step})"
+        # سقف مکعب
+        self.ax.plot([p4[0], p5[0]], [p4[1], p5[1]], [p4[2], p5[2]], 'r-')
+        self.ax.plot([p5[0], p6[0]], [p5[1], p6[1]], [p5[2], p6[2]], 'r-')
+        self.ax.plot([p6[0], p7[0]], [p6[1], p7[1]], [p6[2], p7[2]], 'r-')
+        self.ax.plot([p7[0], p4[0]], [p7[1], p4[1]], [p7[2], p4[2]], 'r-')
+
+        # ستون‌های عمودی
+        self.ax.plot([p0[0], p4[0]], [p0[1], p4[1]], [p0[2], p4[2]], 'r-')
+        self.ax.plot([p1[0], p5[0]], [p1[1], p5[1]], [p1[2], p5[2]], 'r-')
+        self.ax.plot([p2[0], p6[0]], [p2[1], p6[1]], [p2[2], p6[2]], 'r-')
+        self.ax.plot([p3[0], p7[0]], [p3[1], p7[1]], [p3[2], p7[2]], 'r-')
+
+    def _init_plot(self):
+        """مقداردهی اولیه plot."""
+        self.ax.set_xlim([0, self.env.dimensions[0]])
+        self.ax.set_ylim([0, self.env.dimensions[1]])
+        self.ax.set_zlim([0, self.env.dimensions[2]])
+        self.ax.set_xlabel('X (m)')
+        self.ax.set_ylabel('Y (m)')
+        self.ax.set_zlabel('Z (m)')
+        self.ax.set_title('SkyMind Drone Simulation - A* Pathfinding')
+        self.ax.grid(True)
+
+        # رسم موانع با استفاده از تابع کمکی
+        for obs in self.env.obstacles:
+            self._draw_obstacle(obs)
+
+        # مقداردهی اولیه هنرمندان (artists) برای پهپادها و مسیرها
+        colors = plt.cm.jet(np.linspace(0, 1, len(self.env.drones)))
+        for i, drone in enumerate(self.env.drones):
+            # نمایش پهپاد
+            artist, = self.ax.plot([], [], [], 'o', color=colors[i], markersize=8, label=f'Drone {drone.id}')
+            self.drone_artists.append(artist)
+            
+            # نمایش مسیر برنامه‌ریزی شده
+            if drone.path:
+                path_points = np.array(drone.path)
+                path_artist, = self.ax.plot(path_points[:, 0], path_points[:, 1], path_points[:, 2], '--', color=colors[i], alpha=0.5)
+                self.path_artists.append(path_artist)
+            
+            # نمایش مسیر طی شده
+            history_artist, = self.ax.plot([], [], [], '-', color=colors[i], linewidth=2)
+            self.history_artists.append(history_artist)
+
+        self.ax.legend()
+        return self.drone_artists + self.history_artists
+
+    def _update_plot(self, frame):
+        """به‌روزرسانی plot در هر فریم."""
+        # به‌روزرسانی منطق شبیه‌سازی
+        dt = 0.1  # گام زمانی
+        self.env.update(dt)
+
+        # به‌روزرسانی نمایش
+        for i, drone in enumerate(self.env.drones):
+            pos = drone.position
+            
+            # set_data و set_3d_properties برای هنرمندان انتظار دنباله (sequence) دارند.
+            # حتی برای یک نقطه، باید آن را در یک لیست یا آرایه تک‌عضوی قرار دهیم.
+            self.drone_artists[i].set_data([pos[0]], [pos[1]])
+            self.drone_artists[i].set_3d_properties([pos[2]])
+            
+            # به‌روزرسانی مسیر طی شده
+            self.drone_history[i].append(drone.get_history_point())
+            # برای جلوگیری از خطای احتمالی در فریم اول اگر هیستوری خالی باشد
+            if self.drone_history[i]:
+                hist_array = np.array(self.drone_history[i])
+                # مطمئن می‌شویم که hist_array خالی نیست و دو بعدی است
+                if hist_array.ndim == 2 and hist_array.shape[0] > 0: 
+                    self.history_artists[i].set_data(hist_array[:, 0], hist_array[:, 1])
+                    self.history_artists[i].set_3d_properties(hist_array[:, 2])
+
+        return self.drone_artists + self.history_artists
+
+    def run(self):
+        """اجرای شبیه‌سازی."""
+        # با توجه به مشکلات احتمالی blitting در برخی سیستم‌ها، آن را False می‌کنیم.
+        # blit=False پایدارتر است و از خطاهای رندرینگ جلوگیری می‌کند.
+        ani = FuncAnimation(self.fig, self._update_plot, init_func=self._init_plot,
+                              frames=200, interval=50, blit=False)
+        plt.show()
