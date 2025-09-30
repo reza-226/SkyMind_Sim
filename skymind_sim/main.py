@@ -1,55 +1,46 @@
 # skymind_sim/main.py
 
-# Import standard libraries
-import time
+import numpy as np
 
-# Import core simulation components
-from .core.environment import Environment
-from .core.drone import Drone
-from .core.simulation import Simulation
+from skymind_sim.core.environment import Environment
+from skymind_sim.core.drone import Drone
+from skymind_sim.core.simulation import Simulation
 
-# Import path planning and visualization
-from .pathfinding.path_planner import PathPlanner
-from .visualization.visualizer import Visualizer3D
+def run_basic_mission():
+    """
+    Sets up and runs a basic mission with one drone and a few waypoints
+    using the new event-driven architecture.
+    """
+    print("Setting up basic mission...")
+    
+    # 1. Initialize the Environment
+    # FIX: Provided the required 'width' and 'height' arguments.
+    env = Environment(width=500, height=500)
+    print(f"Environment initialized with size {env.width}x{env.height}. No map loaded.")
 
-def main():
-    """Main function to run the SkyMind simulation."""
-    print("--- Initializing SkyMind Simulation ---")
+    # 2. Define Mission Waypoints
+    # These coordinates are relative to the environment's origin (0,0)
+    # The drone will fly a square pattern.
+    waypoints = [
+        np.array([200, 50]),
+        np.array([200, 200]),
+        np.array([50, 200]),
+        np.array([50, 50]),
+    ]
+
+    # 3. Initialize the Drone
+    drone = Drone(
+        drone_id="drone_1", 
+        start_pos=np.array([50, 50]), 
+        speed=10.0,
+        waypoints=waypoints
+    )
+
+    # 4. Initialize and Run the Simulation
+    sim = Simulation(environment=env, drones=[drone])
     
-    # Define the path to the map file for clarity
-    map_filepath = "data/maps/simple_map.json"
-    env = Environment(map_file=map_filepath)
-    
-    # Define start and end points for the drone's mission
-    start_point = (10, 10, 5)
-    end_point = (80, 80, 15)
-    
-    # Initialize the path planner with the environment
-    planner = PathPlanner(env)
-    
-    # Plan the path
-    print(f"Planning path from {start_point} to {end_point}...")
-    path = planner.plan_path(start_point, end_point)
-    
-    if path:
-        print("Path found successfully!")
-        
-        # ----------------- 3D Visualization -----------------
-        print("Generating 3D visualization...")
-        visualizer = Visualizer3D(env, start_point, end_point)
-        visualizer.draw_obstacles()
-        visualizer.draw_path(path)
-        visualizer.show() # This will block until the plot window is closed
-        
-        # ----------- Text-based Simulation (after visualization) -----------
-        print("\n--- Starting Text-Based Simulation ---")
-        drone = Drone(initial_position=start_point)
-        sim = Simulation(env, drone, path)
-        sim.run()
-    else:
-        print("Could not find a path.")
-        
-    print("--- Simulation Finished ---")
+    # The run method now orchestrates the event-driven simulation.
+    sim.run()
 
 if __name__ == "__main__":
-    main()
+    run_basic_mission()

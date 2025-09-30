@@ -4,24 +4,31 @@ import json
 
 class Environment:
     """
-    Represents the 3D environment for the simulation, including dimensions and obstacles.
+    Represents the physical environment of the simulation.
+    Holds properties like dimensions and can load obstacles from a map file.
     """
-    # --- تغییر ۱: تغییر در __init__ ---
-    def __init__(self, map_file):
+    def __init__(self, width, height, map_file=None):
         """
-        Initializes the environment by loading a map from a JSON file.
+        Initializes the Environment.
+
+        If a map_file is provided, it loads data from it. Otherwise, it uses
+        the provided width and height.
 
         Args:
-            map_file (str): The path to the JSON file containing the map data.
+            width (float): The default width of the simulation area if no map is loaded.
+            height (float): The default height of the simulation area if no map is loaded.
+            map_file (str, optional): The path to the map file (JSON). Defaults to None.
         """
-        self.width = 0
-        self.depth = 0
-        self.height = 0
+        self.width = width
+        self.height = height
+        self.depth = 100  # Default depth, can be overwritten by map
         self.obstacles = set()
-        self._load_map(map_file)
 
-    # --- تغییر ۲: تغییر نام متد به _load_map ---
-    # این یک قرارداد خوب است که متدهای داخلی (که فقط توسط خود کلاس استفاده می‌شوند) با آندرلاین شروع شوند.
+        if map_file:
+            self._load_map(map_file)
+        else:
+            print(f"Environment initialized with default size ({self.width}x{self.height}). No map loaded.")
+
     def _load_map(self, map_file):
         """
         Loads the map dimensions and obstacles from a specified JSON file.
@@ -34,11 +41,11 @@ class Environment:
             with open(map_file, 'r') as f:
                 map_data = json.load(f)
             
-            # Load dimensions
+            # Load dimensions from map, overwriting defaults
             dims = map_data.get("dimensions", {})
-            self.width = dims.get("width", 100)
-            self.depth = dims.get("depth", 100)
-            self.height = dims.get("height", 50)
+            self.width = dims.get("width", self.width)
+            self.depth = dims.get("depth", self.depth)
+            self.height = dims.get("height", self.height)
 
             # Load obstacles and add them to the set
             # The obstacles are stored as tuples for efficient lookup in the set
@@ -46,16 +53,12 @@ class Environment:
             self.obstacles = {tuple(obs) for obs in obstacle_list}
             
             print("Map loaded successfully.")
+            print(f"New environment dimensions: (Width: {self.width}, Depth: {self.depth}, Height: {self.height})")
             
         except FileNotFoundError:
-            print(f"Error: Map file not found at '{map_file}'. Using default empty environment.")
-            # Set default dimensions if file not found
-            self.width, self.depth, self.height = 100, 100, 50
+            print(f"Error: Map file not found at '{map_file}'. Using default environment settings.")
         except json.JSONDecodeError:
-            print(f"Error: Could not decode JSON from '{map_file}'. Using default empty environment.")
-            # Set default dimensions if JSON is invalid
-            self.width, self.depth, self.height = 100, 100, 50
-
+            print(f"Error: Could not decode JSON from '{map_file}'. Using default environment settings.")
 
     def get_dimensions(self):
         """Returns the dimensions of the environment as a tuple (width, depth, height)."""
