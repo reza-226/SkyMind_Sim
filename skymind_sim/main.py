@@ -1,72 +1,63 @@
-# skymind_sim/main.py
-
-import os
-from .core.environment import Environment
-from .core.path_planner import PathPlanner
-from .core.simulation import Simulation
-
-def get_map_path():
-    """
-    مسیر کامل فایل نقشه را پیدا می‌کند.
-    این تابع فرض می‌کند که فایل نقشه در پوشه 'data/maps' قرار دارد.
-    """
-    # مسیر ریشه پروژه را پیدا می‌کند (جایی که .git یا فایل اصلی پروژه قرار دارد)
-    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    map_filename = "basic_map.json"  # نام فایل نقشه
-    map_path = os.path.join(project_root, 'data', 'maps', map_filename)
-    return map_path
+import numpy as np
+from skymind_sim.core.environment import Environment
+from skymind_sim.core.path_planner import PathPlanner
+# from skymind_sim.core.simulation import Simulation
 
 def main():
-    """
-    نقطه ورود اصلی برنامه.
-    محیط را بارگذاری می‌کند، مسیریابی را انجام می‌دهد و شبیه‌سازی را اجرا می‌کند.
-    """
     print("Starting SkyMind Simulation...")
+    map_path = 'data/maps/basic_map.json'
 
-    # --- مرحله 1: بارگذاری محیط ---
-    map_path = get_map_path()
-    if not os.path.exists(map_path):
-        print(f"FATAL ERROR: Map file not found at '{map_path}'")
-        print("Please ensure 'basic_map.json' exists in the 'data/maps' directory.")
-        return
+    try:
+        # 1. Initialize Environment
+        print(f"Loading map from '{map_path}'...")
+        env = Environment(map_path)
 
-    # ----- این بخش تغییر کرده است -----
-    # 1. یک نمونه خالی از محیط ایجاد می‌کنیم
-    env = Environment()
-    
-    # 2. متد load_from_json را روی نمونه созда شده فراخوانی می‌کنیم
-    # رزولوشن را می‌توان به صورت یک پارامتر در فایل JSON اضافه کرد
-    # اما برای سادگی، فعلاً آن را اینجا نگه می‌داریم
-    success = env.load_from_json(map_path) 
-    
-    if not success:
-        print("Failed to initialize environment. Exiting.")
-        return
-    # ------------------------------------
+        # Get start and end points from the map data
+        # Assuming we use the first start/end point defined in the map
+        start_position_list = env.map_data['start_points'][0]['position']
+        start_point = tuple(start_position_list)
 
-    # --- مرحله 2: برنامه‌ریزی مسیر ---
-    print("\nStarting Path Planning...")
-    # ایجاد یک نمونه از PathPlanner با محیط بارگذاری شده
-    planner = PathPlanner(env)
+        # Get the 'position' list from the first dictionary in 'end_points'
+        end_position_list = env.map_data['end_points'][0]['position']
+        end_point = tuple(end_position_list)
 
-    # پیدا کردن مسیر از نقطه شروع به پایان
-    path = planner.find_path()
+        # 2. Initialize Path Planner
+        planner = PathPlanner(env)
 
-    if path:
-        print(f"Path found with {len(path)} points.")
-        # برای مشاهده، می‌توان مسیر را چاپ کرد
-        # print("Path coordinates:", path)
-    else:
-        print("Could not find a path. Exiting.")
-        return
+        # 3. Find Path
+        print("Starting path planning...")
+        # --- خط زیر را تغییر دهید ---
+        path = planner.find_path_a_star(start_point, end_point)
 
-    # --- مرحله 3: اجرای شبیه‌سازی (در آینده تکمیل می‌شود) ---
-    print("\nPath planning successful. Simulation setup can now proceed.")
-    # sim = Simulation(env, path)
-    # sim.run()
+        # 4. Run Simulation
+        if path:
+            print(f"Path found with {len(path)} points. Starting simulation...")
+            # sim = Simulation(env, path)
+            # sim.run()
+            print("--- Simulation run is commented out for now. ---")
+            print("Path starts at:", path[0])
+            print("Path ends at:", path[-1])
+            # Optional: print a few points from the path
+            if len(path) > 10:
+                print("Path sample:", path[:5], "...", path[-5:])
 
-    print("\nMain execution finished.")
+        else:
+            print("Could not find a path. Simulation will not run.")
 
+    except Exception as e:
+        # A more specific error message based on the context
+        if 'Environment' in str(e.__class__):
+            print(f"An unexpected error occurred during environment setup: {e}")
+        elif 'PathPlanner' in str(e.__class__):
+             print(f"An unexpected error occurred during path planning: {e}")
+        else:
+            print(f"An unexpected error occurred: {e}")
+            # For debugging, you might want to see the full traceback
+            # import traceback
+            # traceback.print_exc()
+
+    finally:
+        print("Main execution finished.")
 
 if __name__ == "__main__":
     main()
