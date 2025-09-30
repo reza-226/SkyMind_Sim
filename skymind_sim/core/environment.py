@@ -1,87 +1,80 @@
 # skymind_sim/core/environment.py
 
-import numpy as np
+import json
 
 class Environment:
     """
-    کلاسی برای مدیریت محیط شبیه‌سازی، شامل نقشه، ابعاد و موانع.
-    این کلاس داده‌های نقشه را به صورت دیکشنری دریافت کرده و محیط را برای
-    شبیه‌سازی و مسیریابی آماده می‌کند.
+    Represents the 3D environment for the simulation, including dimensions and obstacles.
     """
-    def __init__(self, map_data: dict):
+    # --- تغییر ۱: تغییر در __init__ ---
+    def __init__(self, map_file):
         """
-        سازنده کلاس Environment.
+        Initializes the environment by loading a map from a JSON file.
 
         Args:
-            map_data (dict): یک دیکشنری حاوی داده‌های نقشه که از فایل JSON بارگذاری شده.
+            map_file (str): The path to the JSON file containing the map data.
         """
-        print(f"Initializing Environment with map: {map_data}\n")
-        try:
-            # مرحله 1: ذخیره داده‌های خام نقشه
-            self.map_data = map_data
-            
-            # مرحله 2: استخراج ابعاد محیط
-            # ابعاد به صورت (width, depth, height) یا (x_max, y_max, z_max)
-            dims = self.map_data['dimensions']
-            self.dimensions = (dims[0], dims[1], dims[2])
+        self.width = 0
+        self.depth = 0
+        self.height = 0
+        self.obstacles = set()
+        self._load_map(map_file)
 
-            # مرحله 3: پردازش و ساخت موانع
-            # self.obstacles مجموعه‌ای از تمام نقاط (x,y,z) است که توسط موانع اشغال شده‌اند.
-            self.obstacles = self._create_obstacles()
-            print(f"Obstacles created. Total obstacle points: {len(self.obstacles)}")
-
-        except (KeyError, IndexError) as e:
-            # اگر کلیدهای ضروری در دیکشنری نقشه وجود نداشته باشند
-            raise ValueError(f"Map data is missing required key or is malformed: {e}")
-        except Exception as e:
-            # برای سایر خطاهای غیرمنتظره
-            raise Exception(f"Failed to initialize environment: {e}")
-
-    def _create_obstacles(self) -> set:
+    # --- تغییر ۲: تغییر نام متد به _load_map ---
+    # این یک قرارداد خوب است که متدهای داخلی (که فقط توسط خود کلاس استفاده می‌شوند) با آندرلاین شروع شوند.
+    def _load_map(self, map_file):
         """
-        موانع را از داده‌های نقشه خوانده و آن‌ها را به مجموعه‌ای از نقاط اشغال‌شده تبدیل می‌کند.
-        در حال حاضر فقط از موانع مکعبی (cuboid) پشتیبانی می‌شود.
-        """
-        obstacle_points = set()
-        if 'obstacles' not in self.map_data:
-            return obstacle_points # اگر هیچ مانعی تعریف نشده باشد
-
-        for obs_data in self.map_data['obstacles']:
-            if obs_data['type'] == 'cuboid':
-                pos = np.array(obs_data['position'])
-                size = np.array(obs_data['size'])
-                
-                # گوشه شروع و پایان مکعب را مشخص کنید
-                start_corner = pos
-                end_corner = pos + size
-                
-                # تمام نقاط صحیح داخل این مکعب را به مجموعه موانع اضافه کنید
-                for x in range(start_corner[0], end_corner[0]):
-                    for y in range(start_corner[1], end_corner[1]):
-                        for z in range(start_corner[2], end_corner[2]):
-                            obstacle_points.add((x, y, z))
+        Loads the map dimensions and obstacles from a specified JSON file.
         
-        return obstacle_points
-
-    def is_valid_point(self, point: tuple) -> bool:
-        """
-        بررسی می‌کند که آیا یک نقطه در محدوده محیط قرار دارد و با هیچ مانعی برخورد نمی‌کند.
-
         Args:
-            point (tuple): مختصات (x, y, z) نقطه مورد نظر.
+            map_file (str): The path to the map file.
+        """
+        print(f"Loading map from: {map_file}")
+        try:
+            with open(map_file, 'r') as f:
+                map_data = json.load(f)
+            
+            # Load dimensions
+            dims = map_data.get("dimensions", {})
+            self.width = dims.get("width", 100)
+            self.depth = dims.get("depth", 100)
+            self.height = dims.get("height", 50)
+
+            # Load obstacles and add them to the set
+            # The obstacles are stored as tuples for efficient lookup in the set
+            obstacle_list = map_data.get("obstacles", [])
+            self.obstacles = {tuple(obs) for obs in obstacle_list}
+            
+            print("Map loaded successfully.")
+            
+        except FileNotFoundError:
+            print(f"Error: Map file not found at '{map_file}'. Using default empty environment.")
+            # Set default dimensions if file not found
+            self.width, self.depth, self.height = 100, 100, 50
+        except json.JSONDecodeError:
+            print(f"Error: Could not decode JSON from '{map_file}'. Using default empty environment.")
+            # Set default dimensions if JSON is invalid
+            self.width, self.depth, self.height = 100, 100, 50
+
+
+    def get_dimensions(self):
+        """Returns the dimensions of the environment as a tuple (width, depth, height)."""
+        return (self.width, self.depth, self.height)
+
+    def is_obstacle(self, x, y, z):
+        """
+        Checks if a given coordinate is an obstacle.
 
         Returns:
-            bool: True اگر نقطه معتبر باشد، در غیر این صورت False.
+            bool: True if the coordinate is an obstacle, False otherwise.
         """
-        x, y, z = point
-        width, depth, height = self.dimensions
-
-        # 1. بررسی مرزهای محیط
-        if not (0 <= x < width and 0 <= y < depth and 0 <= z < height):
-            return False
+        return (x, y, z) in self.obstacles
         
-        # 2. بررسی برخورد با موانع
-        if point in self.obstacles:
-            return False
-            
-        return True
+    def get_obstacles(self):
+        """
+        Returns the set of all obstacle coordinates.
+
+        Returns:
+            set: A set of tuples, where each tuple is an (x, y, z) obstacle coordinate.
+        """
+        return self.obstacles
