@@ -1,63 +1,103 @@
-import numpy as np
+# skymind_sim/main.py
+
+import json
+import os
+import traceback  # برای چاپ جزئیات خطا
+
+# ایمپورت ماژول‌های پروژه
 from skymind_sim.core.environment import Environment
 from skymind_sim.core.path_planner import PathPlanner
-# from skymind_sim.core.simulation import Simulation
+from skymind_sim.core.drone import Drone
+from skymind_sim.core.simulation import Simulation
 
 def main():
-    print("Starting SkyMind Simulation...")
-    map_path = 'data/maps/basic_map.json'
+    """
+    نقطه شروع اصلی برای اجرای شبیه‌ساز پهپاد SkyMind.
+    این تابع وظایف زیر را به ترتیب انجام می‌دهد:
+    1. بارگذاری نقشه و ایجاد محیط شبیه‌سازی.
+    2. استخراج نقاط شروع و پایان.
+    3. برنامه‌ریزی مسیر با استفاده از الگوریتم A*.
+    4. در صورت یافتن مسیر، راه‌اندازی و اجرای شبیه‌سازی حرکت پهپاد.
+    """
+    map_filename = 'simple_map.json'
+    map_filepath = os.path.join('data', 'maps', map_filename)
 
     try:
-        # 1. Initialize Environment
-        print(f"Loading map from '{map_path}'...")
-        env = Environment(map_path)
+        # -----------------------------------------------------------------
+        # STEP 1: Load Map and Create Environment
+        # -----------------------------------------------------------------
+        print(f"--- STEP 1: Loading map from '{map_filepath}' ---")
+        if not os.path.exists(map_filepath):
+            raise FileNotFoundError(f"Map file not found at the specified path: {map_filepath}")
 
-        # Get start and end points from the map data
-        # Assuming we use the first start/end point defined in the map
+        with open(map_filepath, 'r') as f:
+            map_data = json.load(f)
+        
+        env = Environment(map_data)
+        print("Environment created successfully.")
+        print(f"Map Dimensions: {env.dimensions}")
+        print(f"Number of Obstacles: {len(env.obstacles)}")
+
+        # -----------------------------------------------------------------
+        # STEP 2: Extract Start and End Points
+        # -----------------------------------------------------------------
+        print("\n--- STEP 2: Extracting Start and End Points ---")
+        # استخراج صحیح موقعیت‌ها از ساختار JSON نقشه
         start_position_list = env.map_data['start_points'][0]['position']
         start_point = tuple(start_position_list)
-
-        # Get the 'position' list from the first dictionary in 'end_points'
+        
         end_position_list = env.map_data['end_points'][0]['position']
         end_point = tuple(end_position_list)
+        
+        print(f"Start Point: {start_point}")
+        print(f"End Point: {end_point}")
 
-        # 2. Initialize Path Planner
+        # -----------------------------------------------------------------
+        # STEP 3: Plan Path using A*
+        # -----------------------------------------------------------------
+        print("\n--- STEP 3: Planning Path using A* Algorithm ---")
         planner = PathPlanner(env)
+        path = planner.plan_path(start_point, end_point)
 
-        # 3. Find Path
-        print("Starting path planning...")
-        # --- خط زیر را تغییر دهید ---
-        path = planner.find_path_a_star(start_point, end_point)
-
-        # 4. Run Simulation
+        # -----------------------------------------------------------------
+        # STEP 4: Initialize and Run Simulation (if path is found)
+        # -----------------------------------------------------------------
         if path:
-            print(f"Path found with {len(path)} points. Starting simulation...")
-            # sim = Simulation(env, path)
-            # sim.run()
-            print("--- Simulation run is commented out for now. ---")
-            print("Path starts at:", path[0])
-            print("Path ends at:", path[-1])
-            # Optional: print a few points from the path
-            if len(path) > 10:
-                print("Path sample:", path[:5], "...", path[-5:])
+            print(f"\nPath successfully found with {len(path)} waypoints.")
+            print(f"Start: {path[0]}, End: {path[-1]}")
+            
+            # نمایش نمونه‌ای از مسیر برای بررسی سریع
+            path_sample = path[:3] + ["..."] + path[-3:] if len(path) > 6 else path
+            print(f"Path sample: {path_sample}")
+
+            print("\n--- STEP 4: Initializing and Running Simulation ---")
+            
+            # ایجاد یک نمونه پهپاد در نقطه شروع
+            drone = Drone(start_point=start_point)
+
+            # ایجاد یک نمونه شبیه‌سازی با محیط و پهپاد
+            sim = Simulation(environment=env, drone=drone)
+
+            # اجرای شبیه‌سازی با مسیر یافت‌شده
+            # آرگومان دوم، سرعت شبیه‌سازی است (تاخیر بین هر گام به ثانیه)
+            # مقدار کمتر = شبیه‌سازی سریع‌تر
+            sim.run(path=path, simulation_speed=0.05)
 
         else:
-            print("Could not find a path. Simulation will not run.")
+            print("\nCould not find a path to the destination. The simulation will not run.")
+
+    except FileNotFoundError as e:
+        print(f"\n[ERROR] A critical file was not found: {e}")
+        print("Please ensure that the map file exists and the path is correct.")
+        
+    except (KeyError, IndexError) as e:
+        print(f"\n[ERROR] Map data is malformed or missing key information: {e}")
+        print("Please check the structure of your JSON map file for 'start_points', 'end_points', or 'obstacles'.")
 
     except Exception as e:
-        # A more specific error message based on the context
-        if 'Environment' in str(e.__class__):
-            print(f"An unexpected error occurred during environment setup: {e}")
-        elif 'PathPlanner' in str(e.__class__):
-             print(f"An unexpected error occurred during path planning: {e}")
-        else:
-            print(f"An unexpected error occurred: {e}")
-            # For debugging, you might want to see the full traceback
-            # import traceback
-            # traceback.print_exc()
-
-    finally:
-        print("Main execution finished.")
+        print(f"\n[ERROR] An unexpected error occurred: {e}")
+        print("--- Traceback ---")
+        traceback.print_exc() # چاپ جزئیات کامل خطا برای دیباگ
 
 if __name__ == "__main__":
     main()

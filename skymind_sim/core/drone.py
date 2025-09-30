@@ -1,94 +1,57 @@
 # skymind_sim/core/drone.py
 
-import numpy as np
-from enum import Enum, auto
-
-class DroneStatus(Enum):
-    """
-    وضعیت‌های مختلفی که یک پهپاد می‌تواند داشته باشد.
-    """
-    IDLE = auto()       # بیکار، در پایگاه
-    PLANNING = auto()   # در حال محاسبه مسیر
-    MOVING = auto()     # در حال حرکت در طول مسیر
-    HOVERING = auto()   # شناور در یک نقطه
-    LANDING = auto()    # در حال فرود
-    FINISHED = auto()   # ماموریت تمام شده
-
 class Drone:
     """
-    این کلاس نمایانگر یک پهپاد در شبیه‌سازی است.
+    کلاسی برای نمایش وضعیت و رفتار یک پهپاد در شبیه‌سازی.
     """
-    def __init__(self, drone_id, initial_position, speed=5.0):
+    def __init__(self, start_point: tuple, battery: float = 100.0, speed: float = 1.0):
         """
         سازنده کلاس Drone.
 
         Args:
-            drone_id (any): شناسه منحصر به فرد برای پهپاد.
-            initial_position (np.ndarray): موقعیت شروع پهپاد (x, y, z).
-            speed (float): سرعت حرکت پهپاد (متر بر ثانیه).
+            start_point (tuple): مختصات اولیه پهپاد به صورت (x, y, z).
+            battery (float, optional): میزان اولیه باتری. پیش‌فرض 100.0 است.
+            speed (float, optional): سرعت پهپاد. پیش‌فرض 1.0 (یک واحد در هر گام) است.
         """
-        self.id = drone_id
-        self.position = np.array(initial_position, dtype=float)
+        # موقعیت فعلی پهپاد
+        self.position = start_point
+        
+        # میزان باتری
+        self.battery = battery
+        
+        # سرعت پهپاد
         self.speed = speed
-        self.status = DroneStatus.IDLE
-        self.path = None
-        self._path_index = 0
+        
+        # وضعیت پهپاد (e.g., 'IDLE', 'FLYING', 'LANDED')
+        self.status = 'IDLE'
 
-    def assign_path(self, path):
+        print(f"Drone initialized at position {self.position} with {self.battery}% battery.")
+
+    def move_to(self, new_position: tuple):
         """
-        یک مسیر محاسبه شده را به پهپاد اختصاص می‌دهد.
+        پهپاد را به موقعیت جدید منتقل کرده و وضعیت آن را به‌روز می‌کند.
+        در آینده می‌توان منطق مصرف باتری را اینجا اضافه کرد.
 
         Args:
-            path (list): لیستی از نقاط (مختصات) که مسیر را تشکیل می‌دهند.
+            new_position (tuple): مختصات مقصد بعدی.
         """
-        if path and len(path) > 1:
-            self.path = path
-            self.status = DroneStatus.MOVING
-            self._path_index = 1 # شروع حرکت به سمت نقطه دوم در مسیر (نقطه اول موقعیت فعلی است)
-            print(f"Drone {self.id}: Path assigned. Ready to move.")
-        else:
-            print(f"Drone {self.id}: Invalid path assigned. Staying IDLE.")
-            self.status = DroneStatus.IDLE
+        # در یک پیاده‌سازی واقعی، مصرف باتری بر اساس مسافت طی شده محاسبه می‌شود.
+        # distance = ((new_position[0] - self.position[0])**2 + ...)**0.5
+        # self.battery -= distance * 0.1 # مثال: مصرف باتری
+        
+        self.position = new_position
+        self.status = 'FLYING'
+        # print(f"Drone moved to {self.position}") # این خط را کامنت می‌کنیم تا خروجی شلوغ نشود
 
-    def update(self, dt):
+    def get_status(self) -> dict:
         """
-        موقعیت پهپاد را بر اساس زمان سپری شده (dt) به‌روزرسانی می‌کند.
+        وضعیت فعلی پهپاد را به صورت یک دیکشنری برمی‌گرداند.
 
-        Args:
-            dt (float): گام زمانی شبیه‌سازی (دلتا تایم).
+        Returns:
+            dict: دیکشنری شامل موقعیت، باتری و وضعیت پهپاد.
         """
-        if self.status != DroneStatus.MOVING or not self.path:
-            return # اگر در حال حرکت نیست، کاری انجام نده
-
-        # اگر به انتهای مسیر رسیده‌ایم
-        if self._path_index >= len(self.path):
-            self.status = DroneStatus.FINISHED
-            print(f"Drone {self.id}: Reached destination at {self.position.round(2)}. Mission finished.")
-            return
-
-        # استخراج نقطه هدف بعدی
-        target_point = np.array(self.path[self._path_index])
-        
-        # محاسبه بردار جهت و فاصله تا هدف
-        direction_vector = target_point - self.position
-        distance_to_target = np.linalg.norm(direction_vector)
-        
-        # محاسبه مسافتی که در این گام زمانی می‌توان طی کرد
-        travel_distance = self.speed * dt
-        
-        # اگر فاصله قابل طی کردن بیشتر از فاصله تا هدف بعدی است
-        if travel_distance >= distance_to_target:
-            # مستقیماً به نقطه هدف برو
-            self.position = target_point
-            # و هدف بعدی را انتخاب کن
-            self._path_index += 1
-            print(f"Drone {self.id}: Reached path point {self._path_index - 1} at {self.position.round(2)}")
-        else:
-            # در غیر این صورت، در جهت هدف حرکت کن
-            normalized_direction = direction_vector / distance_to_target
-            self.position += normalized_direction * travel_distance
-
-    def __str__(self):
-        """نمایش متنی وضعیت پهپاد."""
-        pos_str = f"[{self.position[0]:.2f}, {self.position[1]:.2f}, {self.position[2]:.2f}]"
-        return f"Drone {self.id} | Status: {self.status.name} | Position: {pos_str}"
+        return {
+            'position': self.position,
+            'battery': self.battery,
+            'status': self.status
+        }

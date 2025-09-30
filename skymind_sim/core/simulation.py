@@ -1,63 +1,124 @@
 # skymind_sim/core/simulation.py
 
 import time
+from .drone import Drone
+from .environment import Environment
 
 class Simulation:
     """
-    موتور اصلی شبیه‌سازی که حلقه زمان را مدیریت می‌کند و وضعیت اشیاء را به‌روزرسانی می‌کند.
+    کلاس اصلی برای مدیریت و اجرای شبیه‌سازی.
     """
-    def __init__(self, environment):
+    def __init__(self, environment: Environment, drone: Drone):
         """
         سازنده کلاس Simulation.
 
         Args:
             environment (Environment): شیء محیط شبیه‌سازی.
+            drone (Drone): شیء پهپادی که در شبیه‌سازی شرکت می‌کند.
         """
-        self.env = environment
-        self.drones = []
+        self.environment = environment
+        self.drone = drone
         self.is_running = False
+        print("Simulation initialized.")
+
+    def _display_state(self, path: list):
+        """
+        یک نمایش ساده متنی از وضعیت شبیه‌سازی را در ترمینال چاپ می‌کند.
+        """
+        # پاک کردن صفحه ترمینال برای ایجاد انیمیشن ساده
+        print("\033c", end="") # این کد برای پاک کردن ترمینال در سیستم‌های سازگار با ANSI است
+
+        drone_pos = self.drone.position
+        start_pos = path[0]
+        end_pos = path[-1]
+
+        print("--- SkyMind Simulation ---")
+        print(f"Time: {time.strftime('%H:%M:%S')}")
+        print("-" * 26)
+        print(f"Drone Status: {self.drone.status}")
+        print(f"Drone Position: ({drone_pos[0]:.0f}, {drone_pos[1]:.0f}, {drone_pos[2]:.0f})")
+        print(f"Drone Battery: {self.drone.battery:.1f}%")
+        print("-" * 26)
+        print(f"Path Start: {start_pos}")
+        print(f"Path End:   {end_pos}")
+        print(f"Path Waypoints: {len(path)}")
+        print("\nVisual Representation (Top-Down View):")
+
+        # ایجاد یک نمایش ساده 2D از نقشه
+        width = 40  # عرض نمایش
+        height = 20 # ارتفاع نمایش
         
-        # dt: گام زمانی برای هر فریم شبیه‌سازی (مثلاً 0.1 ثانیه)
-        # time_factor: ضریب سرعت شبیه‌سازی (1.0 = زمان واقعی، 10.0 = ده برابر سریعتر)
-        self.dt = 0.1
-        self.time_factor = 5.0 
+        # تبدیل مختصات جهان واقعی به مختصات نمایشگر کوچک
+        map_width, map_height, _ = self.environment.dimensions
+        
+        def to_grid(pos):
+            gx = int(pos[0] * width / map_width)
+            gy = int(pos[1] * height / map_height)
+            return gx, gy
 
-    def add_drone(self, drone):
-        """یک پهپاد به شبیه‌سازی اضافه می‌کند."""
-        self.drones.append(drone)
-        print(f"Drone {drone.id} added to the simulation.")
+        grid = [['.' for _ in range(width)] for _ in range(height)]
 
-    def run(self):
-        """حلقه اصلی شبیه‌سازی را اجرا می‌کند."""
-        if not self.drones:
-            print("Simulation Error: No drones to simulate.")
+        # نمایش موانع
+        for obs_point in self.environment.obstacles:
+            ox, oy = to_grid(obs_point)
+            if 0 <= oy < height and 0 <= ox < width:
+                grid[oy][ox] = '#'
+        
+        # نمایش مسیر
+        for point in path:
+            px, py = to_grid(point)
+            if 0 <= py < height and 0 <= px < width and grid[py][px] == '.':
+                 grid[py][px] = '*'
+        
+        # نمایش پهپاد
+        dx, dy = to_grid(drone_pos)
+        if 0 <= dy < height and 0 <= dx < width:
+            grid[dy][dx] = 'D'
+
+        # چاپ گرید
+        for row in grid:
+            print(" ".join(row))
+
+    def run(self, path: list, simulation_speed: float = 0.1):
+        """
+        حلقه اصلی شبیه‌سازی را اجرا می‌کند.
+
+        Args:
+            path (list): لیستی از نقاط (waypoints) که پهپاد باید طی کند.
+            simulation_speed (float): تأخیر بین هر گام شبیه‌سازی (به ثانیه).
+        """
+        if not path:
+            print("Simulation cannot run: No path provided.")
             return
 
-        print("\n--- Starting Simulation ---")
-        print(f"Time Step (dt): {self.dt}s | Simulation Speed: {self.time_factor}x")
-        
+        print("\n--- Starting Simulation Run ---")
         self.is_running = True
-        sim_time = 0.0
-
-        try:
-            while self.is_running:
-                # به‌روزرسانی وضعیت تمام پهپادها
-                for drone in self.drones:
-                    drone.update(self.dt)
-                    print(drone) # چاپ وضعیت فعلی پهپاد
-
-                # بررسی شرط پایان شبیه‌سازی
-                # اگر تمام پهپادها به وضعیت FINISHED رسیده‌اند، حلقه را متوقف کن
-                if all(drone.status == drone.status.FINISHED for drone in self.drones):
-                    self.is_running = False
+        
+        # حلقه روی تمام نقاط مسیر (به جز نقطه شروع که پهپاد از قبل آنجاست)
+        for i, waypoint in enumerate(path[1:]):
+            if not self.is_running:
+                print("Simulation stopped.")
+                break
                 
-                # مدیریت زمان
-                sim_time += self.dt
-                # مکث برای ایجاد حس زمان واقعی (تقسیم بر ضریب سرعت)
-                time.sleep(self.dt / self.time_factor)
+            # پهپاد را به نقطه بعدی در مسیر منتقل کن
+            self.drone.move_to(waypoint)
+            
+            # نمایش وضعیت فعلی در ترمینال
+            self._display_state(path)
+            
+            print(f"\nStep {i+1}/{len(path)-1}: Moving to {waypoint}")
 
-        except KeyboardInterrupt:
-            print("\nSimulation stopped by user.")
-        finally:
-            print(f"\n--- Simulation Finished ---")
-            print(f"Total simulated time: {sim_time:.2f} seconds.")
+            # تأخیر برای قابل مشاهده کردن شبیه‌سازی
+            time.sleep(simulation_speed)
+        
+        self.is_running = False
+        self.drone.status = 'LANDED'
+        self._display_state(path) # نمایش وضعیت نهایی
+        print("\n--- Simulation Finished ---")
+        print(f"Drone reached destination: {self.drone.position}")
+
+    def stop(self):
+        """
+        شبیه‌سازی را متوقف می‌کند.
+        """
+        self.is_running = False

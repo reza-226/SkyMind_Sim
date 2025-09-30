@@ -1,136 +1,117 @@
-import numpy as np
-import heapq  # Import the heapq module for the priority queue
+# skymind_sim/core/path_planner.py
+
+import heapq
+from .environment import Environment
 
 class PathPlanner:
     """
-    Handles pathfinding for the drone using the A* algorithm on a 3D grid.
+    کلاسی برای برنامه‌ریزی مسیر با استفاده از الگوریتم A*.
+    این کلاس یک شیء Environment دریافت می‌کند و از آن برای مسیریابی استفاده می‌کند.
     """
-    def __init__(self, environment):
+    def __init__(self, environment: Environment):
         """
-        Initializes the PathPlanner with the simulation environment.
+        سازنده کلاس PathPlanner.
 
         Args:
-            environment (Environment): The environment object containing the grid and obstacles.
+            environment (Environment): شیء محیط که شامل موانع و ابعاد است.
         """
         self.env = environment
-        self.grid = self.env.grid
         print("PathPlanner initialized.")
 
-    def _heuristic(self, a, b):
+    def _heuristic(self, a: tuple, b: tuple) -> float:
         """
-        Calculate the Euclidean distance heuristic between two points.
+        محاسبه فاصله اقلیدسی (Heuristic) بین دو نقطه در فضای سه‌بعدی.
+        این تابع هزینه تخمینی رسیدن از نقطه a به نقطه b را محاسبه می‌کند.
+        """
+        return ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2) ** 0.5
 
-        Args:
-            a (tuple): The (x, y, z) coordinates of the first point.
-            b (tuple): The (x, y, z) coordinates of the second point.
-
-        Returns:
-            float: The straight-line distance between the two points.
+    def _get_neighbors(self, point: tuple) -> list:
         """
-        return np.linalg.norm(np.array(a) - np.array(b))
-
-    def _get_neighbors(self, node):
+        همسایه‌های معتبر یک نقطه را پیدا می‌کند.
+        همسایه‌ها شامل 26 جهت ممکن در یک شبکه سه‌بعدی هستند (حرکت مستقیم و قطری).
         """
-        Get the valid neighbors of a node on the grid.
-        A neighbor is valid if it's within the grid bounds and not an obstacle.
-        """
+        x, y, z = point
         neighbors = []
-        # Define 26 possible directions in 3D space (including diagonals)
+        # بررسی تمام 26 جهت ممکن در اطراف نقطه فعلی
         for dx in [-1, 0, 1]:
             for dy in [-1, 0, 1]:
                 for dz in [-1, 0, 1]:
                     if dx == 0 and dy == 0 and dz == 0:
-                        continue  # Skip the node itself
-
-                    nx, ny, nz = node[0] + dx, node[1] + dy, node[2] + dz
-
-                    # Check if the neighbor is within bounds
-                    if (0 <= nx < self.grid.shape[0] and
-                        0 <= ny < self.grid.shape[1] and
-                        0 <= nz < self.grid.shape[2]):
-                        
-                        # Check if the neighbor is not an obstacle
-                        if self.grid[nx, ny, nz] == 0:
-                            # Calculate the cost to move to this neighbor
-                            # 1 for cardinal, sqrt(2) for 2D diagonal, sqrt(3) for 3D diagonal
-                            cost = np.sqrt(dx**2 + dy**2 + dz**2)
-                            neighbors.append(((nx, ny, nz), cost))
+                        continue  # خود نقطه را به عنوان همسایه در نظر نگیر
+                    
+                    neighbor = (x + dx, y + dy, z + dz)
+                    
+                    # فقط همسایه‌هایی که در محدوده نقشه هستند و مانع نیستند را اضافه کن
+                    if self.env.is_valid_point(neighbor):
+                        neighbors.append(neighbor)
         return neighbors
 
-    def find_path_a_star(self, start_pos, goal_pos):
+    def _reconstruct_path(self, came_from: dict, current: tuple) -> list:
         """
-        Finds a path from a start to a goal position using the A* algorithm.
-
-        Args:
-            start_pos (tuple): The (x, y, z) starting coordinates.
-            goal_pos (tuple): The (x, y, z) goal coordinates.
-
-        Returns:
-            list: A list of (x, y, z) tuples representing the path, or None if no path is found.
+        مسیر را از نقطه پایان به نقطه شروع بازسازی می‌کند.
         """
-        print(f"Starting A* search from grid {start_pos} to {goal_pos}...")
-
-        start_node = tuple(np.floor(start_pos).astype(int))
-        goal_node = tuple(np.floor(goal_pos).astype(int))
-
-        # Check if start or goal are in an obstacle
-        if self.grid[start_node]:
-            print(f"A* search failed: Start node {start_node} is inside an obstacle.")
-            return None
-        if self.grid[goal_node]:
-            print(f"A* search failed: Goal node {goal_node} is inside an obstacle.")
-            return None
-
-        # The set of nodes to be evaluated, implemented as a priority queue (min-heap)
-        # Items are (f_score, node)
-        open_set = [(0, start_node)]
-        heapq.heapify(open_set)
-
-        # Dictionary to reconstruct the path
-        came_from = {}
-
-        # g_score: Cost from start to the current node
-        g_score = {start_node: 0}
-
-        # f_score: Total estimated cost from start to goal through this node (g_score + heuristic)
-        # We can calculate f_score on the fly, as the heap is sorted by it.
-
-        iteration_count = 0
-        
-        while open_set:
-            iteration_count += 1
-            if iteration_count % 5000 == 0:
-                print(f"A* iterations: {iteration_count} | Open set size: {len(open_set)}")
-
-            # Get the node with the lowest f_score from the priority queue
-            current_f_score, current_node = heapq.heappop(open_set)
-
-            if current_node == goal_node:
-                print(f"Path found! Reconstructing path from {len(came_from)} nodes...")
-                return self._reconstruct_path(came_from, current_node)
-
-            for neighbor, move_cost in self._get_neighbors(current_node):
-                # tentative_g_score is the distance from start to the neighbor through current
-                tentative_g_score = g_score[current_node] + move_cost
-
-                # If this path to neighbor is better than any previous one, record it
-                if neighbor not in g_score or tentative_g_score < g_score.get(neighbor, float('inf')):
-                    came_from[neighbor] = current_node
-                    g_score[neighbor] = tentative_g_score
-                    f_score = tentative_g_score + self._heuristic(neighbor, goal_node)
-                    
-                    # Add the neighbor to the open set for evaluation
-                    heapq.heappush(open_set, (f_score, neighbor))
-        
-        print(f"A* search failed after {iteration_count} iterations: No path found from start to goal.")
-        return None
-
-    def _reconstruct_path(self, came_from, current):
-        """Reconstructs the path from the goal back to the start."""
         total_path = [current]
         while current in came_from:
             current = came_from[current]
             total_path.append(current)
-        path = total_path[::-1]  # Reverse the path to get start -> goal
-        print(f"Path reconstructed with {len(path)} steps.")
-        return path
+        return total_path[::-1]  # مسیر را برعکس کن تا از شروع به پایان باشد
+
+    def plan_path(self, start: tuple, end: tuple) -> list | None:
+        """
+        الگوریتم A* را برای یافتن کوتاه‌ترین مسیر از نقطه شروع به پایان اجرا می‌کند.
+
+        Args:
+            start (tuple): مختصات نقطه شروع (x, y, z).
+            end (tuple): مختصات نقطه هدف (x, y, z).
+
+        Returns:
+            list | None: لیستی از تاپل‌ها که مسیر را نشان می‌دهند، یا None اگر مسیری یافت نشود.
+        """
+        if not self.env.is_valid_point(start) or not self.env.is_valid_point(end):
+            print(f"Error: Start point {start} or end point {end} is invalid (outside bounds or inside an obstacle).")
+            return None
+
+        open_set = [(0, start)]  # (f_score, point)
+        heapq.heapify(open_set)
+        
+        came_from = {}
+        
+        g_score = {start: 0} # هزینه واقعی از شروع تا هر نقطه
+        f_score = {start: self._heuristic(start, end)} # هزینه تخمینی کل (g_score + heuristic)
+
+        open_set_hash = {start} # برای جستجوی سریع در open_set
+        
+        nodes_explored = 0
+
+        print(f"Starting A* from {start} to {end}...")
+
+        while open_set:
+            nodes_explored += 1
+            # نمایش پیشرفت برای جلوگیری از حس توقف برنامه
+            if nodes_explored % 5000 == 0:
+                print(f"  ... explored {nodes_explored} nodes.")
+
+            current = heapq.heappop(open_set)[1]
+            open_set_hash.remove(current)
+
+            if current == end:
+                print(f"Path found! Total nodes explored: {nodes_explored}")
+                return self._reconstruct_path(came_from, current)
+
+            for neighbor in self._get_neighbors(current):
+                # هزینه حرکت از current به neighbor همیشه 1 است (یا جذر 2 و 3 برای حرکات قطری)
+                # برای سادگی، هزینه حرکت به هر همسایه را برابر فاصله اقلیدسی در نظر می‌گیریم
+                tentative_g_score = g_score[current] + self._heuristic(current, neighbor)
+                
+                # اگر مسیر جدید به همسایه بهتر است یا هنوز مسیری برای آن پیدا نشده
+                if tentative_g_score < g_score.get(neighbor, float('inf')):
+                    came_from[neighbor] = current
+                    g_score[neighbor] = tentative_g_score
+                    f_score[neighbor] = tentative_g_score + self._heuristic(neighbor, end)
+                    
+                    if neighbor not in open_set_hash:
+                        heapq.heappush(open_set, (f_score[neighbor], neighbor))
+                        open_set_hash.add(neighbor)
+        
+        print(f"No path could be found after exploring {nodes_explored} nodes.")
+        return None

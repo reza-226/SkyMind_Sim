@@ -1,0 +1,36 @@
+{
+  "map_name": "Simple Test Map",
+  "dimensions": [100, 100, 50],
+  "start_points": [
+    {
+      "id": "start_A",
+      "position": [5, 5, 5]
+    }
+  ],
+  "end_points": [
+    {
+      "id": "end_B",
+      "position": [95, 95, 45]
+    }
+  ],
+  "obstacles": [
+    {
+      "id": "obstacle_1",
+      "type": "cuboid",
+      "position": [20, 20, 0],
+      "size": [10, 10, 30]
+    },
+    {
+      "id": "obstacle_2",
+      "type": "cuboid",
+      "position": [50, 50, 10],
+      "size": [15, 15, 40]
+    },
+    {
+      "id": "obstacle_3",
+      "type": "cuboid",
+      "position": [80, 30, 0],
+      "size": [5, 40, 25]
+    }
+  ]
+}
