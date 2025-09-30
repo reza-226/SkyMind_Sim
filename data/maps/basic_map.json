@@ -1,17 +1,24 @@
 {
-  "dimensions": [100, 100, 50],
+  "name": "Basic Test Map",
+  "version": "1.0",
+  "environment": {
+    "dimensions": [100.0, 100.0, 50.0],
+    "grid_resolution": 1.0
+  },
   "obstacles": [
     {
       "type": "box",
-      "min_corner": [40, 40, 0],
-      "max_corner": [60, 60, 25]
+      "position": [20.0, 25.0, 10.0],
+      "size": [10.0, 10.0, 20.0],
+      "rotation": 0
+    },
+    {
+      "type": "box",
+      "position": [60.0, 70.0, 25.0],
+      "size": [15.0, 20.0, 50.0],
+      "rotation": 0
     }
   ],
-  "drones": [
-    {
-      "id": "drone_1",
-      "start": [5, 5, 5],
-      "goal": [95, 95, 45]
-    }
-  ]
+  "start_point": [5.0, 5.0, 5.0],
+  "end_point": [95.0, 95.0, 45.0]
 }

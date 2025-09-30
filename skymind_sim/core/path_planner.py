@@ -1,72 +1,62 @@
 # skymind_sim/core/path_planner.py
 
 import numpy as np
-from .environment import Environment
 
 class PathPlanner:
     """
-    مسئولیت پیدا کردن مسیر برای پهپادها در محیط را بر عهده دارد.
-    در این نسخه اولیه، فقط محیط را به یک گرید (شبکه) از موانع تبدیل می‌کند.
+    این کلاس مسئول پیدا کردن مسیر از نقطه شروع به نقطه پایان در محیط است.
+    در حال حاضر از یک الگوریتم ساده استفاده می‌کند، اما می‌تواند برای الگوریتم‌های
+    پیچیده‌تر مانند A*، RRT* و غیره گسترش یابد.
     """
-    def __init__(self, environment: Environment, grid_resolution=1.0):
+
+    def __init__(self, environment):
         """
+        سازنده کلاس PathPlanner.
+
         Args:
-            environment (Environment): آبجکت محیط شبیه‌سازی.
-            grid_resolution (float): اندازه هر سلول در گرید (بر حسب متر).
+            environment (Environment): شیء محیط که شامل گرید موانع، نقطه شروع و پایان است.
         """
-        if environment is None:
-            raise ValueError("Environment object cannot be None.")
-            
         self.env = environment
-        self.resolution = grid_resolution
+        self.start_node = self.env.world_to_grid(self.env.start_point)
+        self.goal_node = self.env.world_to_grid(self.env.end_point)
         
-        # لاگ‌های جدید برای نمایش اطلاعات
-        print(f"Environment dimensions: {self.env.dimensions}")
-        
-        # محاسبه ابعاد گرید
-        self.grid_dims = np.ceil(self.env.dimensions / self.resolution).astype(int)
-        
-        print(f"Grid resolution: {self.resolution}m")
-        print(f"Calculated grid dimensions: {self.grid_dims}")
-        total_cells = np.prod(self.grid_dims)
-        print(f"Total grid cells to process: {total_cells:,}")
+        print("PathPlanner initialized.")
+        print(f"Start node (grid coords): {self.start_node}")
+        print(f"Goal node (grid coords): {self.goal_node}")
 
-        # ایجاد گرید سه بعدی موانع
-        self.obstacle_grid = np.zeros(self.grid_dims, dtype=np.uint8)
+
+    def find_path(self):
+        """
+        الگوریتم مسیریابی را برای پیدا کردن مسیر اجرا می‌کند.
         
-        # ساخت گرید موانع
-        self._build_obstacle_grid()
-
-    def _build_obstacle_grid(self):
-        """
-        گرید موانع را با بررسی مرکز هر سلول گرید پر می‌کند.
-        """
-        print("Building obstacle grid...")
-        if not self.env.obstacles:
-            print("No obstacles in the environment. Grid is empty.")
-            return
-
-        for i in range(self.grid_dims[0]):
-            for j in range(self.grid_dims[1]):
-                for k in range(self.grid_dims[2]):
-                    # محاسبه مختصات مرکز سلول گرید
-                    grid_cell_center = np.array([
-                        (i + 0.5) * self.resolution,
-                        (j + 0.5) * self.resolution,
-                        (k + 0.5) * self.resolution
-                    ])
-                    
-                    # بررسی برخورد با هر مانع
-                    for obstacle in self.env.obstacles:
-                        if obstacle.is_colliding(grid_cell_center):
-                            self.obstacle_grid[i, j, k] = 1
-                            break 
+        TODO: الگوریتم واقعی (مانند A*) در اینجا پیاده‌سازی شود.
         
-        print("Obstacle grid built successfully.")
+        Returns:
+            list: لیستی از نقاط (به صورت مختصات دنیای واقعی) که مسیر را تشکیل می‌دهند،
+                  یا None اگر مسیری پیدا نشود.
+        """
+        print("Searching for a path...")
 
-    def find_path(self, start_pos, goal_pos):
-        """
-        الگوریتم مسیریابی (در آینده پیاده‌سازی می‌شود).
-        """
-        print(f"Pathfinding from {start_pos} to {goal_pos} is not implemented yet.")
-        return None
+        # بررسی اولیه: آیا نقطه شروع یا پایان داخل مانع است؟
+        if self.env.is_obstacle(self.start_node):
+            print("Error: Start node is inside an obstacle.")
+            return None
+        if self.env.is_obstacle(self.goal_node):
+            print("Error: Goal node is inside an obstacle.")
+            return None
+
+        # --- منطق مسیریابی موقت ---
+        # در این مرحله، فقط یک مسیر مستقیم فرضی برمی‌گردانیم تا جریان برنامه تست شود.
+        # این مسیر شامل نقطه شروع و پایان است.
+        # در آینده این بخش با الگوریتم A* جایگزین خواهد شد.
+        
+        print("Temporary path generation: Creating a direct line for testing purposes.")
+        
+        # تبدیل گره‌های شروع و پایان به مختصات دنیای واقعی
+        start_world = self.env.grid_to_world(self.start_node)
+        goal_world = self.env.grid_to_world(self.goal_node)
+        
+        # ایجاد یک مسیر ساده شامل دو نقطه
+        path_in_world_coords = [start_world.tolist(), goal_world.tolist()]
+
+        return path_in_world_coords
