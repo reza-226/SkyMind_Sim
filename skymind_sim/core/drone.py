@@ -1,75 +1,65 @@
 # FILE: skymind_sim/core/drone.py
 
 import numpy as np
-from enum import Enum
-
-class DroneStatus(Enum):
-    IDLE = "Idle"
-    MOVING = "Moving"
-    CHARGING = "Charging"
-    RETURNING = "Returning"
+import random
 
 class Drone:
     """
     Represents a single drone in the simulation.
+    It manages its own state, including position, velocity, and battery.
     """
-    def __init__(self, drone_id, position, battery=100, speed=1):
+    def __init__(self, drone_id, name="DefaultDrone", position=None, mass=1.0):
         """
         Initializes a Drone object.
 
         Args:
-            drone_id (str): The unique identifier for the drone.
-            position (np.ndarray): The initial (x, y) coordinates of the drone.
-            battery (int): The initial battery level (0-100).
-            speed (float): The speed of the drone in units per simulation step.
+            drone_id (int): The unique identifier for the drone.
+            name (str): The name of the drone.
+            position (list, optional): Initial [x, y] position. Defaults to a random position.
+            mass (float, optional): Mass of the drone in kg. Defaults to 1.0.
         """
-        self.drone_id = drone_id
-        self.position = np.array(position, dtype=float)
-        self.battery = battery
-        self.speed = speed
-        self.status = DroneStatus.IDLE
-        self.mission_path = []
-
-    def set_mission(self, waypoints):
-        """
-        Sets a mission for the drone, defined by a list of waypoints.
-
-        Args:
-            waypoints (list of tuples/np.ndarray): A list of (x, y) coordinates.
-        """
-        self.mission_path = [np.array(wp, dtype=float) for wp in waypoints]
-        if self.mission_path:
-            self.status = DroneStatus.MOVING
-            print(f"Drone {self.drone_id}: Mission set. Path: {self.mission_path}")
-
-    def update(self, delta_time):
-        """
-        Updates the drone's state for a single time step.
-        This includes moving towards a waypoint and consuming battery.
-        """
-        if self.status == DroneStatus.MOVING and self.mission_path:
-            target = self.mission_path[0]
-            direction = target - self.position
-            distance = np.linalg.norm(direction)
+        self.id = drone_id  # Use the provided drone_id as the main identifier
+        self.name = name
+        
+        # If no position is provided, set a default.
+        # Note: It's better to provide a position from the Environment class.
+        if position is None:
+            self.position = np.array([0.0, 0.0])
+        else:
+            self.position = np.array(position, dtype=float)
             
-            travel_distance = self.speed * delta_time
+        self.velocity = np.array([random.uniform(-1, 1), random.uniform(-1, 1)], dtype=float)
+        self.mass = mass
+        self.max_speed = 5.0  # Maximum speed in units per second
+
+    def update_state(self, world_width, world_height):
+        """
+        Updates the drone's position based on its velocity and handles boundary collision.
+        """
+        self.position += self.velocity
+
+        # Simple wall bouncing logic
+        if self.position[0] <= 0 or self.position[0] >= world_width:
+            self.velocity[0] *= -1
+        if self.position[1] <= 0 or self.position[1] >= world_height:
+            self.velocity[1] *= -1
             
-            if distance <= travel_distance:
-                # Reached the waypoint
-                self.position = target
-                self.mission_path.pop(0)
-                if not self.mission_path:
-                    self.status = DroneStatus.IDLE
-                    print(f"Drone {self.drone_id} completed its mission.")
-            else:
-                # Move towards the waypoint
-                self.position += (direction / distance) * travel_distance
-            
-            # Consume battery (simple model)
-            self.battery -= 0.1 * delta_time 
-            if self.battery < 0:
-                self.battery = 0
+        # Clamp position to be within bounds to prevent getting stuck
+        self.position[0] = np.clip(self.position[0], 0, world_width)
+        self.position[1] = np.clip(self.position[1], 0, world_height)
+
+
+    def get_bearing_degrees(self):
+        """
+        Calculates the drone's direction of travel (bearing) in degrees.
+        0 degrees is East (right), 90 is North (up), 180 is West (left), 270 is South (down).
+        """
+        if np.linalg.norm(self.velocity) < 1e-6:
+            return 0.0  # If not moving, default to 0 degrees
+        angle_rad = np.arctan2(-self.velocity[1], self.velocity[0])
+        angle_deg = np.degrees(angle_rad)
+        return angle_deg
 
     def __str__(self):
-        return (f"Drone(ID={self.drone_id}, Pos={self.position}, "
-                f"Battery={self.battery:.1f}%, Status={self.status.value})")
+        return (f"Drone(ID={self.id}, Name={self.name}, "
+                f"Position=[{self.position[0]:.2f}, {self.position[1]:.2f}])")

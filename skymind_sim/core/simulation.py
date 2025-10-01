@@ -1,48 +1,61 @@
 # FILE: skymind_sim/core/simulation.py
 
 import pygame
-from .visualizer import Visualizer
+# وارد کردن مستقیم از فایل
+from skymind_sim.utils.asset_loader import get_asset_loader
 
 class Simulation:
-    """
-    The main simulation class that orchestrates the entire process.
-    """
-    def __init__(self, environment, screen, width, height):
-        """
-        Initializes the simulation.
-
-        Args:
-            environment (Environment): The simulation environment containing drones.
-            screen (pygame.Surface): The Pygame screen surface for drawing.
-            width (int): The width of the screen.
-            height (int): The height of the screen.
-        """
+    def __init__(self, environment, screen, width, height, fps=60):
         self.environment = environment
-        self.visualizer = Visualizer(screen, width, height)
-        self.running = False
+        self.screen = screen
+        self.width = width
+        self.height = height
+        self.fps = fps
+        self.running = True
         self.clock = pygame.time.Clock()
-        self.fps = 60
+        
+        self.asset_loader = get_asset_loader()
+        
+        # دسترسی مستقیم به منابع بارگذاری شده
+        self.drone_icon = self.asset_loader.images.get('drone_default')
+        self.font = self.asset_loader.fonts.get('technical_small')
+
+        if not self.font or not self.drone_icon:
+            raise RuntimeError("CRITICAL: Font or Drone Icon not loaded properly. Check AssetLoader logs.")
 
     def run(self):
-        """
-        Starts and runs the main simulation loop.
-        """
-        self.running = True
+        """حلقه اصلی شبیه‌سازی."""
         while self.running:
-            # --- Event Handling ---
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.running = False
-                # Add other event handlers here (e.g., keyboard input)
+            self.handle_events()
+            self.update()
+            self.render()
+            self.clock.tick(self.fps)
 
-            # --- Time Management ---
-            # Get the time elapsed since the last frame in seconds
-            delta_time = self.clock.tick(self.fps) / 1000.0
+    def handle_events(self):
+        """پردازش ورودی کاربر."""
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
 
-            # --- Simulation Logic Update ---
-            self.environment.update_state(delta_time)
+    def update(self):
+        """به‌روزرسانی وضعیت شبیه‌سازی."""
+        self.environment.update_all()
 
-            # --- Rendering ---
-            self.visualizer.draw(self.environment)
+    def render(self):
+        """رسم همه چیز روی صفحه."""
+        self.screen.fill((50, 50, 50))
+        self._draw_drones()
+        pygame.display.flip()
 
-        print("Simulation finished.")
+    def _draw_drones(self):
+        """رسم تمام پهپادها."""
+        for drone in self.environment.get_all_drones():
+            angle = drone.get_bearing_degrees()
+            rotated_icon = pygame.transform.rotate(self.drone_icon, angle)
+            new_rect = rotated_icon.get_rect(center=drone.position)
+            self.screen.blit(rotated_icon, new_rect.topleft)
+            
+            text_surface = self.font.render(drone.name, True, (255, 255, 255))
+            text_y_offset = self.drone_icon.get_height() / 2 + 5
+            text_rect = text_surface.get_rect(center=(drone.position[0], drone.position[1] + text_y_offset))
+            self.screen.blit(text_surface, text_rect)
