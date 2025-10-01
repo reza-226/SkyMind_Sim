@@ -1,61 +1,58 @@
-# FILE: skymind_sim/core/simulation.py
-
+# skymind_sim/core/simulation.py
 import pygame
-# وارد کردن مستقیم از فایل
-from skymind_sim.utils.asset_loader import get_asset_loader
+import sys
+
+from .drone import Drone
 
 class Simulation:
-    def __init__(self, environment, screen, width, height, fps=60):
-        self.environment = environment
-        self.screen = screen
-        self.width = width
-        self.height = height
-        self.fps = fps
-        self.running = True
-        self.clock = pygame.time.Clock()
+    def __init__(self, config, environment):
+        """
+        Initializes the main simulation logic.
         
-        self.asset_loader = get_asset_loader()
-        
-        # دسترسی مستقیم به منابع بارگذاری شده
-        self.drone_icon = self.asset_loader.images.get('drone_default')
-        self.font = self.asset_loader.fonts.get('technical_small')
+        :param config: The simulation configuration dictionary.
+        :param environment: The initialized Environment object.
+        """
+        print("INFO: Initializing Simulation...")
+        self.config = config
+        self.environment = environment # The environment now handles the window and clock
 
-        if not self.font or not self.drone_icon:
-            raise RuntimeError("CRITICAL: Font or Drone Icon not loaded properly. Check AssetLoader logs.")
+        # --- Create Game Objects ---
+        # Create a sprite group to hold all sprites for easy updating and drawing
+        self.all_sprites = pygame.sprite.Group()
+
+        # Create the drone and add it to the sprite group
+        start_x = self.config.get('SCREEN_WIDTH', 1280) / 2
+        start_y = self.config.get('SCREEN_HEIGHT', 720) / 2
+        self.drone = Drone(start_pos=(start_x, start_y))
+        self.all_sprites.add(self.drone)
+
+        print("INFO: Simulation created.")
 
     def run(self):
-        """حلقه اصلی شبیه‌سازی."""
-        while self.running:
-            self.handle_events()
-            self.update()
-            self.render()
-            self.clock.tick(self.fps)
+        """
+        The main loop of the simulation.
+        """
+        print("INFO: Simulation is running...")
+        while self.environment.running:
+            # --- Event Handling ---
+            # Get all events from the queue
+            events = pygame.event.get()
+            self.environment.handle_events(events)
 
-    def handle_events(self):
-        """پردازش ورودی کاربر."""
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.running = False
+            # --- Update Phase ---
+            # Update all sprites in the group
+            self.all_sprites.update()
+            self.environment.update()
 
-    def update(self):
-        """به‌روزرسانی وضعیت شبیه‌سازی."""
-        self.environment.update_all()
+            # --- Render Phase ---
+            # The environment handles drawing the background and sprites
+            self.environment.render(self.all_sprites)
 
-    def render(self):
-        """رسم همه چیز روی صفحه."""
-        self.screen.fill((50, 50, 50))
-        self._draw_drones()
-        pygame.display.flip()
+            # --- Frame Rate Control ---
+            # Ensure the loop runs at a maximum of FPS frames per second
+            self.environment.clock.tick(self.config.get('FPS', 60))
 
-    def _draw_drones(self):
-        """رسم تمام پهپادها."""
-        for drone in self.environment.get_all_drones():
-            angle = drone.get_bearing_degrees()
-            rotated_icon = pygame.transform.rotate(self.drone_icon, angle)
-            new_rect = rotated_icon.get_rect(center=drone.position)
-            self.screen.blit(rotated_icon, new_rect.topleft)
-            
-            text_surface = self.font.render(drone.name, True, (255, 255, 255))
-            text_y_offset = self.drone_icon.get_height() / 2 + 5
-            text_rect = text_surface.get_rect(center=(drone.position[0], drone.position[1] + text_y_offset))
-            self.screen.blit(text_surface, text_rect)
+        # --- Quit ---
+        print("INFO: Simulation loop ended. Quitting...")
+        pygame.quit()
+        sys.exit()

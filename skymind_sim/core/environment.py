@@ -1,51 +1,58 @@
-# FILE: skymind_sim/core/environment.py
-
-import random
-from skymind_sim.core.drone import Drone
+# skymind_sim/core/environment.py
+import pygame
 
 class Environment:
-    """
-    Manages all objects within the simulation space,
-    including drones and potential obstacles.
-    """
-    def __init__(self, width, height):
-        self.width = width
-        self.height = height
-        self.drones = []
-        self.obstacles = []
-        self._drone_id_counter = 0
-
-    def add_drone(self, drone):
-        """Adds a single drone to the environment."""
-        self.drones.append(drone)
-
-    def create_drones(self, count):
+    def __init__(self, config):
         """
-        Creates a specified number of drones with random initial positions
-        and adds them to the environment.
+        Initializes the simulation environment, including Pygame and the display window.
         """
-        for _ in range(count):
-            # Create a unique name for each drone
-            drone_name = f"Drone-{self._drone_id_counter}"
-            self._drone_id_counter += 1
-            
-            # Generate random positions within the screen boundaries (with a margin)
-            rand_x = random.randint(50, self.width - 50)
-            rand_y = random.randint(50, self.height - 50)
-            
-            # Create a new drone instance
-            new_drone = Drone(drone_id=self._drone_id_counter, name=drone_name, position=[rand_x, rand_y])
-            
-            # Add the new drone to our list
-            self.add_drone(new_drone)
+        print("INFO: Initializing Environment...")
+        self.config = config
         
-        print(f"Created and added {count} drones to the environment.")
+        # --- CRITICAL INITIALIZATION STEPS ---
+        # 1. Initialize all imported Pygame modules
+        pygame.init()
+        print("INFO: Pygame initialized successfully.")
 
-    def get_all_drones(self):
-        """Returns the list of all drones."""
-        return self.drones
+        # 2. Get screen dimensions from config
+        screen_width = self.config.get('SCREEN_WIDTH', 1280)
+        screen_height = self.config.get('SCREEN_HEIGHT', 720)
+        
+        # 3. Create the display surface (the main window)
+        self.screen = pygame.display.set_mode((screen_width, screen_height))
+        print(f"INFO: Display set to {screen_width}x{screen_height}.")
+        
+        pygame.display.set_caption(self.config.get('CAPTION', 'SkyMind Drone Simulator'))
+        
+        self.clock = pygame.time.Clock()
+        self.running = True
 
-    def update_all(self):
-        """Updates the state of all objects in the environment."""
-        for drone in self.drones:
-            drone.update_state(self.width, self.height)
+        print("INFO: Environment created.")
+
+    def update(self):
+        """
+        Placeholder for updating environment state (e.g., moving obstacles).
+        """
+        pass
+
+    def render(self, *sprite_groups):
+        """
+        Renders all visual elements to the screen.
+        """
+        # Fill the background
+        self.screen.fill(self.config.get('BACKGROUND_COLOR', (20, 30, 40)))
+
+        # Draw all sprites from the provided groups
+        for group in sprite_groups:
+            group.draw(self.screen)
+
+        # Update the full display Surface to the screen
+        pygame.display.flip()
+
+    def handle_events(self, events):
+        """
+        Handles global events like quitting the application.
+        """
+        for event in events:
+            if event.type == pygame.QUIT:
+                self.running = False

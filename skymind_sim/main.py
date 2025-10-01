@@ -1,38 +1,42 @@
-# FILE: skymind_sim/main.py
-
+# skymind_sim/main.py
+import sys
 import pygame
 
-# وارد کردن مستقیم کلاس‌ها از فایل‌هایشان
-from skymind_sim.core.environment import Environment
-from skymind_sim.core.simulation import Simulation 
-from skymind_sim.utils.asset_loader import get_asset_loader
-
-# --- ثابت‌ها ---
-SCREEN_WIDTH = 1280
-SCREEN_HEIGHT = 720
+from .config import SIM_CONFIG
+from .core.simulation import Simulation
+from .core.environment import Environment
+from .utils.asset_loader import AssetLoader
+# Configuration dictionary
+SIM_CONFIG = {
+    'SCREEN_WIDTH': 1280,
+    'SCREEN_HEIGHT': 720,
+    'FPS': 60,
+    'CAPTION': 'SkyMind Drone Simulator',
+    'BACKGROUND_COLOR': (20, 30, 40), # Dark blue-grey
+    'ASSETS_DIR': 'assets'
+}
 
 def main():
-    """تابع اصلی برای مقداردهی اولیه و اجرای شبیه‌سازی."""
-    pygame.init()
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption("SkyMind Drone Simulator")
-
-    # AssetLoader را بعد از راه‌اندازی pygame مقداردهی اولیه کنید
-    asset_loader = get_asset_loader()
-    asset_loader.initialize() # این متد را برای بارگذاری منابع فراخوانی می‌کنیم
+    """The main entry point of the simulator."""
     
-    env = Environment(width=SCREEN_WIDTH, height=SCREEN_HEIGHT)
-    env.create_drones(5) 
+    # 1. Initialize core systems IN THE CORRECT ORDER
+    
+    # First, create the environment, which initializes pygame and the display
+    env = Environment(config=SIM_CONFIG)
+    
+    # Second, load assets now that the display is ready
+    AssetLoader.load_assets()
+    
+    # Third, create the simulation instance
+    sim = Simulation(config=SIM_CONFIG, environment=env)
 
-    sim = Simulation(
-        environment=env,
-        screen=screen,
-        width=SCREEN_WIDTH,
-        height=SCREEN_HEIGHT
-    )
+    # 2. Run the main simulation loop
+    try:
+        sim.run()
+    except Exception as e:
+        print(f"FATAL: An error occurred during simulation run: {e}")
+        pygame.quit()
+        sys.exit()
 
-    sim.run()
-    pygame.quit()
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
