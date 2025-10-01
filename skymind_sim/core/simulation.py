@@ -1,77 +1,71 @@
 # skymind_sim/core/simulation.py
 
 import time
-import heapq
-import numpy as np
-
-from .environment import Environment
-from .drone import Drone
-from .event import Event, EventType
-from .visualizer import Visualizer
+import pygame
 
 class Simulation:
-    def __init__(self, env: Environment, drones: dict[str, Drone], viz_enabled: bool = True):
-        self.env = env
-        self.drones = drones
+    """
+    Manages the main simulation loop, state updates, and rendering.
+    It orchestrates the interaction between the environment, drones, and visualizer.
+    """
+    def __init__(self, environment, visualizer, end_time):
+        """
+        Initializes the simulation manager.
+
+        Args:
+            environment (Environment): The simulation environment object.
+            visualizer (Visualizer): The visualizer object for rendering.
+            end_time (float): The total duration of the simulation in seconds.
+        """
+        self.environment = environment
+        self.visualizer = visualizer
+        self.end_time = end_time
+        
+        self.drones = []
+        self.is_running = False
         self.current_time = 0.0
-        self.event_queue = []
-        self.viz_enabled = viz_enabled
-        self.visualizer = None
+        self.clock = pygame.time.Clock()
 
-        if self.viz_enabled:
-            # --- THIS IS THE CORRECTED LINE ---
-            self.visualizer = Visualizer(size=env.size, drones=self.drones)
+    def add_drone(self, drone):
+        """Adds a drone to the simulation."""
+        self.drones.append(drone)
+        print(f"Added drone to simulation: {drone.id}")
 
-    def _schedule_event(self, timestamp: float, event_type: EventType, data: dict = None):
-        """Adds an event to the priority queue."""
-        event = Event(timestamp, event_type, data)
-        heapq.heappush(self.event_queue, event)
-
-    def run(self, until: float):
-        """Runs the simulation until a specific time."""
-        print(f"Starting simulation. Running until time {until}s.")
-
-        # Schedule initial update events for all drones
-        for drone_id in self.drones:
-            self._schedule_event(self.current_time, EventType.UPDATE_STATE, {"drone_id": drone_id})
-
-        # Schedule the first visualizer update
-        if self.viz_enabled:
-            self._schedule_event(self.current_time, EventType.VISUALIZER_UPDATE)
-
-        running = True
-        while self.event_queue and self.current_time < until and running:
-            event = heapq.heappop(self.event_queue)
+    def run(self):
+        """
+        Starts and executes the main simulation loop.
+        The loop continues until the end time is reached or the window is closed.
+        """
+        self.is_running = True
+        
+        while self.is_running:
+            # 1. Handle Events (like closing the window)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.is_running = False
             
-            # Clamp the time to the 'until' value to avoid overshooting
-            self.current_time = min(event.timestamp, until)
-            
-            # --- Event Handling ---
-            if event.event_type == EventType.UPDATE_STATE:
-                drone_id = event.data["drone_id"]
-                drone = self.drones[drone_id]
-                
-                # Calculate time delta for this drone's update
-                # Note: This is a simplified approach. A more robust sim would track last update time.
-                dt = 0.1 # Using a fixed time step for state updates
+            # 2. Calculate time delta (dt)
+            # This makes the simulation speed independent of the computer's speed.
+            # We cap the frame rate at 60 FPS. dt will be in seconds.
+            dt = self.clock.tick(60) / 1000.0
+
+            # 3. Update simulation state
+            self.current_time += dt
+            if self.current_time >= self.end_time:
+                print("Simulation end time reached.")
+                self.is_running = False
+
+            # Update each drone
+            for drone in self.drones:
                 drone.update(dt)
-                print(f"[T={self.current_time:.2f}] Updated state for {drone.id}. Pos: {drone.pos}")
 
-                # Schedule the next update for this drone
-                if not drone.is_mission_complete():
-                    self._schedule_event(self.current_time + dt, EventType.UPDATE_STATE, {"drone_id": drone_id})
+            # 4. Render the new state
+            # We pass the list of drones and the environment to the visualizer
+            self.visualizer.draw(self.drones, self.environment)
+            
+        print("Simulation loop has ended.")
 
-            elif event.event_type == EventType.VISUALIZER_UPDATE:
-                if self.visualizer:
-                    running = self.visualizer.update() # No need to pass drones here anymore
-                    if not running:
-                         print("Visualizer window closed by user.")
-
-                    # Schedule the next visual update only if sim is still running
-                    if running:
-                        viz_update_interval = 1.0 / 30.0 # ~30 FPS
-                        self._schedule_event(self.current_time + viz_update_interval, EventType.VISUALIZER_UPDATE)
-
-        print("Simulation finished.")
+    def close(self):
+        """A helper method to cleanly close the visualizer."""
         if self.visualizer:
             self.visualizer.close()

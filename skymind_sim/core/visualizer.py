@@ -1,70 +1,87 @@
 # skymind_sim/core/visualizer.py
 
 import pygame
-from typing import Dict, Tuple
-from .drone import Drone
 
-# Define some colors
+# --- Constants for Colors ---
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
-BLUE = (0, 0, 255)
-GREEN = (0, 255, 0)
 RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
+GRAY = (150, 150, 150)
+
+# --- Constants for Drawing ---
+DRONE_COLOR = BLUE
+DRONE_INACTIVE_COLOR = GRAY
+PATH_COLOR = GREEN
+TARGET_COLOR = RED
+
 
 class Visualizer:
-    # The __init__ signature is the key part here. It explicitly defines 'size' and 'drones'.
-    def __init__(self, size: Tuple[int, int], drones: Dict[str, Drone]):
+    """
+    Handles the graphical representation of the simulation using Pygame.
+    """
+    def __init__(self, width, height):
         """
-        Initializes the Pygame visualizer.
+        Initializes the Pygame window and visualizer settings.
 
         Args:
-            size (Tuple[int, int]): The dimensions of the simulation window (width, height).
-            drones (Dict[str, Drone]): A dictionary of drone objects to be visualized.
+            width (int): The width of the simulation window.
+            height (int): The height of the simulation window.
         """
         pygame.init()
-        pygame.display.set_caption("SkyMind Simulation")
-
-        self.width, self.height = size
-        self.screen = pygame.display.set_mode(size)
-        self.drones = drones  # Store the dictionary of drones
+        self.width = width
+        self.height = height
+        self.screen = pygame.display.set_mode((self.width, self.height))
+        pygame.display.set_caption("SkyMind Drone Simulation")
+        # Use a default system font. If not found, Pygame has a fallback.
         self.font = pygame.font.SysFont(None, 24)
 
-    def _draw_drone(self, drone: Drone):
-        """Draws a single drone and its path."""
-        # Draw waypoints
-        for i, wp in enumerate(drone.waypoints):
-            color = GREEN if i >= drone.current_waypoint_index else BLUE
-            pygame.draw.circle(self.screen, color, (int(wp[0]), int(wp[1])), 5)
-            if i > 0:
-                pygame.draw.line(self.screen, color, drone.waypoints[i-1], drone.waypoints[i], 1)
-
-        # Draw the drone itself
-        drone_pos = (int(drone.pos[0]), int(drone.pos[1]))
-        pygame.draw.circle(self.screen, RED, drone_pos, 8) # Main body
-        pygame.draw.circle(self.screen, WHITE, drone_pos, 8, 1) # Outline
-
-        # Draw drone ID label
-        id_text = self.font.render(drone.id, True, WHITE)
-        self.screen.blit(id_text, (drone_pos[0] + 10, drone_pos[1]))
-
-    def update(self) -> bool:
+    def draw(self, drones, environment):
         """
-        Updates the display with the current state of all drones.
-        Returns False if the user has quit the application, True otherwise.
+        Draws the current state of the simulation onto the screen.
+        
+        Args:
+            drones (list): A list of Drone objects to draw.
+            environment (Environment): The simulation environment (unused for now, but good practice).
         """
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                return False
+        # 1. Fill the background
+        self.screen.fill(WHITE)
 
-        # Drawing
-        self.screen.fill(BLACK)
+        # 2. Draw each drone and its associated info
+        for drone in drones:
+            drone_pos = (int(drone.position[0]), int(drone.position[1]))
+            
+            # Choose color based on active status
+            current_drone_color = DRONE_COLOR if drone.is_active else DRONE_INACTIVE_COLOR
+            
+            # Draw drone body
+            pygame.draw.circle(self.screen, current_drone_color, drone_pos, 8) # Drone is an 8px radius circle
 
-        for drone_id, drone in self.drones.items():
-            self._draw_drone(drone)
+            # Draw drone ID and battery status text
+            info_text = f"{drone.id} | Bat: {drone.current_battery:.0f}"
+            if not drone.is_active:
+                info_text += " [INACTIVE]"
+            
+            text_surface = self.font.render(info_text, True, BLACK)
+            self.screen.blit(text_surface, (drone_pos[0] + 12, drone_pos[1] - 10))
 
+            # Draw the drone's remaining path
+            if drone.is_active and not drone.is_mission_complete and len(drone.path) > 0:
+                # The path starts from the drone's current position to its next target
+                path_points = [drone.position] + drone.path[drone.path_index:]
+                if len(path_points) > 1:
+                    # Convert all points to tuples of integers for drawing
+                    drawable_points = [tuple(map(int, p)) for p in path_points]
+                    pygame.draw.lines(self.screen, PATH_COLOR, False, drawable_points, 1)
+            
+                # Draw the current target as a hollow circle
+                target_pos = drone.path[drone.path_index]
+                pygame.draw.circle(self.screen, TARGET_COLOR, tuple(map(int, target_pos)), 5, 1)
+
+        # 3. Update the entire display
         pygame.display.flip()
-        return True
 
     def close(self):
-        """Closes the pygame window."""
+        """Closes the Pygame window."""
         pygame.quit()

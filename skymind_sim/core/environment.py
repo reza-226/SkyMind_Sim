@@ -1,31 +1,22 @@
 # skymind_sim/core/environment.py
 
-from typing import Tuple
-
 class Environment:
     """
-    Represents the physical environment of the simulation.
-    
-    This class holds properties of the simulation world, such as its
-    dimensions. In the future, it could also manage obstacles, weather
-    conditions, or other environmental factors.
+    Represents the simulation environment, including its dimensions.
+    For now, it just holds the boundaries of the world.
+    In the future, it can be extended to include obstacles, weather, etc.
     """
-    def __init__(self, size: Tuple[int, int]):
+    def __init__(self, width, height):
         """
         Initializes the environment.
 
         Args:
-            size (Tuple[int, int]): The dimensions of the environment as (width, height).
+            width (int or float): The width of the simulation area.
+            height (int or float): The height of the simulation area.
         """
-        if not (isinstance(size, (tuple, list)) and len(size) == 2 and
-                all(isinstance(x, (int, float)) for x in size)):
-            raise ValueError("size must be a tuple or list of two numbers (width, height).")
-            
-        self.size = size
-        self.width, self.height = self.size
+        self.width = int(width)
+        self.height = int(height)
 
-    def __repr__(self) -> str:
-        """
-        Provides a string representation of the Environment object.
-        """
-        return f"Environment(size=({self.width}, {self.height}))"
+    def __repr__(self):
+        """Provides a developer-friendly representation of the environment."""
+        return f"Environment(width={self.width}, height={self.height})"
