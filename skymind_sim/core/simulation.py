@@ -3,98 +3,68 @@
 import time
 from .drone import Drone
 from .environment import Environment
+from .event import Event, EventType
 from .scheduler import Scheduler
-from .event import Event
 
 class Simulation:
-    def __init__(self, environment: Environment, drones: list[Drone]):
-        self.env = environment
+    def __init__(self, drones: list[Drone], environment: Environment, time_step: float = 0.1):
         self.drones = {drone.drone_id: drone for drone in drones}
+        self.environment = environment
+        self.time_step = time_step
         self.scheduler = Scheduler()
-        self.start_time_real = None
+        self.start_time = 0
+        self.current_time = 0
         
-        # Simulation parameters
-        self.time_step = 0.1 # seconds, granularity of simulation updates
-
-    def _setup_initial_events(self):
-        """Sets up the initial events for the simulation."""
-        for drone_id, drone in self.drones.items():
-            # Start the mission for the drone
-            drone.start_mission()
-            
-            # Schedule the first update event for each drone
-            if drone.status == "flying":
-                initial_event = Event(
-                    timestamp=self.scheduler.current_time,
-                    priority=1,
-                    action=self._update_drone_and_reschedule,
-                    event_type='DRONE_UPDATE',
-                    data={'drone_id': drone_id}
-                )
-                self.scheduler.schedule_event(initial_event)
-
-    def _update_drone_and_reschedule(self, drone_id: str):
-        """
-        The core action for updating a drone's state and scheduling the next update.
-        """
-        drone = self.drones.get(drone_id)
-        if not drone or drone.status not in ["flying", "hovering"]:
-            # Stop rescheduling if drone is no longer active
-            return
-
-        # Perform the update for the time_step
-        drone.update_state(self.time_step)
-
-        # If the drone is still active, schedule the next update
-        if drone.status in ["flying", "hovering"]:
-            next_event_time = self.scheduler.current_time + self.time_step
-            next_event = Event(
-                timestamp=next_event_time,
-                priority=1,
-                action=self._update_drone_and_reschedule,
-                event_type='DRONE_UPDATE',
-                data={'drone_id': drone_id}
+        for drone_id in self.drones:
+            initial_event = Event(
+                time=self.current_time,
+                type=EventType.DRONE_UPDATE,
+                drone_id=drone_id
             )
-            self.scheduler.schedule_event(next_event)
+            # This call MUST match the method name in scheduler.py
+            self.scheduler.add_event(initial_event)
+        
+        print("--- Simulation Starting ---")
+
+    def _update_drone_and_reschedule(self, event: Event):
+        drone = self.drones.get(event.drone_id)
+        
+        if drone and drone.status == "flying":
+            drone.update_state(self.time_step)
+            
+            next_event = Event(
+                time=self.current_time + self.time_step,
+                type=EventType.DRONE_UPDATE,
+                drone_id=drone.drone_id
+            )
+            # This call MUST match the method name in scheduler.py
+            self.scheduler.add_event(next_event)
 
     def run(self):
-        """
-        Runs the event-driven simulation.
-        """
-        print("--- Starting Event-Driven Simulation ---")
-        self.start_time_real = time.time()
+        self.start_time = time.time()
         
-        self._setup_initial_events()
-
         while not self.scheduler.is_empty():
             event = self.scheduler.get_next_event()
-            
-            # Print status periodically
-            # We can make this more sophisticated later
-            current_sim_time = self.scheduler.current_time
-            if int(current_sim_time) % 10 == 0 and abs(current_sim_time - int(current_sim_time)) < self.time_step:
-                 # This is a simple way to print roughly every 10 seconds of sim time
-                 drone = list(self.drones.values())[0] # For single drone sim
-                 # print(f"  > Sim Time: {current_sim_time:.2f}s, Drone Pos: {drone.pos}, Bat: {drone.battery_level:.2f}%")
+            if not event: break
 
+            self.current_time = event.time
 
-            # Execute the event's action
-            if event.action:
-                # The data for our event is a dictionary, so we pass it as keyword arguments
-                event.action(**event.data)
-
-        end_time_real = time.time()
-        print("\n--- Simulation Finished: No more events in the queue ---")
-        print(f"Total Real Time Elapsed: {end_time_real - self.start_time_real:.2f} seconds")
+            if event.type == EventType.DRONE_UPDATE:
+                if event.drone_id in self.drones:
+                    self._update_drone_and_reschedule(event)
         
-        self.print_summary()
+        end_time = time.time()
+        print("\n--- Simulation Finished: No more events in the queue ---")
+        self.print_summary(end_time - self.start_time)
 
-    def print_summary(self):
-        """Prints a summary of the simulation results."""
-        print("\n--- Mission Summary ---")
+    def print_summary(self, real_time_elapsed: float):
+        print("\n--- Simulation Summary ---")
+        print(f"Total Real Time Elapsed: {real_time_elapsed:.2f} seconds")
+        print(f"Total Mission Time: {self.current_time:.2f} seconds")
+        print("\n--- Final Drone States ---")
         for drone_id, drone in self.drones.items():
-            print(f"Drone ID: {drone_id}")
-            print(f"  Total Mission Time: {self.scheduler.current_time:.2f} seconds")
-            print(f"  Final Drone Status: {drone.status}")
-            print(f"  Final Position: {drone.pos}")
-            print(f"  Remaining Battery: {drone.battery_level:.2f}%")
+            print(f"  Drone ID: {drone_id}")
+            print(f"    Final Status: {drone.status}")
+            print(f"    Final Position: {drone.pos}")
+            print(f"    Remaining Battery: {drone.battery.level:.2f}%")
+            print("--------------------")

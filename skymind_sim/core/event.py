@@ -1,29 +1,25 @@
 # skymind_sim/core/event.py
 
+from enum import Enum
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any, Optional
+
+class EventType(Enum):
+    """Defines the types of events that can occur in the simulation."""
+    DRONE_UPDATE = "DRONE_UPDATE"
+    # Future event types can be added here, e.g., MISSION_COMMAND
 
 @dataclass(order=True)
 class Event:
-    """
-    نشان‌دهنده یک رویداد در شبیه‌سازی است.
-
-    این کلاس از dataclass(order=True) استفاده می‌کند تا رویدادها
-    به طور خودکار بر اساس زمان وقوع (timestamp) قابل مرتب‌سازی باشند.
-    این ویژگی برای صف اولویت (priority queue) بسیار حیاتی است.
-
-    Attributes:
-        timestamp (float): زمان وقوع رویداد در شبیه‌سازی.
-        priority (int): اولویت رویداد. عدد کمتر به معنای اولویت بالاتر است.
-                         برای رویدادهایی که در یک زمان یکسان رخ می‌دهند استفاده می‌شود.
-        action (Callable): تابعی (یا متدی) که باید هنگام پردازش رویداد فراخوانی شود.
-        event_type (str): یک رشته برای توصیف نوع رویداد (مثلاً 'DRONE_UPDATE').
-        data (Any): داده‌های اضافی مرتبط با رویداد که به تابع action پاس داده می‌شود.
-    """
-    timestamp: float
-    priority: int
-    # 'action' نباید در مقایسه برای مرتب‌سازی شرکت کند، چون قابل مقایسه نیست.
-    # از field برای این کار استفاده می‌کنیم.
-    action: Callable = field(compare=False) 
-    event_type: str = field(compare=False)
-    data: Any = field(default=None, compare=False)
+    """Represents an event in the simulation priority queue."""
+    # The 'time' of the event. Used for sorting in the priority queue.
+    time: float = field(init=True, repr=True)
+    
+    # The 'type' of the event.
+    type: EventType = field(init=True, repr=True)
+    
+    # The ID of the drone this event pertains to.
+    drone_id: Optional[str] = field(default=None, compare=False, repr=True)
+    
+    # Optional payload for the event
+    data: Optional[Any] = field(default=None, compare=False, repr=False)

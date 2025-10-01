@@ -1,102 +1,64 @@
 # skymind_sim/core/drone.py
 
 import numpy as np
+from .battery import Battery
 
 class Drone:
-    """
-    Represents a single drone in the simulation.
-    Manages its own state, including position, status, and battery.
-    """
-    def __init__(self, drone_id: str, start_pos: np.ndarray, speed: float = 10.0, waypoints: list = None, battery_level: float = 100.0):
-        """
-        Initializes a Drone instance.
-
-        Args:
-            drone_id (str): A unique identifier for the drone.
-            start_pos (np.ndarray): The starting position (x, y) of the drone.
-            speed (float): The travel speed of the drone in units per second.
-            waypoints (list, optional): A list of waypoints for the drone's mission. Defaults to None.
-            battery_level (float, optional): The initial battery level percentage. Defaults to 100.0.
-        """
+    def __init__(self, drone_id: str, start_pos, waypoints, speed: float = 10.0, battery_level: float = 100.0, battery_depletion_rate: float = 0.5):
         self.drone_id = drone_id
         
-        # CRITICAL FIX: Initialize self.pos as a float array to allow for fractional positions.
+        # Ensure position and waypoints are float arrays for accurate calculations
         self.pos = np.array(start_pos, dtype=float) 
+        self.waypoints = np.array(waypoints, dtype=float)
         
-        self.speed = speed
+        self.speed = speed  # in meters/second
+        self.battery = Battery(initial_level=battery_level)
+        self.battery_depletion_rate = battery_depletion_rate # units per second
         
-        # Ensure waypoints are also float arrays for consistency
-        self.waypoints = [np.array(wp, dtype=float) for wp in waypoints] if waypoints else []
+        self.status = "flying"  # Can be 'flying', 'landing', 'landed'
+        self.waypoint_index = 0
+        self.target_waypoint = self.waypoints[self.waypoint_index]
         
-        self.current_waypoint_index = 0
-        self.status = "idle"
+        print(f"Drone {self.drone_id}: Initialized at position {self.pos} with {self.battery.level:.2f}% battery.")
+        if self.waypoints.size > 0:
+            self.waypoint_index = 1 # Start by heading to the first waypoint in the list
+            self.target_waypoint = self.waypoints[self.waypoint_index]
+            print(f"Drone {self.drone_id}: Heading to waypoint {self.waypoint_index} at {self.target_waypoint}")
 
-        # Battery properties
-        self.battery_level = battery_level
-        self.consumption_rate_flying = 0.5
-        self.consumption_rate_hovering = 0.1
-    
-    def start_mission(self):
-        """Starts the mission by setting status to flying if waypoints are available."""
-        if self.waypoints:
-            print(f"Drone {self.drone_id}: Mission started. Heading to waypoint {self.current_waypoint_index}.")
-            self.status = "flying"
-        else:
-            print(f"Drone {self.drone_id}: No waypoints defined. Mission cannot start.")
-            self.status = "idle"
 
     def update_state(self, time_delta: float):
-        """
-        Updates the drone's state for a given time delta.
-        This includes position and battery, and handles state transitions like
-        reaching a waypoint or crashing.
-        """
-        if self.status not in ["flying", "hovering"]:
+        """Updates the drone's position and battery based on the time delta."""
+        if self.status != "flying":
             return
 
-        # 1. Update Battery
-        consumption = 0
-        if self.status == "flying":
-            consumption = self.consumption_rate_flying * time_delta
-        elif self.status == "hovering":
-            consumption = self.consumption_rate_hovering * time_delta
-        
-        self.battery_level -= consumption
-        
-        if self.battery_level <= 0:
-            self.battery_level = 0
-            self.status = "crashed"
-            print(f"\nCRITICAL: Drone {self.drone_id} ran out of battery and crashed at position {self.pos}!")
+        # Calculate battery depletion before moving
+        self.battery.deplete(self.battery_depletion_rate * time_delta)
+        if self.battery.is_empty():
+            print(f"Drone {self.drone_id}: Battery depleted! Emergency landing...")
+            self.status = "landed" # Or a new 'crashed' status
             return
 
-        # 2. Update Position if flying
-        if self.status == "flying":
-            if self.current_waypoint_index >= len(self.waypoints):
-                self.status = "landed"
-                return
+        # Movement calculation
+        direction_vector = self.target_waypoint - self.pos
+        distance_to_target = np.linalg.norm(direction_vector)
 
-            target_pos = self.waypoints[self.current_waypoint_index]
-            direction = target_pos - self.pos
-            distance_to_target = np.linalg.norm(direction)
+        travel_distance = self.speed * time_delta
 
-            if distance_to_target == 0:
-                self._waypoint_reached()
-                return
+        if travel_distance >= distance_to_target:
+            # Reached the waypoint
+            self.pos = self.target_waypoint
+            print(f"Drone {self.drone_id}: Reached waypoint {self.waypoint_index} at position {self.pos}")
 
-            travel_distance = self.speed * time_delta
-            
-            if travel_distance >= distance_to_target:
-                self.pos = target_pos
-                self._waypoint_reached()
+            # Move to the next waypoint
+            self.waypoint_index += 1
+            if self.waypoint_index < len(self.waypoints):
+                self.target_waypoint = self.waypoints[self.waypoint_index]
+                print(f"Drone {self.drone_id}: Heading to waypoint {self.waypoint_index} at {self.target_waypoint}")
             else:
-                # This line requires self.pos to be a float array.
-                self.pos += (direction / distance_to_target) * travel_distance
-
-    def _waypoint_reached(self):
-        """Internal helper method to handle logic when a waypoint is reached."""
-        print(f"Drone {self.drone_id}: Reached waypoint {self.current_waypoint_index} at position {self.pos}")
-        self.current_waypoint_index += 1
-        
-        if self.current_waypoint_index >= len(self.waypoints):
-            self.status = "landed"
-            print(f"Drone {self.drone_id}: Mission completed. Final status: landed.")
+                # Mission finished
+                print(f"Drone {self.drone_id}: Mission completed. Final status: landed.")
+                self.status = "landed"
+        else:
+            # Move towards the waypoint
+            movement_vector = (direction_vector / distance_to_target) * travel_distance
+            self.pos += movement_vector
