@@ -2,49 +2,51 @@
 
 class Battery:
     """
-    Represents the battery of a drone.
+    Manages the battery state of a drone.
     """
-    def __init__(self, initial_level: float = 100.0, min_level: float = 0.0, max_level: float = 100.0):
+    def __init__(self, capacity: float, charge_rate: float, discharge_rate_idle: float, discharge_rate_flight: float):
         """
         Initializes the battery.
 
         Args:
-            initial_level (float): The starting battery level, as a percentage.
-            min_level (float): The minimum battery level (usually 0).
-            max_level (float): The maximum battery level (usually 100).
+            capacity (float): Total capacity of the battery (e.g., in percentage, 100.0).
+            charge_rate (float): Rate at which the battery charges per second.
+            discharge_rate_idle (float): Rate at which the battery discharges per second when idle.
+            discharge_rate_flight (float): Rate at which the battery discharges per second during flight.
         """
-        self.max_level = max_level
-        self.min_level = min_level
-        self.level = self._clamp(initial_level)
+        self.capacity = capacity
+        self.level = capacity  # Start with a full battery
+        self.charge_rate = charge_rate
+        self.discharge_rate_idle = discharge_rate_idle
+        self.discharge_rate_flight = discharge_rate_flight
 
-    def _clamp(self, value: float) -> float:
-        """Ensures the battery level stays within the min/max bounds."""
-        return max(self.min_level, min(self.max_level, value))
-
-    def deplete(self, amount: float):
+    def discharge(self, duration: float, is_flying: bool = True):
         """
-        Depletes the battery by a given amount.
+        Discharges the battery for a given duration.
 
         Args:
-            amount (float): The amount to deplete. Should be a positive number.
+            duration (float): The time duration in seconds.
+            is_flying (bool): True if the drone is flying, False if idle.
         """
-        if amount > 0:
-            self.level = self._clamp(self.level - amount)
+        if is_flying:
+            discharge_amount = self.discharge_rate_flight * duration
+        else:
+            discharge_amount = self.discharge_rate_idle * duration
+        
+        self.level = max(0, self.level - discharge_amount)
 
-    def charge(self, amount: float):
+    def charge(self, duration: float):
         """
-        Charges the battery by a given amount.
+        Charges the battery for a given duration.
 
         Args:
-            amount (float): The amount to charge. Should be a positive number.
+            duration (float): The time duration in seconds.
         """
-        if amount > 0:
-            self.level = self._clamp(self.level + amount)
+        charge_amount = self.charge_rate * duration
+        self.level = min(self.capacity, self.level + charge_amount)
 
-    def is_empty(self) -> bool:
-        """Checks if the battery is at its minimum level."""
-        return self.level <= self.min_level
-
-    def __repr__(self) -> str:
-        """String representation of the battery status."""
-        return f"<Battery: {self.level:.2f}%>"
+    def get_level_percentage(self) -> float:
+        """
+        Returns the current battery level as a percentage.
+        """
+        return (self.level / self.capacity) * 100

@@ -9,9 +9,10 @@ numpy==2.3.3
 packaging==25.0
 pillow==11.3.0
 pluggy==1.6.0
+pygame==2.6.1
 Pygments==2.19.2
 pyparsing==3.2.5
 pytest==8.4.2
 python-dateutil==2.9.0.post0
 six==1.17.0
--e git+https://github.com/reza-226/SkyMind_Sim.git@0fc3baa0e16c625699fd14e9731d370882aef0b2#egg=skymind_sim
+-e git+https://github.com/reza-226/SkyMind_Sim.git@bd76dd2a495c96985983e850ece1cf8eb2583bf4#egg=skymind_sim

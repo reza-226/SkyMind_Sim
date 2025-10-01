@@ -1,70 +1,77 @@
 # skymind_sim/core/simulation.py
 
 import time
-from .drone import Drone
+import heapq
+import numpy as np
+
 from .environment import Environment
+from .drone import Drone
 from .event import Event, EventType
-from .scheduler import Scheduler
+from .visualizer import Visualizer
 
 class Simulation:
-    def __init__(self, drones: list[Drone], environment: Environment, time_step: float = 0.1):
-        self.drones = {drone.drone_id: drone for drone in drones}
-        self.environment = environment
-        self.time_step = time_step
-        self.scheduler = Scheduler()
-        self.start_time = 0
-        self.current_time = 0
-        
+    def __init__(self, env: Environment, drones: dict[str, Drone], viz_enabled: bool = True):
+        self.env = env
+        self.drones = drones
+        self.current_time = 0.0
+        self.event_queue = []
+        self.viz_enabled = viz_enabled
+        self.visualizer = None
+
+        if self.viz_enabled:
+            # --- THIS IS THE CORRECTED LINE ---
+            self.visualizer = Visualizer(size=env.size, drones=self.drones)
+
+    def _schedule_event(self, timestamp: float, event_type: EventType, data: dict = None):
+        """Adds an event to the priority queue."""
+        event = Event(timestamp, event_type, data)
+        heapq.heappush(self.event_queue, event)
+
+    def run(self, until: float):
+        """Runs the simulation until a specific time."""
+        print(f"Starting simulation. Running until time {until}s.")
+
+        # Schedule initial update events for all drones
         for drone_id in self.drones:
-            initial_event = Event(
-                time=self.current_time,
-                type=EventType.DRONE_UPDATE,
-                drone_id=drone_id
-            )
-            # This call MUST match the method name in scheduler.py
-            self.scheduler.add_event(initial_event)
-        
-        print("--- Simulation Starting ---")
+            self._schedule_event(self.current_time, EventType.UPDATE_STATE, {"drone_id": drone_id})
 
-    def _update_drone_and_reschedule(self, event: Event):
-        drone = self.drones.get(event.drone_id)
-        
-        if drone and drone.status == "flying":
-            drone.update_state(self.time_step)
+        # Schedule the first visualizer update
+        if self.viz_enabled:
+            self._schedule_event(self.current_time, EventType.VISUALIZER_UPDATE)
+
+        running = True
+        while self.event_queue and self.current_time < until and running:
+            event = heapq.heappop(self.event_queue)
             
-            next_event = Event(
-                time=self.current_time + self.time_step,
-                type=EventType.DRONE_UPDATE,
-                drone_id=drone.drone_id
-            )
-            # This call MUST match the method name in scheduler.py
-            self.scheduler.add_event(next_event)
+            # Clamp the time to the 'until' value to avoid overshooting
+            self.current_time = min(event.timestamp, until)
+            
+            # --- Event Handling ---
+            if event.event_type == EventType.UPDATE_STATE:
+                drone_id = event.data["drone_id"]
+                drone = self.drones[drone_id]
+                
+                # Calculate time delta for this drone's update
+                # Note: This is a simplified approach. A more robust sim would track last update time.
+                dt = 0.1 # Using a fixed time step for state updates
+                drone.update(dt)
+                print(f"[T={self.current_time:.2f}] Updated state for {drone.id}. Pos: {drone.pos}")
 
-    def run(self):
-        self.start_time = time.time()
-        
-        while not self.scheduler.is_empty():
-            event = self.scheduler.get_next_event()
-            if not event: break
+                # Schedule the next update for this drone
+                if not drone.is_mission_complete():
+                    self._schedule_event(self.current_time + dt, EventType.UPDATE_STATE, {"drone_id": drone_id})
 
-            self.current_time = event.time
+            elif event.event_type == EventType.VISUALIZER_UPDATE:
+                if self.visualizer:
+                    running = self.visualizer.update() # No need to pass drones here anymore
+                    if not running:
+                         print("Visualizer window closed by user.")
 
-            if event.type == EventType.DRONE_UPDATE:
-                if event.drone_id in self.drones:
-                    self._update_drone_and_reschedule(event)
-        
-        end_time = time.time()
-        print("\n--- Simulation Finished: No more events in the queue ---")
-        self.print_summary(end_time - self.start_time)
+                    # Schedule the next visual update only if sim is still running
+                    if running:
+                        viz_update_interval = 1.0 / 30.0 # ~30 FPS
+                        self._schedule_event(self.current_time + viz_update_interval, EventType.VISUALIZER_UPDATE)
 
-    def print_summary(self, real_time_elapsed: float):
-        print("\n--- Simulation Summary ---")
-        print(f"Total Real Time Elapsed: {real_time_elapsed:.2f} seconds")
-        print(f"Total Mission Time: {self.current_time:.2f} seconds")
-        print("\n--- Final Drone States ---")
-        for drone_id, drone in self.drones.items():
-            print(f"  Drone ID: {drone_id}")
-            print(f"    Final Status: {drone.status}")
-            print(f"    Final Position: {drone.pos}")
-            print(f"    Remaining Battery: {drone.battery.level:.2f}%")
-            print("--------------------")
+        print("Simulation finished.")
+        if self.visualizer:
+            self.visualizer.close()

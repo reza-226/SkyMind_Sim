@@ -1,62 +1,67 @@
 # skymind_sim/main.py
 
 import numpy as np
-from skymind_sim.core.drone import Drone
-from skymind_sim.core.environment import Environment
-from skymind_sim.core.simulation import Simulation
+from skymind_sim.core import Simulation, Environment, Drone
 
 def main():
     """
-    Main function to set up and run the multi-drone simulation.
+    Main function to set up and run the simulation.
     """
     print("Setting up multi-drone simulation...")
 
-    # 1. Create the shared environment
-    env = Environment(width=500, height=500)
+    # 1. Create the Environment
+    # The environment now only needs its size.
+    env = Environment(size=(800, 600))
 
-    # 2. Define waypoints for each drone
-    waypoints_alpha = np.array([
-        [50, 50],
-        [150, 50],
-        [150, 150],
-        [50, 150],
-        [50, 50]  # Return to start
-    ], dtype=float)
+    # 2. Define Drone Configurations
+    # This dictionary-based approach is clean and scalable.
+    drones_config = {
+        "drone_1": {
+            "pos": np.array([50.0, 50.0]),
+            "waypoints": [
+                np.array([100.0, 100.0]),
+                np.array([200.0, 400.0]),
+                np.array([50.0, 500.0]),
+            ]
+        },
+        "drone_2": {
+            "pos": np.array([750.0, 550.0]),
+            "waypoints": [
+                np.array([600.0, 500.0]),
+                np.array([400.0, 200.0]),
+                np.array([700.0, 100.0]),
+            ]
+        },
+        "drone_3": {
+            "pos": np.array([400.0, 300.0]),
+            "waypoints": [
+                np.array([100.0, 300.0]),
+                np.array([400.0, 500.0]),
+                np.array([700.0, 300.0]),
+                np.array([400.0, 100.0]),
+            ]
+        }
+    }
 
-    waypoints_beta = np.array([
-        [450, 450],
-        [350, 450],
-        [350, 350],
-        [450, 350],
-        [450, 450] # Return to start
-    ], dtype=float)
+    # 3. Create Drone instances from the configuration
+    drones: dict[str, Drone] = {}
+    for drone_id, config in drones_config.items():
+        drones[drone_id] = Drone(
+            id=drone_id,
+            pos=config["pos"],
+            waypoints=config["waypoints"]
+        )
+        print(f"- Created {drone_id} at start position {config['pos']}")
 
-    # 3. Create drone instances
-    drone_alpha = Drone(
-        drone_id="drone_alpha",
-        start_pos=waypoints_alpha[0],
-        waypoints=waypoints_alpha,
-        speed=15.0, # m/s
-        battery_level=100.0,
-        battery_depletion_rate=0.5 # units per second
-    )
 
-    drone_beta = Drone(
-        drone_id="drone_beta",
-        start_pos=waypoints_beta[0],
-        waypoints=waypoints_beta,
-        speed=20.0, # Let's make this one a bit faster
-        battery_level=100.0,
-        battery_depletion_rate=0.6 # Faster speed, higher consumption
-    )
-    
-    # 4. Create a list of drones
-    all_drones = [drone_alpha, drone_beta]
+    # 4. Create the Simulation instance
+    # Pass the already created environment and drones dictionary.
+    sim = Simulation(env=env, drones=drones, viz_enabled=True)
 
-    # 5. Initialize and run the simulation
-    # The time_step can be adjusted for precision vs. performance
-    sim = Simulation(drones=all_drones, environment=env, time_step=0.1)
-    sim.run()
+    # 5. Run the simulation for a total of 100 seconds
+    sim.run(until=100.0)
+
+    print("Simulation setup complete. Running...")
 
 
 if __name__ == "__main__":

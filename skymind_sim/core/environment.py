@@ -1,83 +1,31 @@
 # skymind_sim/core/environment.py
 
-import json
+from typing import Tuple
 
 class Environment:
     """
     Represents the physical environment of the simulation.
-    Holds properties like dimensions and can load obstacles from a map file.
+    
+    This class holds properties of the simulation world, such as its
+    dimensions. In the future, it could also manage obstacles, weather
+    conditions, or other environmental factors.
     """
-    def __init__(self, width, height, map_file=None):
+    def __init__(self, size: Tuple[int, int]):
         """
-        Initializes the Environment.
-
-        If a map_file is provided, it loads data from it. Otherwise, it uses
-        the provided width and height.
+        Initializes the environment.
 
         Args:
-            width (float): The default width of the simulation area if no map is loaded.
-            height (float): The default height of the simulation area if no map is loaded.
-            map_file (str, optional): The path to the map file (JSON). Defaults to None.
+            size (Tuple[int, int]): The dimensions of the environment as (width, height).
         """
-        self.width = width
-        self.height = height
-        self.depth = 100  # Default depth, can be overwritten by map
-        self.obstacles = set()
-
-        if map_file:
-            self._load_map(map_file)
-        else:
-            print(f"Environment initialized with default size ({self.width}x{self.height}). No map loaded.")
-
-    def _load_map(self, map_file):
-        """
-        Loads the map dimensions and obstacles from a specified JSON file.
-        
-        Args:
-            map_file (str): The path to the map file.
-        """
-        print(f"Loading map from: {map_file}")
-        try:
-            with open(map_file, 'r') as f:
-                map_data = json.load(f)
+        if not (isinstance(size, (tuple, list)) and len(size) == 2 and
+                all(isinstance(x, (int, float)) for x in size)):
+            raise ValueError("size must be a tuple or list of two numbers (width, height).")
             
-            # Load dimensions from map, overwriting defaults
-            dims = map_data.get("dimensions", {})
-            self.width = dims.get("width", self.width)
-            self.depth = dims.get("depth", self.depth)
-            self.height = dims.get("height", self.height)
+        self.size = size
+        self.width, self.height = self.size
 
-            # Load obstacles and add them to the set
-            # The obstacles are stored as tuples for efficient lookup in the set
-            obstacle_list = map_data.get("obstacles", [])
-            self.obstacles = {tuple(obs) for obs in obstacle_list}
-            
-            print("Map loaded successfully.")
-            print(f"New environment dimensions: (Width: {self.width}, Depth: {self.depth}, Height: {self.height})")
-            
-        except FileNotFoundError:
-            print(f"Error: Map file not found at '{map_file}'. Using default environment settings.")
-        except json.JSONDecodeError:
-            print(f"Error: Could not decode JSON from '{map_file}'. Using default environment settings.")
-
-    def get_dimensions(self):
-        """Returns the dimensions of the environment as a tuple (width, depth, height)."""
-        return (self.width, self.depth, self.height)
-
-    def is_obstacle(self, x, y, z):
+    def __repr__(self) -> str:
         """
-        Checks if a given coordinate is an obstacle.
-
-        Returns:
-            bool: True if the coordinate is an obstacle, False otherwise.
+        Provides a string representation of the Environment object.
         """
-        return (x, y, z) in self.obstacles
-        
-    def get_obstacles(self):
-        """
-        Returns the set of all obstacle coordinates.
-
-        Returns:
-            set: A set of tuples, where each tuple is an (x, y, z) obstacle coordinate.
-        """
-        return self.obstacles
+        return f"Environment(size=({self.width}, {self.height}))"
