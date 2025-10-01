@@ -1,71 +1,48 @@
-# skymind_sim/core/simulation.py
+# FILE: skymind_sim/core/simulation.py
 
-import time
 import pygame
+from .visualizer import Visualizer
 
 class Simulation:
     """
-    Manages the main simulation loop, state updates, and rendering.
-    It orchestrates the interaction between the environment, drones, and visualizer.
+    The main simulation class that orchestrates the entire process.
     """
-    def __init__(self, environment, visualizer, end_time):
+    def __init__(self, environment, screen, width, height):
         """
-        Initializes the simulation manager.
+        Initializes the simulation.
 
         Args:
-            environment (Environment): The simulation environment object.
-            visualizer (Visualizer): The visualizer object for rendering.
-            end_time (float): The total duration of the simulation in seconds.
+            environment (Environment): The simulation environment containing drones.
+            screen (pygame.Surface): The Pygame screen surface for drawing.
+            width (int): The width of the screen.
+            height (int): The height of the screen.
         """
         self.environment = environment
-        self.visualizer = visualizer
-        self.end_time = end_time
-        
-        self.drones = []
-        self.is_running = False
-        self.current_time = 0.0
+        self.visualizer = Visualizer(screen, width, height)
+        self.running = False
         self.clock = pygame.time.Clock()
-
-    def add_drone(self, drone):
-        """Adds a drone to the simulation."""
-        self.drones.append(drone)
-        print(f"Added drone to simulation: {drone.id}")
+        self.fps = 60
 
     def run(self):
         """
-        Starts and executes the main simulation loop.
-        The loop continues until the end time is reached or the window is closed.
+        Starts and runs the main simulation loop.
         """
-        self.is_running = True
-        
-        while self.is_running:
-            # 1. Handle Events (like closing the window)
+        self.running = True
+        while self.running:
+            # --- Event Handling ---
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.is_running = False
-            
-            # 2. Calculate time delta (dt)
-            # This makes the simulation speed independent of the computer's speed.
-            # We cap the frame rate at 60 FPS. dt will be in seconds.
-            dt = self.clock.tick(60) / 1000.0
+                    self.running = False
+                # Add other event handlers here (e.g., keyboard input)
 
-            # 3. Update simulation state
-            self.current_time += dt
-            if self.current_time >= self.end_time:
-                print("Simulation end time reached.")
-                self.is_running = False
+            # --- Time Management ---
+            # Get the time elapsed since the last frame in seconds
+            delta_time = self.clock.tick(self.fps) / 1000.0
 
-            # Update each drone
-            for drone in self.drones:
-                drone.update(dt)
+            # --- Simulation Logic Update ---
+            self.environment.update_state(delta_time)
 
-            # 4. Render the new state
-            # We pass the list of drones and the environment to the visualizer
-            self.visualizer.draw(self.drones, self.environment)
-            
-        print("Simulation loop has ended.")
+            # --- Rendering ---
+            self.visualizer.draw(self.environment)
 
-    def close(self):
-        """A helper method to cleanly close the visualizer."""
-        if self.visualizer:
-            self.visualizer.close()
+        print("Simulation finished.")

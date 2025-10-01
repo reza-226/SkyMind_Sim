@@ -1,58 +1,72 @@
-# skymind_sim/main.py
+# FILE: skymind_sim/main.py
 
-from skymind_sim.core.simulation import Simulation
-from skymind_sim.core.environment import Environment
+import pygame
+import numpy as np
+import sys
+import os
+
+# Adjust the Python path to include the project root
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from skymind_sim.core.drone import Drone
-from skymind_sim.core.visualizer import Visualizer
+from skymind_sim.core.environment import Environment
+from skymind_sim.core.simulation import Simulation
+
+# --- Constants ---
+WIDTH, HEIGHT = 800, 600
+FPS = 60
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
 
 def main():
     """
-    Main function to set up and run the drone simulation.
+    Main function to initialize and run the simulation.
     """
+    # --- Pygame Setup ---
+    pygame.init()
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    pygame.display.set_caption("SkyMind Drone Simulation")
+
     print("Simulation setup starting...")
-    
-    # 1. Setup Environment
-    env = Environment(width=800, height=600)
 
-    # 2. Setup Visualizer using environment dimensions
-    visualizer = Visualizer(env.width, env.height)
+    # --- Environment Setup ---
+    env = Environment(width=WIDTH, height=HEIGHT)
 
-    # 3. Setup Simulation with a fixed time step and duration
-    # end_time is the total duration in seconds.
-    sim = Simulation(environment=env, visualizer=visualizer, end_time=120.0)
+    # --- Create Drone Instances with Correct Parameter Name ---
+    # --- MODIFIED LINES ---
+    drone1 = Drone(drone_id="UAV_1", position=np.array([50.0, 50.0]))
+    drone2 = Drone(drone_id="UAV_2", position=np.array([750.0, 550.0]))
+    drone3 = Drone(drone_id="UAV_3", position=np.array([400.0, 300.0]))
+    # --- END OF MODIFIED LINES ---
 
-    # 4. Create Drones with different battery parameters for testing
-    # Drone 1: Standard battery, should complete its mission.
-    drone1 = Drone(drone_id="Alpha-1", position=[50, 50], speed=50, 
-                   battery_capacity=1000.0, consumption_rate=2.0)
-    
-    # Drone 2: High consumption rate, might not make it.
-    drone2 = Drone(drone_id="Bravo-2", position=[750, 550], speed=60, 
-                   battery_capacity=500.0, consumption_rate=15.0)
-                   
-    # Drone 3: Very low starting battery, will definitely stop early.
-    drone3 = Drone(drone_id="Charlie-3", position=[600, 250], speed=40,
-                   battery_capacity=80.0, consumption_rate=5.0)
+    # --- Define Missions for Drones ---
+    # Mission for UAV_1: Patrol a triangular area
+    path1 = [np.array([200.0, 200.0]), np.array([50.0, 400.0]), np.array([300.0, 50.0])]
+    drone1.set_mission(path1)
 
-    # 5. Set Missions for each drone
-    drone1.set_mission(path=[[200, 200], [50, 400], [300, 50]])
-    drone2.set_mission(path=[[400, 400], [100, 100]])
-    drone3.set_mission(path=[[400, 100], [100, 300]]) # A longer path to ensure it fails
+    # Mission for UAV_2: Move to a single point and stay
+    path2 = [np.array([100.0, 100.0])]
+    drone2.set_mission(path2)
 
-    # 6. Add drones to the simulation
-    sim.add_drone(drone1)
-    sim.add_drone(drone2)
-    sim.add_drone(drone3)
+    # Mission for UAV_3: Go to a point near the center
+    path3 = [np.array([300.0, 350.0])]
+    drone3.set_mission(path3)
 
-    # 7. Run the simulation
-    print("Simulation setup complete. Running...")
+    # --- Add Drones to Environment ---
+    env.add_drone(drone1)
+    env.add_drone(drone2)
+    env.add_drone(drone3)
+
+    # --- Simulation Setup ---
+    sim = Simulation(environment=env, screen=screen, width=WIDTH, height=HEIGHT)
+
+    # --- Run Simulation ---
     sim.run()
 
-    # 8. Cleanly close the visualizer window
-    sim.close()
-
-    print("Simulation finished.")
-
+    # --- Shutdown ---
+    pygame.quit()
+    sys.exit()
 
 if __name__ == "__main__":
     main()

@@ -2,86 +2,97 @@
 
 import pygame
 
-# --- Constants for Colors ---
+# Define some colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
-RED = (255, 0, 0)
 GREEN = (0, 255, 0)
+RED = (255, 0, 0)
 BLUE = (0, 0, 255)
-GRAY = (150, 150, 150)
-
-# --- Constants for Drawing ---
-DRONE_COLOR = BLUE
-DRONE_INACTIVE_COLOR = GRAY
-PATH_COLOR = GREEN
-TARGET_COLOR = RED
-
+GRAY = (200, 200, 200)
 
 class Visualizer:
     """
-    Handles the graphical representation of the simulation using Pygame.
+    Handles all the drawing and rendering for the simulation.
     """
-    def __init__(self, width, height):
+    def __init__(self, screen, width, height):
         """
-        Initializes the Pygame window and visualizer settings.
+        Initializes the visualizer.
 
         Args:
-            width (int): The width of the simulation window.
-            height (int): The height of the simulation window.
+            screen: The pygame screen surface to draw on.
+            width (int): The width of the screen.
+            height (int): The height of the screen.
         """
-        pygame.init()
+        self.screen = screen
         self.width = width
         self.height = height
-        self.screen = pygame.display.set_mode((self.width, self.height))
-        pygame.display.set_caption("SkyMind Drone Simulation")
-        # Use a default system font. If not found, Pygame has a fallback.
-        self.font = pygame.font.SysFont(None, 24)
-
-    def draw(self, drones, environment):
-        """
-        Draws the current state of the simulation onto the screen.
         
-        Args:
-            drones (list): A list of Drone objects to draw.
-            environment (Environment): The simulation environment (unused for now, but good practice).
+        # --- MODIFIED SECTION ---
+        # Try to load the drone image, but handle errors gracefully.
+        try:
+            self.drone_image = pygame.image.load('data/assets/drone_icon.png').convert_alpha()
+            self.drone_image = pygame.transform.scale(self.drone_image, (30, 30))
+        except (pygame.error, FileNotFoundError):
+            # If the image file is not found or fails to load, print a warning 
+            # and set the image to None. The drawing code will then use a fallback.
+            print("Warning: 'data/assets/drone_icon.png' not found. Drawing circles for drones instead.")
+            self.drone_image = None
+        # --- END OF MODIFIED SECTION ---
+        
+        # Font for displaying text
+        self.font = pygame.font.SysFont('Arial', 14)
+
+    def draw(self, environment):
         """
-        # 1. Fill the background
+        Draws the entire simulation state.
+
+        Args:
+            environment (Environment): The environment object containing all elements to draw.
+        """
         self.screen.fill(WHITE)
+        
+        for drone in environment.drones:
+            self.draw_drone(drone)
 
-        # 2. Draw each drone and its associated info
-        for drone in drones:
-            drone_pos = (int(drone.position[0]), int(drone.position[1]))
-            
-            # Choose color based on active status
-            current_drone_color = DRONE_COLOR if drone.is_active else DRONE_INACTIVE_COLOR
-            
-            # Draw drone body
-            pygame.draw.circle(self.screen, current_drone_color, drone_pos, 8) # Drone is an 8px radius circle
-
-            # Draw drone ID and battery status text
-            info_text = f"{drone.id} | Bat: {drone.current_battery:.0f}"
-            if not drone.is_active:
-                info_text += " [INACTIVE]"
-            
-            text_surface = self.font.render(info_text, True, BLACK)
-            self.screen.blit(text_surface, (drone_pos[0] + 12, drone_pos[1] - 10))
-
-            # Draw the drone's remaining path
-            if drone.is_active and not drone.is_mission_complete and len(drone.path) > 0:
-                # The path starts from the drone's current position to its next target
-                path_points = [drone.position] + drone.path[drone.path_index:]
-                if len(path_points) > 1:
-                    # Convert all points to tuples of integers for drawing
-                    drawable_points = [tuple(map(int, p)) for p in path_points]
-                    pygame.draw.lines(self.screen, PATH_COLOR, False, drawable_points, 1)
-            
-                # Draw the current target as a hollow circle
-                target_pos = drone.path[drone.path_index]
-                pygame.draw.circle(self.screen, TARGET_COLOR, tuple(map(int, target_pos)), 5, 1)
-
-        # 3. Update the entire display
         pygame.display.flip()
 
-    def close(self):
-        """Closes the Pygame window."""
-        pygame.quit()
+    def draw_drone(self, drone):
+        """
+        Draws a single drone and its associated information.
+
+        Args:
+            drone (Drone): The drone object to draw.
+        """
+        pos = (int(drone.position[0]), int(drone.position[1]))
+
+        # Draw Drone Path/Waypoints
+        if drone.mission_path:
+            points = [drone.position] + drone.mission_path
+            if len(points) > 1:
+                pygame.draw.lines(self.screen, GRAY, False, points, 2)
+            
+            for point in drone.mission_path:
+                pygame.draw.circle(self.screen, BLUE, (int(point[0]), int(point[1])), 4)
+
+        # Draw Drone Body
+        if self.drone_image:
+            img_rect = self.drone_image.get_rect(center=pos)
+            self.screen.blit(self.drone_image, img_rect)
+        else:
+            # Fallback to drawing a circle if no image
+            pygame.draw.circle(self.screen, BLACK, pos, 10)
+
+        # Draw Drone Info (ID and Battery)
+        id_text = self.font.render(drone.drone_id, True, BLACK)
+        self.screen.blit(id_text, (pos[0] + 15, pos[1] - 15))
+        
+        battery_percentage = drone.battery / 100.0
+        battery_bar_width = 30
+        battery_bar_height = 5
+        
+        bg_rect = pygame.Rect(pos[0] - 15, pos[1] + 15, battery_bar_width, battery_bar_height)
+        pygame.draw.rect(self.screen, RED, bg_rect)
+        
+        fg_width = int(battery_bar_width * battery_percentage)
+        fg_rect = pygame.Rect(pos[0] - 15, pos[1] + 15, fg_width, battery_bar_height)
+        pygame.draw.rect(self.screen, GREEN, fg_rect)

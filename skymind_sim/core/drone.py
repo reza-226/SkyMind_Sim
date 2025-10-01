@@ -1,102 +1,75 @@
-# skymind_sim/core/drone.py
+# FILE: skymind_sim/core/drone.py
 
 import numpy as np
+from enum import Enum
+
+class DroneStatus(Enum):
+    IDLE = "Idle"
+    MOVING = "Moving"
+    CHARGING = "Charging"
+    RETURNING = "Returning"
 
 class Drone:
     """
-    Represents a single drone in the simulation, managing its state,
-    mission, and physical properties like battery.
+    Represents a single drone in the simulation.
     """
-    def __init__(self, drone_id, position, speed,
-                 battery_capacity=1000.0, consumption_rate=1.0):
+    def __init__(self, drone_id, position, battery=100, speed=1):
         """
         Initializes a Drone object.
 
         Args:
-            drone_id (str): Unique identifier for the drone.
-            position (list or np.ndarray): Initial position [x, y].
-            speed (float): The speed of the drone in units per second.
-            battery_capacity (float): Maximum battery capacity (e.g., in abstract energy units).
-            consumption_rate (float): Energy consumed per second of flight.
+            drone_id (str): The unique identifier for the drone.
+            position (np.ndarray): The initial (x, y) coordinates of the drone.
+            battery (int): The initial battery level (0-100).
+            speed (float): The speed of the drone in units per simulation step.
         """
-        self.id = drone_id
+        self.drone_id = drone_id
         self.position = np.array(position, dtype=float)
+        self.battery = battery
         self.speed = speed
-        self.path = []
-        self.path_index = 0
-        self.is_mission_complete = False
+        self.status = DroneStatus.IDLE
+        self.mission_path = []
 
-        # --- Battery Attributes ---
-        self.battery_capacity = float(battery_capacity)
-        self.current_battery = float(battery_capacity)  # Start with a full battery
-        self.consumption_rate = float(consumption_rate)
-        self.is_active = True  # A flag to indicate if the drone can fly
-
-    def __repr__(self):
-        """Provides a developer-friendly representation of the drone."""
-        return (f"Drone(id={self.id}, pos={self.position}, "
-                f"battery={self.current_battery:.2f}/{self.battery_capacity:.2f}, "
-                f"active={self.is_active})")
-
-    def set_mission(self, path):
+    def set_mission(self, waypoints):
         """
-        Assigns a mission (a series of waypoints) to the drone.
+        Sets a mission for the drone, defined by a list of waypoints.
 
         Args:
-            path (list of lists): A list of [x, y] coordinates representing the path.
+            waypoints (list of tuples/np.ndarray): A list of (x, y) coordinates.
         """
-        self.path = [np.array(p, dtype=float) for p in path]
-        self.path_index = 0
-        self.is_mission_complete = False
-        print(f"Drone {self.id}: Mission set. Path: {self.path}")
+        self.mission_path = [np.array(wp, dtype=float) for wp in waypoints]
+        if self.mission_path:
+            self.status = DroneStatus.MOVING
+            print(f"Drone {self.drone_id}: Mission set. Path: {self.mission_path}")
 
-    def update(self, dt):
+    def update(self, delta_time):
         """
-        Updates the drone's state for a given time step (dt).
-        This includes movement and battery consumption.
-
-        Args:
-            dt (float): The time elapsed since the last update in seconds.
+        Updates the drone's state for a single time step.
+        This includes moving towards a waypoint and consuming battery.
         """
-        # --- Pre-update Checks ---
-        # Do nothing if mission is done or drone is out of battery
-        if self.is_mission_complete or not self.is_active:
-            return
+        if self.status == DroneStatus.MOVING and self.mission_path:
+            target = self.mission_path[0]
+            direction = target - self.position
+            distance = np.linalg.norm(direction)
+            
+            travel_distance = self.speed * delta_time
+            
+            if distance <= travel_distance:
+                # Reached the waypoint
+                self.position = target
+                self.mission_path.pop(0)
+                if not self.mission_path:
+                    self.status = DroneStatus.IDLE
+                    print(f"Drone {self.drone_id} completed its mission.")
+            else:
+                # Move towards the waypoint
+                self.position += (direction / distance) * travel_distance
+            
+            # Consume battery (simple model)
+            self.battery -= 0.1 * delta_time 
+            if self.battery < 0:
+                self.battery = 0
 
-        # Check if we are at the end of the path list
-        if self.path_index >= len(self.path):
-            self.is_mission_complete = True
-            print(f"Drone {self.id}: Mission Complete!")
-            return
-
-        # --- Energy Consumption ---
-        energy_consumed = self.consumption_rate * dt
-        
-        # Check if there's enough battery for this time step
-        if self.current_battery <= energy_consumed:
-            self.current_battery = 0
-            self.is_active = False
-            print(f"!!! CRITICAL: Drone {self.id} out of battery at position {self.position} !!!")
-            return  # Stop all actions
-
-        # If there's battery, consume it for this time step
-        self.current_battery -= energy_consumed
-
-        # --- Movement Logic ---
-        target_pos = self.path[self.path_index]
-        direction = target_pos - self.position
-        distance_to_target = np.linalg.norm(direction)
-        
-        move_distance = self.speed * dt
-
-        if distance_to_target < move_distance:
-            # We are close enough to snap to the target waypoint
-            self.position = target_pos
-            self.path_index += 1
-            # Check if this was the last point in the mission
-            if self.path_index >= len(self.path):
-                self.is_mission_complete = True
-                print(f"Drone {self.id}: Mission Complete!")
-        else:
-            # Move towards the target
-            self.position += (direction / distance_to_target) * move_distance
+    def __str__(self):
+        return (f"Drone(ID={self.drone_id}, Pos={self.position}, "
+                f"Battery={self.battery:.1f}%, Status={self.status.value})")
