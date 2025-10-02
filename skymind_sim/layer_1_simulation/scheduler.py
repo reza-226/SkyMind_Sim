@@ -1,23 +1,26 @@
-# skymind_sim/core/scheduler.py
-
-import heapq
-from .event import Event
+# skymind_sim/layer_1_simulation/scheduler.py
 
 class Scheduler:
+    """
+    A simple time scheduler for the simulation.
+    It manages the simulation time and ticks.
+    Belongs to Layer 1 as it controls the flow of the simulation itself.
+    """
     def __init__(self):
-        """Initializes an empty event queue."""
-        self.event_queue = []
+        self.time: float = 0.0
+        self.tick_count: int = 0
+        print("Scheduler initialized.")
 
-    def add_event(self, event: Event):
-        """Adds an event to the priority queue."""
-        heapq.heappush(self.event_queue, event)
+    def tick(self, dt: float):
+        """
+        Advances the simulation time by a delta.
 
-    def get_next_event(self) -> Event | None:
-        """Retrieves and removes the next event from the queue."""
-        if not self.is_empty():
-            return heapq.heappop(self.event_queue)
-        return None
+        Args:
+            dt (float): The time step for this tick (e.g., 0.1 seconds).
+        """
+        self.time += dt
+        self.tick_count += 1
+        print(f"--- Simulation Tick {self.tick_count}: Time = {self.time:.2f}s ---")
 
-    def is_empty(self) -> bool:
-        """Checks if the event queue is empty."""
-        return not self.event_queue
+    def get_time(self) -> float:
+        return self.time

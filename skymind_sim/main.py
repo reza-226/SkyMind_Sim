@@ -1,42 +1,49 @@
 # skymind_sim/main.py
-import sys
-import pygame
 
-from .config import SIM_CONFIG
-from .core.simulation import Simulation
-from .core.environment import Environment
-from .utils.asset_loader import AssetLoader
-# Configuration dictionary
-SIM_CONFIG = {
-    'SCREEN_WIDTH': 1280,
-    'SCREEN_HEIGHT': 720,
-    'FPS': 60,
-    'CAPTION': 'SkyMind Drone Simulator',
-    'BACKGROUND_COLOR': (20, 30, 40), # Dark blue-grey
-    'ASSETS_DIR': 'assets'
-}
+from skymind_sim.layer_1_simulation.simulation import Simulation
+import time
 
-def main():
-    """The main entry point of the simulator."""
-    
-    # 1. Initialize core systems IN THE CORRECT ORDER
-    
-    # First, create the environment, which initializes pygame and the display
-    env = Environment(config=SIM_CONFIG)
-    
-    # Second, load assets now that the display is ready
-    AssetLoader.load_assets()
-    
-    # Third, create the simulation instance
-    sim = Simulation(config=SIM_CONFIG, environment=env)
+def run_simulation_in_terminal():
+    """
+    A simple function to test the simulation logic without any graphics.
+    This demonstrates that Layer 1 can run independently of Layer 0.
+    """
+    print("=========================================")
+    print("=      SkyMind_Sim Terminal Runner      =")
+    print("=========================================")
 
-    # 2. Run the main simulation loop
-    try:
-        sim.run()
-    except Exception as e:
-        print(f"FATAL: An error occurred during simulation run: {e}")
-        pygame.quit()
-        sys.exit()
+    # 1. Create a simulation instance
+    sim = Simulation()
+
+    # 2. Setup the world
+    sim.setup_world()
+
+    # 3. Start the simulation
+    sim.start()
+
+    # 4. Run the simulation for a few steps
+    time_step = 0.5  # Simulate a time step of 0.5 seconds
+    num_steps = 5
+
+    for i in range(num_steps):
+        print(f"\n[Main Loop - Step {i+1}/{num_steps}]")
+        sim.update(dt=time_step)
+
+        # Get and print the world state after the update
+        world_state = sim.get_world_state()
+        print("Current World State:")
+        print(f"  Time: {world_state['time']:.2f}s")
+        for drone_state in world_state['drones']:
+            print(f"  - Drone {drone_state['id']} at {drone_state['position']}")
+
+        time.sleep(1) # Pause for 1 second to make the output readable
+
+    # 5. Stop the simulation
+    sim.stop()
+    print("\n=========================================")
+    print("=         Simulation Finished         =")
+    print("=========================================")
+
 
 if __name__ == "__main__":
-    main()
+    run_simulation_in_terminal()
