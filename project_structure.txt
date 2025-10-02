@@ -49,43 +49,55 @@ simulation_20250928_163734.log
 ./skymind_sim:
 __init__.py
 config.py
-core/
+layer_0_presentation/
+layer_1_simulation/
+layer_2_models/
+layer_3_intelligence/
 main.py
-pathfinding/
 utils/
-visualization/
 
 
-./skymind_sim/core:
+./skymind_sim/layer_0_presentation:
 __init__.py
-battery.py
-drone.py
+asset_loader.py
 environment.py
-event.py
-obstacle.py
-path_planner.py
+renderer.py
+
+./skymind_sim/layer_1_simulation:
+__init__.py
+entities/
 scheduler.py
 simulation.py
-visualizer.py
+world/
 
 
-./skymind_sim/pathfinding:
+./skymind_sim/layer_1_simulation/entities:
 __init__.py
-path_planner.py
+drone.py
 
+
+./skymind_sim/layer_1_simulation/world:
+__init__.py
+obstacle.py
+
+
+./skymind_sim/layer_2_models:
+__init__.py
+energy_model.py
+
+./skymind_sim/layer_3_intelligence:
+__init__.py
+pathfinding/
+
+./skymind_sim/layer_3_intelligence/pathfinding:
+__init__.py
+a_star.py
+path_plann
 
 ./skymind_sim/utils:
 __init__.py
-a_star.py
-asset_loader.py
-log_manager.py
+event_system.py
 logger.py
-pathfinding.py
-visualizer.py
-
-
-./skymind_sim/visualization:
-__init__.py
 
 
 ./skymind_sim.egg-info:

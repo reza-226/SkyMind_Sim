@@ -1,0 +1,18 @@
+2025-10-02 12:31:00,692 - root - INFO - Logging configured successfully.
+2025-10-02 12:31:00,693 - root - INFO - Log file created at: data/simulation_logs\simulation_20251002_123100.log
+2025-10-02 12:31:00,693 - __main__ - INFO - Initializing Simulation (Layer 1)...
+2025-10-02 12:31:00,693 - skymind_sim.layer_1_simulation.simulation - INFO - Simulation (Layer 1) initialized.
+2025-10-02 12:31:00,693 - skymind_sim.layer_1_simulation.simulation - INFO - Attempting to load world from: data/maps/simple_map.json
+2025-10-02 12:31:00,694 - skymind_sim.layer_1_simulation.world.world - INFO - World created with size (1280x720).
+2025-10-02 12:31:00,695 - __main__ - CRITICAL - An unhandled exception occurred: Drone.__init__() got an unexpected keyword argument 'id'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\main.py", line 25, in main
+    simulation.load_world_from_file('data/maps/simple_map.json')
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 44, in load_world_from_file
+    drone = Drone(
+        id=drone_data['id'],
+        position=tuple(drone_data['position'])
+    )
+TypeError: Drone.__init__() got an unexpected keyword argument 'id'
+2025-10-02 12:31:00,705 - __main__ - INFO - Application Closed

@@ -1,0 +1,16 @@
+2025-10-02 12:44:45,983 - root - INFO - Logging configured successfully.
+2025-10-02 12:44:45,983 - root - INFO - Log file created at: data/simulation_logs\simulation_20251002_124445.log
+2025-10-02 12:44:45,984 - root - INFO - Initializing Simulation (Layer 1)...
+2025-10-02 12:44:46,153 - skymind_sim.layer_1_simulation.simulation - INFO - Simulation (Layer 1) initialized.
+2025-10-02 12:44:46,154 - skymind_sim.layer_1_simulation.simulation - INFO - Attempting to load world from: data/maps/simple_map.json
+2025-10-02 12:44:46,154 - skymind_sim.layer_1_simulation.world.world - INFO - World created with size (1280x720).
+2025-10-02 12:44:46,155 - skymind_sim.layer_1_simulation.entities.drone - INFO - Drone 'd1' created at position (100, 100).
+2025-10-02 12:44:46,155 - skymind_sim.layer_1_simulation.world.world - INFO - Added Drone(ID='d1', Position=(100, 100)) to the world.
+2025-10-02 12:44:46,156 - skymind_sim.layer_1_simulation.world.obstacle - INFO - Obstacle 'obs1' created at (300, 200) with size (50, 150).
+2025-10-02 12:44:46,156 - skymind_sim.layer_1_simulation.world.world - INFO - Added Obstacle(ID='obs1', Position=(300, 200), Size=(50, 150)) to the world.
+2025-10-02 12:44:46,221 - skymind_sim.layer_0_presentation.asset_loader - INFO - AssetLoader initialized with absolute base path: 'D:\Payannameh\SkyMind_Sim\assets'
+2025-10-02 12:44:46,242 - skymind_sim.layer_0_presentation.asset_loader - INFO - Successfully loaded image 'drone' from 'D:\Payannameh\SkyMind_Sim\assets\images/drone.png'
+2025-10-02 12:44:46,244 - skymind_sim.layer_0_presentation.renderer - INFO - Renderer initialized and drone asset loaded.
+2025-10-02 12:44:46,244 - skymind_sim.layer_1_simulation.simulation - INFO - Simulation loop started.
+2025-10-02 12:44:51,171 - skymind_sim.layer_1_simulation.simulation - INFO - Simulation loop ended.
+2025-10-02 12:44:51,172 - root - INFO - Application Closed

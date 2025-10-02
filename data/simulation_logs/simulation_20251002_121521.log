@@ -1,0 +1,14 @@
+2025-10-02 12:15:21,665 - root - INFO - Logging configured successfully.
+2025-10-02 12:15:21,665 - root - INFO - Log file created at: data/simulation_logs\simulation_20251002_121521.log
+2025-10-02 12:15:21,666 - __main__ - INFO - Initializing Simulation (Layer 1)...
+2025-10-02 12:15:21,666 - skymind_sim.layer_1_simulation.simulation - INFO - Simulation (Layer 1) initialized.
+2025-10-02 12:15:21,666 - skymind_sim.layer_1_simulation.simulation - INFO - Attempting to load world from: data/maps/simple_map.json
+2025-10-02 12:15:21,668 - skymind_sim.layer_1_simulation.simulation - INFO - World setup complete: 1 drone(s), 3 obstacle(s).
+2025-10-02 12:15:21,669 - __main__ - INFO - World loaded successfully from file.
+2025-10-02 12:15:21,671 - __main__ - CRITICAL - An unhandled exception occurred: 'Simulation' object has no attribute 'get_world'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\main.py", line 31, in main
+    drone = simulation.get_world().get_drone_by_id('d1')
+            ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Simulation' object has no attribute 'get_world'
+2025-10-02 12:15:21,679 - __main__ - INFO - Application Closed

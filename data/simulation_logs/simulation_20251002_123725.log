@@ -1,0 +1,13 @@
+2025-10-02 12:37:25,536 - root - INFO - Logging configured successfully.
+2025-10-02 12:37:25,537 - root - INFO - Log file created at: data/simulation_logs\simulation_20251002_123725.log
+2025-10-02 12:37:25,537 - root - INFO - Initializing Simulation (Layer 1)...
+2025-10-02 12:37:25,708 - skymind_sim.layer_1_simulation.simulation - INFO - Simulation (Layer 1) initialized.
+2025-10-02 12:37:25,708 - skymind_sim.layer_1_simulation.simulation - INFO - Attempting to load world from: data/maps/simple_map.json
+2025-10-02 12:37:25,709 - skymind_sim.layer_1_simulation.world.world - INFO - World created with size (1280x720).
+2025-10-02 12:37:25,709 - skymind_sim.layer_1_simulation.entities.drone - INFO - Drone 'd1' created at position (100, 100).
+2025-10-02 12:37:25,710 - skymind_sim.layer_1_simulation.world.world - INFO - Added Drone(ID='d1', Position=(100, 100)) to the world.
+2025-10-02 12:37:25,710 - skymind_sim.layer_1_simulation.world.obstacle - INFO - Obstacle 'obs1' created at (300, 200) with size (50, 150).
+2025-10-02 12:37:25,711 - skymind_sim.layer_1_simulation.world.world - INFO - Added Obstacle(ID='obs1', Position=(300, 200), Size=(50, 150)) to the world.
+2025-10-02 12:37:25,774 - skymind_sim.layer_1_simulation.simulation - INFO - Simulation loop started.
+2025-10-02 12:37:35,878 - skymind_sim.layer_1_simulation.simulation - INFO - Simulation loop ended.
+2025-10-02 12:37:35,879 - root - INFO - Application Closed

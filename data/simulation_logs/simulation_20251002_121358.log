@@ -1,0 +1,10 @@
+2025-10-02 12:13:58,542 - root - INFO - Logging configured successfully.
+2025-10-02 12:13:58,543 - root - INFO - Log file created at: data/simulation_logs\simulation_20251002_121358.log
+2025-10-02 12:13:58,543 - skymind_sim.layer_1_simulation.simulation - INFO - Simulation (Layer 1) initialized.
+2025-10-02 12:13:58,544 - __main__ - CRITICAL - An unhandled exception occurred: 'Simulation' object has no attribute 'setup_world_from_file'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\main.py", line 24, in main
+    simulation.setup_world_from_file('data/maps/simple_map.json')
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Simulation' object has no attribute 'setup_world_from_file'. Did you mean: 'load_world_from_file'?
+2025-10-02 12:13:58,551 - __main__ - INFO - Application Closed

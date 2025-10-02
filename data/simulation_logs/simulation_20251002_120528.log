@@ -1,0 +1,20 @@
+2025-10-02 12:05:28,798 - root - INFO - Logging configured successfully.
+2025-10-02 12:05:28,799 - root - INFO - Log file created at: data/simulation_logs\simulation_20251002_120528.log
+2025-10-02 12:05:28,966 - skymind_sim.layer_1_simulation.simulation - INFO - Simulation (Layer 1) initialized.
+2025-10-02 12:05:28,966 - skymind_sim.layer_1_simulation.simulation - INFO - Attempting to load world from: data/maps/simple_map.json
+2025-10-02 12:05:28,967 - skymind_sim.layer_1_simulation.simulation - INFO - World setup complete: 1 drone(s), 3 obstacle(s).
+2025-10-02 12:05:29,034 - skymind_sim.layer_0_presentation.asset_loader - INFO - AssetLoader Singleton Initialized.
+2025-10-02 12:05:29,042 - skymind_sim.layer_0_presentation.renderer - INFO - Renderer initialized with size (800x600) and title 'SkyMind_Sim'.
+2025-10-02 12:05:29,048 - skymind_sim.layer_0_presentation.renderer - ERROR - Failed to load assets: No such file or directory: 'D:\Payannameh\SkyMind_Sim\skymind_sim\assets\images\drone.png'.
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_0_presentation\renderer.py", line 50, in load_assets
+    original_drone_img = self.asset_loader.load_image('drone.png')
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_0_presentation\asset_loader.py", line 53, in load_image
+    image = pygame.image.load(path).convert_alpha()
+            ~~~~~~~~~~~~~~~~~^^^^^^
+FileNotFoundError: No such file or directory: 'D:\Payannameh\SkyMind_Sim\skymind_sim\assets\images\drone.png'.
+2025-10-02 12:05:29,088 - skymind_sim.layer_1_simulation.simulation - INFO - Path set for drone 'd1'.
+2025-10-02 12:05:29,089 - __main__ - INFO - Starting Main Loop...
+2025-10-02 12:05:45,236 - __main__ - INFO - ...Main Loop Exited.
+2025-10-02 12:05:45,237 - skymind_sim.layer_0_presentation.renderer - INFO - Renderer cleanup.
+2025-10-02 12:05:45,298 - __main__ - INFO - Application Closed

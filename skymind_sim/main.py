@@ -1,49 +1,53 @@
 # skymind_sim/main.py
+import pygame
 
+# وارد کردن کلاس‌های اصلی از لایه‌های مربوطه
 from skymind_sim.layer_1_simulation.simulation import Simulation
-import time
+from skymind_sim.layer_0_presentation.renderer import Renderer
 
-def run_simulation_in_terminal():
-    """
-    A simple function to test the simulation logic without any graphics.
-    This demonstrates that Layer 1 can run independently of Layer 0.
-    """
-    print("=========================================")
-    print("=      SkyMind_Sim Terminal Runner      =")
-    print("=========================================")
+# تنظیمات اصلی صفحه نمایش
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+FPS = 60  # فریم بر ثانیه برای نمایش
 
-    # 1. Create a simulation instance
+def main_game_loop():
+    print("="*41 + "\n=       SkyMind_Sim Initializing        =\n" + "="*41)
+    
+    # 1. مقداردهی اولیه لایه شبیه‌سازی
     sim = Simulation()
-
-    # 2. Setup the world
     sim.setup_world()
-
-    # 3. Start the simulation
+    
+    # 2. مقداردهی اولیه لایه نمایش
+    renderer = Renderer(SCREEN_WIDTH, SCREEN_HEIGHT)
+    
+    # 3. ایجاد ساعت برای کنترل نرخ فریم و محاسبه dt
+    clock = pygame.time.Clock()
+    
+    # 4. شروع شبیه‌سازی (برای تنظیم زمان اولیه)
     sim.start()
-
-    # 4. Run the simulation for a few steps
-    time_step = 0.5  # Simulate a time step of 0.5 seconds
-    num_steps = 5
-
-    for i in range(num_steps):
-        print(f"\n[Main Loop - Step {i+1}/{num_steps}]")
-        sim.update(dt=time_step)
-
-        # Get and print the world state after the update
+    
+    print("\nStarting Main Loop...")
+    running = True
+    while running:
+        # مدیریت رویدادهای پنجره (مثل بستن)
+        running = renderer.handle_events()
+        
+        # محاسبه زمان سپری شده از فریم قبل (dt) به ثانیه
+        # این کار باعث می‌شود سرعت شبیه‌سازی مستقل از نرخ فریم رندر باشد
+        dt = clock.tick(FPS) / 1000.0
+        
+        # آپدیت منطق شبیه‌سازی
+        sim.update(dt)
+        
+        # گرفتن وضعیت فعلی دنیا از شبیه‌سازی
         world_state = sim.get_world_state()
-        print("Current World State:")
-        print(f"  Time: {world_state['time']:.2f}s")
-        for drone_state in world_state['drones']:
-            print(f"  - Drone {drone_state['id']} at {drone_state['position']}")
+        
+        # رسم وضعیت دنیا روی صفحه
+        renderer.draw(world_state)
 
-        time.sleep(1) # Pause for 1 second to make the output readable
-
-    # 5. Stop the simulation
-    sim.stop()
-    print("\n=========================================")
-    print("=         Simulation Finished         =")
-    print("=========================================")
-
+    print("...Main Loop Exited.")
+    renderer.cleanup()
+    print("\n" + "="*41 + "\n=         Application Closed          =\n" + "="*41)
 
 if __name__ == "__main__":
-    run_simulation_in_terminal()
+    main_game_loop()
