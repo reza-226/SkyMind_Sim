@@ -1,53 +1,64 @@
 # skymind_sim/main.py
+
 import pygame
+import logging
+from .layer_0_presentation.renderer import Renderer
+from .layer_1_simulation.simulation import Simulation
+from .utils.logger import setup_logging
 
-# وارد کردن کلاس‌های اصلی از لایه‌های مربوطه
-from skymind_sim.layer_1_simulation.simulation import Simulation
-from skymind_sim.layer_0_presentation.renderer import Renderer
+# --- Configuration ---
+WINDOW_TITLE = "SkyMind_Sim"
+MAP_FILE_PATH = "data/maps/simple_map.json"  # Path to our new map file
+LOG_LEVEL = logging.INFO
 
-# تنظیمات اصلی صفحه نمایش
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
-FPS = 60  # فریم بر ثانیه برای نمایش
+def main():
+    # 1. Initialization
+    setup_logging(LOG_LEVEL)
+    logger = logging.getLogger(__name__)
+    pygame.init()
+    
+    # 2. Layer Setup
+    # Layer 1: Simulation Core
+    simulation = Simulation()
+    simulation.load_world_from_file(MAP_FILE_PATH)
+    
+    # Get world size from the simulation after loading the map
+    world_size = simulation.get_world_state()["world_size"]
 
-def main_game_loop():
-    print("="*41 + "\n=       SkyMind_Sim Initializing        =\n" + "="*41)
-    
-    # 1. مقداردهی اولیه لایه شبیه‌سازی
-    sim = Simulation()
-    sim.setup_world()
-    
-    # 2. مقداردهی اولیه لایه نمایش
-    renderer = Renderer(SCREEN_WIDTH, SCREEN_HEIGHT)
-    
-    # 3. ایجاد ساعت برای کنترل نرخ فریم و محاسبه dt
-    clock = pygame.time.Clock()
-    
-    # 4. شروع شبیه‌سازی (برای تنظیم زمان اولیه)
-    sim.start()
-    
-    print("\nStarting Main Loop...")
+    # Layer 0: Presentation
+    renderer = Renderer(width=world_size[0], height=world_size[1], title=WINDOW_TITLE)
+    renderer.load_assets()
+
+    # --- Temp: Set a simple path for the drone to test movement ---
+    # In the future, this path will come from Layer 3 (Intelligence)
+    simulation.set_drone_path("d1", [(700, 500), (700, 100), (100, 100), (100, 500)])
+
+
+    # 3. Main Loop
     running = True
+    clock = pygame.time.Clock()
+    logger.info("Starting Main Loop...")
     while running:
-        # مدیریت رویدادهای پنجره (مثل بستن)
-        running = renderer.handle_events()
-        
-        # محاسبه زمان سپری شده از فریم قبل (dt) به ثانیه
-        # این کار باعث می‌شود سرعت شبیه‌سازی مستقل از نرخ فریم رندر باشد
-        dt = clock.tick(FPS) / 1000.0
-        
-        # آپدیت منطق شبیه‌سازی
-        sim.update(dt)
-        
-        # گرفتن وضعیت فعلی دنیا از شبیه‌سازی
-        world_state = sim.get_world_state()
-        
-        # رسم وضعیت دنیا روی صفحه
-        renderer.draw(world_state)
+        dt = clock.tick(60) / 1000.0  # Delta time in seconds
 
-    print("...Main Loop Exited.")
+        # Event Handling
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+        # 4. Logic & Update
+        simulation.update(dt)
+
+        # 5. Rendering
+        world_state = simulation.get_world_state()
+        renderer.render(world_state)
+
+    logger.info("...Main Loop Exited.")
+
+    # 6. Cleanup
     renderer.cleanup()
-    print("\n" + "="*41 + "\n=         Application Closed          =\n" + "="*41)
+    pygame.quit()
+    logger.info("Application Closed")
 
 if __name__ == "__main__":
-    main_game_loop()
+    main()

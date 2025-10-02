@@ -1,60 +1,94 @@
 # skymind_sim/layer_0_presentation/asset_loader.py
+
 import pygame
 import os
+import logging
 
-# پیدا کردن مسیر ریشه پروژه برای دسترسی به پوشه assets
-# این کد از محل فایل asset_loader.py دو مرحله به بالا می‌رود (از layer_0_presentation به skymind_sim و سپس به ریشه پروژه)
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+logger = logging.getLogger(__name__)
+
+# --- بخش اصلاح شده برای محاسبه مسیر ریشه پروژه ---
+# این کد به صورت قابل اعتمادتری مسیر ریشه پروژه را پیدا می‌کند.
+# فرض بر این است که این فایل در skymind_sim/layer_0_presentation/ قرار دارد.
+# بنابراین، با دو بار بازگشت به عقب (os.path.dirname), به ریشه پروژه می‌رسیم.
+try:
+    CURRENT_FILE_PATH = os.path.abspath(__file__)
+    LAYER_0_DIR = os.path.dirname(CURRENT_FILE_PATH)
+    SKYBIND_SIM_DIR = os.path.dirname(LAYER_0_DIR)
+    PROJECT_ROOT = os.path.dirname(SKYBIND_SIM_DIR)
+except NameError:
+    # __file__ ممکن است در برخی محیط‌ها (مانند REPL تعاملی) تعریف نشده باشد
+    # در این حالت از مسیر کاری فعلی به عنوان یک جایگزین استفاده می‌کنیم
+    PROJECT_ROOT = os.getcwd()
+
+ASSETS_DIR = os.path.join(PROJECT_ROOT, 'assets')
+# --------------------------------------------------
+
 
 class AssetLoader:
-    def __init__(self):
-        self.images = {}
-        self.fonts = {}
-        # اطمینان از اینکه ماژول فونت Pygame مقداردهی اولیه شده است
-        if not pygame.font.get_init():
-            pygame.font.init()
-        print("AssetLoader Singleton Initialized.")
+    """
+    A Singleton class to handle loading of assets like images and fonts.
+    This ensures that assets are loaded only once by caching them.
+    """
+    _instance = None
+    _cache = {}
 
-    def get_path(self, asset_type: str, filename: str) -> str:
-        """مسیر کامل یک asset را بر اساس نوع آن (images, fonts) می‌سازد."""
-        return os.path.join(PROJECT_ROOT, 'assets', asset_type, filename)
+    def __new__(cls):
+        if cls._instance is None:
+            logger.info("AssetLoader Singleton Initialized.")
+            cls._instance = super(AssetLoader, cls).__new__(cls)
+            cls._instance._cache = {}  # Initialize cache for the instance
+        return cls._instance
 
-    def load_image(self, filename: str) -> pygame.Surface:
-        """یک تصویر را بارگذاری و کش می‌کند. در صورت خطا، یک سطح جایگزین برمی‌گرداند."""
-        if filename not in self.images:
-            full_path = self.get_path('images', filename)
-            try:
-                image = pygame.image.load(full_path).convert_alpha()
-                self.images[filename] = image
-                print(f"SUCCESS: Image loaded and cached from '{full_path}'")
-            except pygame.error as e:
-                print(f"ERROR: Cannot load image '{filename}'. Pygame error: {e}")
-                # در صورت خطا یک مربع صورتی به عنوان جایگزین ایجاد می‌کنیم
-                image = pygame.Surface((40, 40))
-                image.fill((255, 0, 255)) # رنگ صورتی نشانگر خطاست
-                self.images[filename] = image
-        # یک کپی از تصویر را برمی‌گردانیم تا تغییرات ناخواسته روی نسخه کش شده اعمال نشود
-        return self.images[filename].copy()
+    def load_image(self, filename: str):
+        """
+        Loads an image from the 'assets/images' directory.
+        Uses a cache to avoid reloading the same image.
 
-    def load_font(self, filename: str, size: int) -> pygame.font.Font:
-        """یک فونت را بارگذاری و کش می‌کند. در صورت خطا، فونت پیش‌فرض Pygame را برمی‌گرداند."""
-        key = (filename, size)
-        if key not in self.fonts:
-            full_path = self.get_path('fonts', filename)
-            try:
-                font = pygame.font.Font(full_path, size)
-                self.fonts[key] = font
-                print(f"SUCCESS: Font '{filename}' loaded at size {size}")
-            except (pygame.error, FileNotFoundError) as e:
-                print(f"ERROR: Cannot load font '{filename}'. Error: {e}")
-                # در صورت خطا از فونت پیش‌فرض استفاده می‌کنیم
-                font = pygame.font.Font(None, size)
-                self.fonts[key] = font
-        return self.fonts[key]
+        Args:
+            filename (str): The name of the image file.
 
-# =========================================================================
-# >> نکته کلیدی اینجاست <<
-# ما یک نمونه (instance) از کلاس AssetLoader با نام asset_loader ایجاد می‌کنیم.
-# فایل‌های دیگر (مثل renderer.py) همین نمونه را import خواهند کرد.
-# =========================================================================
-asset_loader = AssetLoader()
+        Returns:
+            pygame.Surface: The loaded image surface.
+        """
+        if filename in self._cache:
+            return self._cache[filename]
+            
+        path = os.path.join(ASSETS_DIR, 'images', filename)
+        try:
+            image = pygame.image.load(path).convert_alpha()
+            self._cache[filename] = image
+            logger.debug(f"Loaded image '{filename}' and cached it.")
+            return image
+        except pygame.error as e:
+            # لاگ کردن مسیر کامل برای دیباگینگ آسان‌تر
+            full_path = os.path.abspath(path)
+            logger.error(f"Error loading image. Attempted to load from path: '{full_path}'. Error: {e}")
+            raise
+
+    def load_font(self, filename: str, size: int):
+        """
+        Loads a font from the 'assets/fonts' directory.
+        Uses a cache to avoid reloading the same font at the same size.
+
+        Args:
+            filename (str): The name of the font file.
+            size (int): The desired font size.
+
+        Returns:
+            pygame.font.Font: The loaded font object.
+        """
+        cache_key = f"{filename}_{size}"
+        if cache_key in self._cache:
+            return self._cache[cache_key]
+
+        path = os.path.join(ASSETS_DIR, 'fonts', filename)
+        try:
+            font = pygame.font.Font(path, size)
+            self._cache[cache_key] = font
+            logger.debug(f"Loaded font '{filename}' with size {size} and cached it.")
+            return font
+        except pygame.error as e:
+            # لاگ کردن مسیر کامل برای دیباگینگ آسان‌تر
+            full_path = os.path.abspath(path)
+            logger.error(f"Error loading font. Attempted to load from path: '{full_path}'. Error: {e}")
+            raise

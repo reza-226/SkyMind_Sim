@@ -1,0 +1,14 @@
+2025-10-02 13:18:10,445 - root - INFO - Logging configured successfully.
+2025-10-02 13:18:10,445 - root - INFO - Log file created at: data/simulation_logs\simulation_20251002_131810.log
+2025-10-02 13:18:10,446 - root - INFO - Logging level set to: INFO
+2025-10-02 13:18:10,702 - skymind_sim.layer_1_simulation.simulation - INFO - Simulation (Layer 1) initialized.
+2025-10-02 13:18:10,702 - skymind_sim.layer_1_simulation.simulation - INFO - Attempting to load world from: data/maps/simple_map.json
+2025-10-02 13:18:10,704 - skymind_sim.layer_1_simulation.simulation - INFO - World setup complete: 1 drone(s), 3 obstacle(s).
+2025-10-02 13:18:10,761 - skymind_sim.layer_0_presentation.asset_loader - INFO - AssetLoader Singleton Initialized.
+2025-10-02 13:18:10,766 - skymind_sim.layer_0_presentation.renderer - INFO - Renderer initialized with size (800x600) and title 'SkyMind_Sim'.
+2025-10-02 13:18:10,777 - skymind_sim.layer_0_presentation.renderer - INFO - Assets loaded successfully.
+2025-10-02 13:18:10,777 - skymind_sim.layer_1_simulation.simulation - INFO - Path set for drone 'd1'.
+2025-10-02 13:18:10,780 - __main__ - INFO - Starting Main Loop...
+2025-10-02 13:18:24,300 - __main__ - INFO - ...Main Loop Exited.
+2025-10-02 13:18:24,300 - skymind_sim.layer_0_presentation.renderer - INFO - Renderer cleanup.
+2025-10-02 13:18:24,338 - __main__ - INFO - Application Closed
