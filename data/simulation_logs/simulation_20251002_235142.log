@@ -1,0 +1,18 @@
+2025-10-02 23:51:42,822 - root - INFO - Logging configured. Log file at: data/simulation_logs\simulation_20251002_235142.log
+2025-10-02 23:51:42,823 - skymind_sim.layer_1_simulation.simulation - INFO - در حال راه‌اندازی شبیه‌ساز...
+2025-10-02 23:51:43,065 - root - CRITICAL - Critical error at top level: Environment.__init__() got an unexpected keyword argument 'width'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\main.py", line 13, in main
+    sim = Simulation()
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 45, in __init__
+        self.environment = Environment(
+                           ~~~~~~~~~~~^
+            width=width,
+            ^^^^^^^^^^^^
+            height=height,
+            ^^^^^^^^^^^^^^
+            map_data=self.config.get('map_obstacles', [])
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+TypeError: Environment.__init__() got an unexpected keyword argument 'width'

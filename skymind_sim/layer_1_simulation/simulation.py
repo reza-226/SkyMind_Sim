@@ -1,147 +1,98 @@
-# skymind_sim/layer_1_simulation/simulation.py
-
-import json
+import pygame
 import logging
-from typing import Tuple, List, Optional
-from .entities.drone import Drone
-from .world.obstacle import Obstacle
-# Import جدید برای PathPlanner
-from skymind_sim.layer_3_intelligence.pathfinding.path_planner import PathPlanner
-
-logger = logging.getLogger(__name__)
+from skymind_sim.layer_0_presentation.environment import Environment
+from skymind_sim.layer_1_simulation.entities.drone import Drone
 
 class Simulation:
     """
-    Manages the simulation state, including all entities and the world environment.
-    It's the heart of Layer 1 and now integrates with the pathfinding intelligence.
+    کلاس اصلی مدیریت شبیه‌سازی.
+    این کلاس مسئول ایجاد محیط، پهپادها و اجرای حلقه اصلی شبیه‌سازی است.
     """
-    def __init__(self):
-        self.drones = {}
-        self.obstacles = {}
-        self.world_size = (800, 600)
-        # عضو جدید برای نگهداری برنامه‌ریز مسیر
-        self.path_planner: Optional[PathPlanner] = None
-        logger.info("Simulation (Layer 1) initialized.")
+    def __init__(self, config: dict):
+        """
+        سازنده کلاس Simulation.
 
-    def load_world_from_file(self, file_path: str):
+        Args:
+            config (dict): دیکشنری حاوی تمام تنظیمات شبیه‌سازی.
         """
-        Loads the simulation world configuration from a JSON file and initializes the PathPlanner.
-        """
-        logger.info(f"Attempting to load world from: {file_path}")
+        self.config = config
+        self.running = False
+        
+        # مقداردهی اولیه Pygame
         try:
-            with open(file_path, 'r') as f:
-                world_data = json.load(f)
+            pygame.init()
+            logging.info("Pygame با موفقیت مقداردهی اولیه شد.")
+        except pygame.error as e:
+            logging.critical(f"خطا در مقداردهی اولیه Pygame: {e}")
+            raise
 
-            self.world_size = tuple(world_data.get("world_size", self.world_size))
+        # ایجاد محیط (شامل پنجره و موانع)
+        self.environment = Environment(config=self.config)
+        
+        # ایجاد پهپادها
+        self.drones = self._create_drones()
 
-            self.drones.clear()
-            self.obstacles.clear()
-
-            # Load obstacles
-            for obs_info in world_data.get("obstacles", []):
-                obs_id = obs_info["id"]
-                pos = tuple(obs_info["position"])
-                size = tuple(obs_info["size"])
-                self.obstacles[obs_id] = Obstacle(obs_id, position=pos, size=size)
+    def _create_drones(self) -> list:
+        """
+        لیستی از اشیاء پهپاد را بر اساس تنظیمات کانفیگ ایجاد می‌کند.
+        """
+        drones_list = []
+        drones_config = self.config.get("drones", [])
+        if not drones_config:
+            logging.warning("هیچ پهپادی در فایل کانفیگ تعریف نشده است.")
+            return drones_list
             
-            # --- بخش جدید: مقداردهی PathPlanner ---
-            # پس از بارگذاری همه موانع، یک نمونه از PathPlanner می‌سازیم
-            self.path_planner = PathPlanner(
-                obstacles=list(self.obstacles.values()),
-                world_bounds=self.world_size,
-                grid_size=20  # اندازه گرید را می‌توان قابل تنظیم کرد
-            )
-            
-            # Load drones
-            for drone_info in world_data.get("drones", []):
-                drone_id = drone_info["id"]
-                pos = tuple(drone_info["start_position"])
-                speed = drone_info.get("speed", 50)
-                self.drones[drone_id] = Drone(drone_id, initial_position=pos, speed=speed)
-                
-                # --- بخش جدید: محاسبه مسیر هوشمند برای هر پهپاد ---
-                # اگر نقطه هدف در فایل نقشه تعریف شده باشد، مسیر را محاسبه می‌کنیم
-                if "target_position" in drone_info:
-                    target_pos = tuple(drone_info["target_position"])
-                    self.calculate_and_set_path(drone_id, pos, target_pos)
+        for drone_conf in drones_config:
+            try:
+                drone = Drone(config=drone_conf)
+                drones_list.append(drone)
+            except Exception as e:
+                logging.error(f"خطا در ایجاد پهپاد با کانفیگ {drone_conf}: {e}")
+        return drones_list
 
-            logger.info(f"World setup complete: {len(self.drones)} drone(s), {len(self.obstacles)} obstacle(s).")
-
-        except FileNotFoundError:
-            logger.error(f"Map file not found at: {file_path}")
-        except json.JSONDecodeError:
-            logger.error(f"Error decoding JSON from file: {file_path}")
-        except KeyError as e:
-            logger.error(f"Missing key in map file {file_path}: {e}")
-
-    def setup_test_world(self):
+    def run(self):
         """
-        Sets up a simple, hard-coded world for testing A* pathfinding.
+        حلقه اصلی شبیه‌سازی را اجرا می‌کند.
         """
-        # Create obstacles
-        obs1 = Obstacle(obstacle_id="obs1", position=(200, 150), size=(50, 200))
-        obs2 = Obstacle(obstacle_id="obs2", position=(400, 300), size=(200, 50))
-        self.obstacles = {obs1.id: obs1, obs2.id: obs2}
+        logging.info("شبیه‌سازی شروع شد.")
+        self.running = True
+        clock = pygame.time.Clock()
+        time_step = self.config.get("simulation", {}).get("time_step", 1.0 / 60.0)
 
-        # مقداردهی PathPlanner با موانع
-        self.path_planner = PathPlanner(
-            obstacles=list(self.obstacles.values()),
-            world_bounds=self.world_size,
-            grid_size=20
-        )
+        while self.running:
+            # 1. مدیریت رویدادها (Event Handling)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+                # سایر رویدادها مانند ورودی کیبورد در اینجا مدیریت می‌شوند
 
-        # Create a drone and find a path for it
-        start_pos = (50, 50)
-        end_pos = (750, 550)
-        drone1 = Drone(drone_id="d1", initial_position=start_pos, speed=150)
-        self.drones[drone1.id] = drone1
-        
-        # محاسبه و تنظیم مسیر هوشمند
-        self.calculate_and_set_path(drone1.id, start_pos, end_pos)
-        
-        logger.info(f"Test world setup complete with A* pathfinding.")
+            # 2. به‌روزرسانی وضعیت (Update State)
+            self._update(time_step)
 
-    def calculate_and_set_path(self, drone_id: str, start_pos: Tuple[int, int], end_pos: Tuple[int, int]):
+            # 3. رندر کردن (Render)
+            self._render()
+
+            # تنظیم نرخ فریم
+            clock.tick(self.config.get("window", {}).get("fps", 60))
+
+        logging.info("حلقه شبیه‌سازی پایان یافت. در حال خروج...")
+        pygame.quit()
+
+    def _update(self, dt: float):
         """
-        Calculates a path using the PathPlanner and sets it for the specified drone.
+        وضعیت تمام اشیاء داخل شبیه‌سازی را به‌روزرسانی می‌کند.
         """
-        if not self.path_planner:
-            logger.error("PathPlanner is not initialized. Cannot find path.")
-            return
-
-        # پیدا کردن مسیر با استفاده از PathPlanner
-        path = self.path_planner.find_path(start_pos, end_pos)
-        
-        if path:
-            self.set_drone_path(drone_id, path)
-        else:
-            logger.warning(f"Could not find a path for drone '{drone_id}' from {start_pos} to {end_pos}.")
-
-    def update(self, dt: float):
-        """
-        Updates the state of all entities in the simulation.
-        dt: delta time in seconds.
-        """
-        for drone in self.drones.values():
+        for drone in self.drones:
             drone.update(dt)
 
-    def get_world_state(self) -> dict:
+    def _render(self):
         """
-        Returns a serializable dictionary representing the current state of the world.
+        تمام اشیاء را روی صفحه رسم می‌کند.
         """
-        state = {
-            "drones": [d.get_state() for d in self.drones.values()],
-            "obstacles": [o.get_state() for o in self.obstacles.values()],
-            "world_size": self.world_size
-        }
-        return state
-
-    def set_drone_path(self, drone_id: str, path: List[Tuple[int, int]]):
-        """
-        Sets the movement path for a specific drone.
-        """
-        if drone_id in self.drones:
-            self.drones[drone_id].set_path(path)
-            logger.info(f"Path with {len(path)} waypoints set for drone '{drone_id}'.")
-        else:
-            logger.warning(f"Attempted to set path for non-existent drone '{drone_id}'.")
+        self.environment.draw_background()
+        self.environment.draw_obstacles()
+        
+        for drone in self.drones:
+            self.environment.draw_drone(drone)
+            
+        pygame.display.flip()

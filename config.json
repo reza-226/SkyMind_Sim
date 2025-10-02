@@ -1,0 +1,27 @@
+{
+    "logging": {
+        "level": "INFO",
+        "file": "data/simulation_logs/sim.log"
+    },
+    "simulation": {
+        "duration": 60,
+        "time_step": 0.1,
+        "display_width": 1200,
+        "display_height": 800,
+        "title": "SkyMind Drone Simulation",  
+        "map_path": "data/maps/basic_map.json" 
+    },
+    "environment": {
+       
+    },
+    "drones": [
+        {
+            "id": "drone_0",
+            "position": [100.0, 100.0],
+            "destination": [700.0, 500.0],
+            "speed": 150.0,
+            "battery_capacity": 100.0,
+            "energy_consumption_rate": 0.1
+        }
+    ]
+}

@@ -1,73 +1,62 @@
-# skymind_sim/layer_1_simulation/entities/drone.py
-from typing import Tuple, List, Dict, Any, Optional
+import pygame
+import numpy as np
+import logging
 
 class Drone:
-    def __init__(self, drone_id: str, initial_position: Tuple[float, float], speed: float = 50.0):
+    """
+    این کلاس نمایانگر یک پهپاد در شبیه‌سازی است.
+    """
+    def __init__(self, config: dict):
         """
-        مقداردهی اولیه پهپاد.
+        سازنده کلاس Drone.
 
         Args:
-            drone_id (str): شناسه منحصر به فرد پهپاد.
-            initial_position (Tuple[float, float]): موقعیت اولیه (x, y) پهپاد.
-            speed (float): سرعت حرکت پهپاد بر حسب پیکسل بر ثانیه.
+            config (dict): دیکشنری تنظیمات مربوط به این پهپاد خاص.
         """
-        self.id = drone_id
-        self.position: Tuple[float, float] = initial_position
-        self.speed: float = speed  # پیکسل بر ثانیه
-        self.path: List[Tuple[float, float]] = []
-        self.current_target_index: int = 0
-        print(f"Drone '{self.id}' created at position {self.position}.")
+        try:
+            self.id = config["id"]
+            self.position = np.array(config["position"], dtype=float)
+            self.destination = np.array(config["destination"], dtype=float)
+            self.speed = config["speed"]
+            self.color = config.get("color", (0, 0, 255))
+            
+            # بارگذاری تصویر پهپاد
+            self.asset_path = config.get("asset_path")
+            self.asset = None
+            if self.asset_path:
+                try:
+                    self.asset = pygame.image.load(self.asset_path).convert_alpha()
+                    # می‌توانید اندازه تصویر را در اینجا تغییر دهید
+                    # self.asset = pygame.transform.scale(self.asset, (30, 30))
+                except pygame.error as e:
+                    logging.error(f"خطا در بارگذاری تصویر پهپاد از مسیر '{self.asset_path}': {e}")
+                    self.asset = None
 
-    def set_path(self, path: List[Tuple[float, float]]):
-        """یک مسیر برای حرکت پهپاد تنظیم می‌کند."""
-        self.path = path
-        self.current_target_index = 0
-        if path:
-            # موقعیت اولیه را به اولین نقطه مسیر به‌روزرسانی می‌کنیم
-            self.position = path[0]
-            self.current_target_index = 1
+            logging.info(f"پهپاد {self.id} در موقعیت {self.position.tolist()} با مقصد اولیه {self.destination.tolist()} ایجاد شد.")
+
+        except KeyError as e:
+            logging.error(f"خطا در خواندن اطلاعات پهپاد از کانفیگ. کلید '{e.args[0]}' یافت نشد.")
+            raise
 
     def update(self, dt: float):
-        """موقعیت پهپاد را بر اساس مسیر و زمان سپری شده (dt) به‌روزرسانی می‌کند."""
-        if not self.path or self.current_target_index >= len(self.path):
-            return  # مسیری برای دنبال کردن وجود ندارد
+        """
+        موقعیت پهپاد را بر اساس سرعت و مقصدش به‌روزرسانی می‌کند.
 
-        target_pos = self.path[self.current_target_index]
-        current_pos = self.position
+        Args:
+            dt (float): زمان سپری شده از آخرین فریم (delta time).
+        """
+        direction = self.destination - self.position
+        distance = np.linalg.norm(direction)
 
-        # محاسبه بردار جهت به سمت هدف
-        dx = target_pos[0] - current_pos[0]
-        dy = target_pos[1] - current_pos[1]
-        
-        # محاسبه فاصله تا هدف
-        distance = (dx**2 + dy**2)**0.5
-
-        if distance < 1.0:
-            # به هدف رسیده‌ایم، به هدف بعدی می‌رویم
-            self.current_target_index += 1
-            if self.current_target_index >= len(self.path):
-                # به انتهای مسیر رسیده‌ایم
-                self.path = [] # مسیر را خالی میکنیم که پهپاد متوقف شود
-            return
-
-        # نرمال‌سازی بردار جهت
-        direction_x = dx / distance
-        direction_y = dy / distance
-
-        # محاسبه مسافت قابل حرکت در این فریم
-        move_distance = self.speed * dt
-
-        # حرکت پهپاد
-        new_x = current_pos[0] + direction_x * move_distance
-        new_y = current_pos[1] + direction_y * move_distance
-        
-        self.position = (new_x, new_y)
-
-
-    def get_state(self) -> Dict[str, Any]:
-        """وضعیت فعلی پهپاد را برای استفاده در لایه‌های دیگر برمی‌گرداند."""
-        return {
-            "id": self.id,
-            "position": self.position,
-            "path_remaining": self.path[self.current_target_index:] if self.path else []
-        }
+        # اگر پهپاد به مقصد نرسیده باشد، حرکت کن
+        if distance > 1.0:  # یک آستانه کوچک برای جلوگیری از لرزش در مقصد
+            # نرمال‌سازی بردار جهت
+            direction_normalized = direction / distance
+            # محاسبه جابجایی در این فریم
+            displacement = direction_normalized * self.speed * dt
+            
+            # اگر جابجایی بیشتر از فاصله تا مقصد باشد، پهپاد را مستقیم به مقصد ببر
+            if np.linalg.norm(displacement) > distance:
+                self.position = self.destination
+            else:
+                self.position += displacement

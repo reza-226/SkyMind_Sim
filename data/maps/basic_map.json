@@ -1,41 +1,8 @@
-{
-  "map_name": "Basic Test Environment",
-  "version": "1.0",
-  "bounds": {
-    "min": [0, 0, 0],
-    "max": [100, 100, 50]
-  },
-  "grid_cell_size": 1.0,
-  "obstacles": [
     {
-      "name": "Wall_1",
-      "type": "box",
-      "min": [20, 0, 0],
-      "max": [22, 80, 40]
-    },
-    {
-      "name": "Wall_2",
-      "type": "box",
-      "min": [20, 80, 0],
-      "max": [80, 82, 40]
-    },
-    {
-      "name": "Floating_Platform",
-      "type": "box",
-      "min": [40, 30, 20],
-      "max": [60, 70, 22]
+      "map_name": "Basic Test Map",
+      "dimensions": [1024, 768],
+      "obstacles": [
+        [200, 150, 50, 400],
+        [500, 300, 300, 50]
+      ]
     }
-  ],
-  "start_points": [
-    {
-      "name": "start_A",
-      "position": [5, 5, 5]
-    }
-  ],
-  "end_points": [
-    {
-      "name": "end_A",
-      "position": [95, 95, 45]
-    }
-  ]
-}

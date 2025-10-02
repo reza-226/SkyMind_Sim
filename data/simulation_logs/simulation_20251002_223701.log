@@ -1,0 +1,9 @@
+2025-10-02 22:37:01,586 - root - INFO - Logging configured. Log file at: data/simulation_logs\simulation_20251002_223701.log
+2025-10-02 22:37:01,860 - root - CRITICAL - Critical error at top level: 'world_size'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\main.py", line 13, in main
+    sim = Simulation()
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 35, in __init__
+    width = sim_config['world_size']['width']
+            ~~~~~~~~~~^^^^^^^^^^^^^^
+KeyError: 'world_size'

@@ -1,66 +1,46 @@
 # skymind_sim/main.py
-
-import pygame
 import logging
-from .layer_0_presentation.renderer import Renderer
-from .layer_1_simulation.simulation import Simulation
-from .utils.logger import setup_logging
-
-# --- Configuration ---
-WINDOW_TITLE = "SkyMind_Sim"
-# 1. تغییر مسیر فایل نقشه برای استفاده از نقشه هوشمند جدید
-MAP_FILE_PATH = "data/maps/smart_map.json"
-LOG_LEVEL = logging.INFO
+import os
+from skymind_sim.config import load_config
+from skymind_sim.utils.logger import setup_logging
+# این import را از کامنت خارج کنید
+from skymind_sim.layer_1_simulation.simulation import Simulation
 
 def main():
-    # 1. Initialization
-    setup_logging(LOG_LEVEL)
-    logger = logging.getLogger(__name__)
-    pygame.init()
-    
-    # 2. Layer Setup
-    # Layer 1: Simulation Core
-    simulation = Simulation()
-    # حالا این متد هم نقشه را بارگذاری می‌کند و هم مسیر هوشمند را محاسبه می‌کند
-    simulation.load_world_from_file(MAP_FILE_PATH)
-    
-    # Get world size from the simulation after loading the map
-    world_size = simulation.get_world_state()["world_size"]
+    """
+    نقطه ورود اصلی برنامه شبیه‌سازی.
+    """
+    # ------------------ بخش بارگذاری کانفیگ ------------------
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    config_path = os.path.join(project_root,'config.json')
+    print(f"DEBUG: Attempting to load config from: {config_path}")
+    try:
+        config = load_config(config_path)
+    except (FileNotFoundError, Exception) as e:
+        logging.basicConfig(level="ERROR", format='%(asctime)s - %(levelname)s - %(message)s')
+        logging.critical(f"بارگذاری پیکربندی از مسیر '{config_path}' با شکست مواجه شد. جزئیات: {e}", exc_info=True)
+        logging.critical("اجرای برنامه به دلیل عدم وجود یا خطای فایل کانفیگ متوقف شد.")
+        return
 
-    # Layer 0: Presentation
-    renderer = Renderer(width=world_size[0], height=world_size[1], title=WINDOW_TITLE)
-    renderer.load_assets()
+    # ------------------ بخش تنظیم لاگ‌گیری ------------------
+    log_config = config.get("logging", {})
+    setup_logging(
+        level=log_config.get("level", "INFO"),
+        log_file=os.path.join(project_root, log_config.get("file", "data/simulation_logs/sim.log"))
+    )
 
-    # 2. حذف کد موقت برای مسیر ثابت
-    # این بخش دیگر لازم نیست، چون Simulation خودش مسیر را با A* پیدا می‌کند.
-    # simulation.set_drone_path("d1", [(700, 500), (700, 100), (100, 100), (100, 500)])
+    # ------------------ بخش اصلی برنامه ------------------
+    try:
+        logging.info("پیکربندی با موفقیت بارگذاری شد. شروع شبیه‌سازی...")
+        
+        # این دو خط را از کامنت خارج کنید
+        simulation = Simulation(config)
+        simulation.run()
+        
+        logging.info("شبیه‌سازی با موفقیت به پایان رسید.")
 
-
-    # 3. Main Loop
-    running = True
-    clock = pygame.time.Clock()
-    logger.info("Starting Main Loop...")
-    while running:
-        dt = clock.tick(60) / 1000.0  # Delta time in seconds
-
-        # Event Handling
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-        # 4. Logic & Update
-        simulation.update(dt)
-
-        # 5. Rendering
-        world_state = simulation.get_world_state()
-        renderer.render(world_state)
-
-    logger.info("...Main Loop Exited.")
-
-    # 6. Cleanup
-    renderer.cleanup()
-    pygame.quit()
-    logger.info("Application Closed")
+    except Exception as e:
+        logging.critical(f"یک خطای پیش‌بینی نشده در حین اجرای شبیه‌سازی رخ داد: {e}", exc_info=True)
 
 if __name__ == "__main__":
     main()

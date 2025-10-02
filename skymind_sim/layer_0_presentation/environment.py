@@ -1,58 +1,75 @@
-# skymind_sim/core/environment.py
 import pygame
+import logging
+import json
 
 class Environment:
-    def __init__(self, config):
+    """
+    کلاس مدیریت محیط، شامل پنجره، پس‌زمینه و بارگذاری نقشه.
+    """
+    def __init__(self, config: dict):
         """
-        Initializes the simulation environment, including Pygame and the display window.
+        سازنده کلاس Environment.
+
+        Args:
+            config (dict): دیکشنری کامل تنظیمات برنامه.
         """
-        print("INFO: Initializing Environment...")
-        self.config = config
+        window_settings = config.get("window", {})
+        env_settings = config.get("environment", {})
+        sim_settings = config.get("simulation", {})
         
-        # --- CRITICAL INITIALIZATION STEPS ---
-        # 1. Initialize all imported Pygame modules
-        pygame.init()
-        print("INFO: Pygame initialized successfully.")
-
-        # 2. Get screen dimensions from config
-        screen_width = self.config.get('SCREEN_WIDTH', 1280)
-        screen_height = self.config.get('SCREEN_HEIGHT', 720)
+        self.width = window_settings.get("width", 800)
+        self.height = window_settings.get("height", 600)
+        caption = window_settings.get("caption", "Simulation")
         
-        # 3. Create the display surface (the main window)
-        self.screen = pygame.display.set_mode((screen_width, screen_height))
-        print(f"INFO: Display set to {screen_width}x{screen_height}.")
+        self.background_color = env_settings.get("background_color", (255, 255, 255))
         
-        pygame.display.set_caption(self.config.get('CAPTION', 'SkyMind Drone Simulator'))
+        self.screen = pygame.display.set_mode((self.width, self.height))
+        pygame.display.set_caption(caption)
         
-        self.clock = pygame.time.Clock()
-        self.running = True
+        self.obstacles = []
+        self.map_filepath = sim_settings.get("map_path")
+        if self.map_filepath:
+            self._load_map(self.map_filepath)
+        else:
+            logging.warning("هیچ مسیری برای فایل نقشه ('map_path') در کانفیگ مشخص نشده است. محیط بدون مانع خواهد بود.")
 
-        print("INFO: Environment created.")
+    def _load_map(self, filepath: str):
+        """موانع را از یک فایل نقشه JSON بارگذاری می‌کند."""
+        try:
+            with open(filepath, 'r') as f:
+                map_data = json.load(f)
+            
+            # هر مانع به صورت [x, y, width, height] تعریف شده است
+            for obs_data in map_data.get("obstacles", []):
+                rect = pygame.Rect(obs_data[0], obs_data[1], obs_data[2], obs_data[3])
+                self.obstacles.append(rect)
+            
+            logging.info(f"{len(self.obstacles)} مانع با موفقیت از '{filepath}' بارگذاری شد.")
+        except FileNotFoundError:
+            logging.error(f"فایل نقشه در مسیر '{filepath}' یافت نشد.")
+        except json.JSONDecodeError:
+            logging.error(f"خطا در پارس کردن فایل JSON نقشه: '{filepath}'")
+        except Exception as e:
+            logging.error(f"خطای پیش‌بینی نشده در بارگذاری نقشه: {e}")
 
-    def update(self):
-        """
-        Placeholder for updating environment state (e.g., moving obstacles).
-        """
-        pass
+    def draw_background(self):
+        """پس‌زمینه صفحه را رسم می‌کند."""
+        self.screen.fill(self.background_color)
 
-    def render(self, *sprite_groups):
-        """
-        Renders all visual elements to the screen.
-        """
-        # Fill the background
-        self.screen.fill(self.config.get('BACKGROUND_COLOR', (20, 30, 40)))
+    def draw_obstacles(self):
+        """تمام موانع را روی صفحه رسم می‌کند."""
+        obstacle_color = (100, 100, 100) # رنگ خاکستری برای موانع
+        for obs in self.obstacles:
+            pygame.draw.rect(self.screen, obstacle_color, obs)
 
-        # Draw all sprites from the provided groups
-        for group in sprite_groups:
-            group.draw(self.screen)
-
-        # Update the full display Surface to the screen
-        pygame.display.flip()
-
-    def handle_events(self, events):
-        """
-        Handles global events like quitting the application.
-        """
-        for event in events:
-            if event.type == pygame.QUIT:
-                self.running = False
+    def draw_drone(self, drone):
+        """یک پهپاد را روی صفحه رسم می‌کند."""
+        # اگر پهپاد تصویر دارد، تصویر را رسم کن
+        if drone.asset:
+            # مرکز تصویر را با موقعیت پهپاد هماهنگ کن
+            pos_x, pos_y = drone.position
+            asset_rect = drone.asset.get_rect(center=(int(pos_x), int(pos_y)))
+            self.screen.blit(drone.asset, asset_rect)
+        # در غیر این صورت، یک دایره ساده رسم کن
+        else:
+            pygame.draw.circle(self.screen, drone.color, (int(drone.position[0]), int(drone.position[1])), 10)

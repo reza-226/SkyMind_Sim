@@ -1,0 +1,14 @@
+2025-10-02 22:06:45 - root - INFO - Logging system configured successfully.
+2025-10-02 22:06:45 - root - INFO - SkyMind_Sim starting up...
+2025-10-02 22:06:45 - root - INFO - Initializing Simulation...
+2025-10-02 22:06:45 - root - INFO - Pygame initialized successfully.
+2025-10-02 22:06:45 - root - INFO - Initializing Environment...
+2025-10-02 22:06:45 - root - INFO - Environment initialized with 5 obstacles.
+2025-10-02 22:06:45 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
+2025-10-02 22:06:45 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - Navigation grid (60x40) built in 0.0000s. Obstacle cells: 186
+2025-10-02 22:06:45 - root - INFO - Navigation grid built with 5 obstacle cells.
+2025-10-02 22:06:45 - root - INFO - Drone 1 created at position [100, 100] with max speed 100.
+2025-10-02 22:06:45 - root - INFO - Initialized entities: 1 test drone created.
+2025-10-02 22:06:45 - root - INFO - Starting simulation loop...
+2025-10-02 22:06:55 - root - INFO - Simulation shutting down.
+2025-10-02 22:06:55 - root - INFO - SkyMind_Sim shut down.

@@ -1,33 +1,32 @@
 # skymind_sim/layer_1_simulation/world/obstacle.py
 
 import pygame
-from typing import Tuple
 
 class Obstacle:
     """
-    Represents a static obstacle in the simulation world.
-    Now includes a pygame.Rect for easier geometric calculations.
+    نشان‌دهنده یک مانع ثابت در محیط شبیه‌سازی.
+    این کلاس اطلاعات مربوط به موقعیت، اندازه و رنگ مانع را نگهداری می‌کند
+    و همچنین نحوه ترسیم آن روی صفحه را مدیریت می‌کند.
     """
-    def __init__(self, obstacle_id: str, position: Tuple[int, int], size: Tuple[int, int]):
-        self.id = obstacle_id
-        self.position = position
-        self.size = size
-        
-        # --- تغییر اصلی: اضافه کردن pygame.Rect ---
-        # یک شیء Rect برای محاسبات آسان‌تر (مانند تشخیص برخورد و محدوده) ایجاد می‌کنیم.
-        self.rect = pygame.Rect(position[0], position[1], size[0], size[1])
-        
-        # این پیام لاگ را حذف می‌کنیم تا خروجی تمیزتر باشد.
-        # print(f"Obstacle '{self.id}' created at position {self.position} with size {self.size}.")
+    def __init__(self, rect: pygame.Rect, color: tuple = (100, 100, 100)):
+        """
+        سازنده کلاس Obstacle.
 
-    def get_state(self) -> dict:
+        Args:
+            rect (pygame.Rect): یک شیء Rect از Pygame که موقعیت (x, y) و 
+                                اندازه (width, height) مانع را مشخص می‌کند.
+            color (tuple, optional): رنگ مانع به صورت (R, G, B). 
+                                     پیش‌فرض (100, 100, 100) است.
         """
-        Returns a serializable dictionary representing the obstacle's state.
+        self.rect = rect
+        self.color = color
+
+    def render(self, surface: pygame.Surface):
         """
-        return {
-            "id": self.id,
-            "position": self.position,
-            "size": self.size,
-            # می‌توانیم rect را هم برای نمایش اضافه کنیم اگر نیاز شد
-            "rect": [self.rect.x, self.rect.y, self.rect.w, self.rect.h]
-        }
+        مانع را به صورت یک مستطیل روی سطح (surface) داده شده ترسیم می‌کند.
+
+        Args:
+            surface (pygame.Surface): سطحی که مانع باید روی آن کشیده شود 
+                                      (معمولاً صفحه اصلی بازی).
+        """
+        pygame.draw.rect(surface, self.color, self.rect)
