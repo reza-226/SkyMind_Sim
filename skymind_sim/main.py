@@ -8,7 +8,8 @@ from .utils.logger import setup_logging
 
 # --- Configuration ---
 WINDOW_TITLE = "SkyMind_Sim"
-MAP_FILE_PATH = "data/maps/simple_map.json"  # Path to our new map file
+# 1. تغییر مسیر فایل نقشه برای استفاده از نقشه هوشمند جدید
+MAP_FILE_PATH = "data/maps/smart_map.json"
 LOG_LEVEL = logging.INFO
 
 def main():
@@ -20,6 +21,7 @@ def main():
     # 2. Layer Setup
     # Layer 1: Simulation Core
     simulation = Simulation()
+    # حالا این متد هم نقشه را بارگذاری می‌کند و هم مسیر هوشمند را محاسبه می‌کند
     simulation.load_world_from_file(MAP_FILE_PATH)
     
     # Get world size from the simulation after loading the map
@@ -29,9 +31,9 @@ def main():
     renderer = Renderer(width=world_size[0], height=world_size[1], title=WINDOW_TITLE)
     renderer.load_assets()
 
-    # --- Temp: Set a simple path for the drone to test movement ---
-    # In the future, this path will come from Layer 3 (Intelligence)
-    simulation.set_drone_path("d1", [(700, 500), (700, 100), (100, 100), (100, 500)])
+    # 2. حذف کد موقت برای مسیر ثابت
+    # این بخش دیگر لازم نیست، چون Simulation خودش مسیر را با A* پیدا می‌کند.
+    # simulation.set_drone_path("d1", [(700, 500), (700, 100), (100, 100), (100, 500)])
 
 
     # 3. Main Loop

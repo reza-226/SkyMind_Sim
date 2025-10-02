@@ -1,0 +1,23 @@
+    {
+        "world_size": [800, 600],
+        "obstacles": [
+            {
+                "id": "obs_wall_1",
+                "position": [375, 100],
+                "size": [50, 250]
+            },
+            {
+                "id": "obs_wall_2",
+                "position": [200, 450],
+                "size": [400, 50]
+            }
+        ],
+        "drones": [
+            {
+                "id": "smart_drone_01",
+                "start_position": [100, 100],
+                "target_position": [700, 500],
+                "speed": 150
+            }
+        ]
+    }

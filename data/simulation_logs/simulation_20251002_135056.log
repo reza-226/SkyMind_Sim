@@ -1,0 +1,14 @@
+2025-10-02 13:50:56,615 - root - INFO - Logging configured successfully.
+2025-10-02 13:50:56,615 - root - INFO - Log file created at: data/simulation_logs\simulation_20251002_135056.log
+2025-10-02 13:50:56,616 - root - INFO - Logging level set to: INFO
+2025-10-02 13:50:56,778 - skymind_sim.layer_1_simulation.simulation - INFO - Simulation (Layer 1) initialized.
+2025-10-02 13:50:56,779 - skymind_sim.layer_1_simulation.simulation - INFO - Attempting to load world from: data/maps/smart_map.json
+2025-10-02 13:50:56,780 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with a grid of size 20x20. 148 grid cells are marked as obstacles.
+2025-10-02 13:50:56,780 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - Finding path from (100, 100) to (700, 500)...
+2025-10-02 13:52:30,866 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - Path found with 32 points.
+2025-10-02 13:52:30,867 - skymind_sim.layer_1_simulation.simulation - INFO - Path with 32 waypoints set for drone 'smart_drone_01'.
+2025-10-02 13:52:30,867 - skymind_sim.layer_1_simulation.simulation - INFO - World setup complete: 1 drone(s), 2 obstacle(s).
+2025-10-02 13:52:30,900 - skymind_sim.layer_0_presentation.asset_loader - INFO - AssetLoader Singleton Initialized.
+2025-10-02 13:52:30,900 - skymind_sim.layer_0_presentation.renderer - INFO - Renderer initialized with size (800x600) and title 'SkyMind_Sim'.
+2025-10-02 13:52:30,907 - skymind_sim.layer_0_presentation.renderer - INFO - Assets loaded successfully.
+2025-10-02 13:52:30,908 - __main__ - INFO - Starting Main Loop...

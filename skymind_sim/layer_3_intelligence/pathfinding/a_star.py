@@ -1,80 +1,119 @@
-# skymind_sim/utils/a_star.py
+# skymind_sim/layer_3_intelligence/pathfinding/a_star.py
 
 import heapq
-from typing import TYPE_CHECKING, Optional
+import math
+from typing import List, Tuple, Optional, Set
 
-if TYPE_CHECKING:
-    from ..core.environment import Environment
+# تعریف Node برای استفاده در الگوریتم
+class Node:
+    """
+    یک گره در گراف جستجوی A*.
+    حاوی موقعیت، گره والد و هزینه‌های g، h و f.
+    """
+    def __init__(self, position: Tuple[int, int], parent: Optional['Node'] = None):
+        self.position = position
+        self.parent = parent
+        
+        self.g = 0  # هزینه از گره شروع تا گره فعلی
+        self.h = 0  # هزینه تخمینی (Heuristic) از گره فعلی تا گره هدف
+        self.f = 0  # هزینه کل (f = g + h)
 
-def manhattan_distance(pos1: tuple[int, int], pos2: tuple[int, int]) -> int:
-    """
-    محاسبه فاصله منهتن بین دو نقطه.
-    h(n) در الگوریتم A*.
-    """
-    x1, y1 = pos1
-    x2, y2 = pos2
-    return abs(x1 - x2) + abs(y1 - y2)
-
-def a_star_search(env: 'Environment', start: tuple[int, int], end: tuple[int, int]) -> Optional[list[tuple[int, int]]]:
-    """
-    الگوریتم A* برای پیدا کردن کوتاه‌ترین مسیر در محیط.
+    def __eq__(self, other):
+        # دو گره برابرند اگر موقعیت آنها یکی باشد
+        return self.position == other.position
     
-    :param env: شیء محیط که نقشه و موانع را در خود دارد.
-    :param start: مختصات نقطه شروع (x, y).
-    :param end: مختصات نقطه پایان (x, y).
-    :return: لیستی از مختصات مسیر از شروع تا پایان، یا None اگر مسیری پیدا نشود.
+    def __lt__(self, other):
+        # برای مقایسه در صف اولویت (heapq)
+        return self.f < other.f
+
+    def __hash__(self):
+        # برای اینکه بتوانیم گره‌ها را در یک Set (مانند closed_set) ذخیره کنیم
+        return hash(self.position)
+
+def a_star_search(
+    start_pos: Tuple[int, int], 
+    end_pos: Tuple[int, int], 
+    obstacles: Set[Tuple[int, int]],
+    grid_size: int = 10, # اندازه هر خانه گرید
+    world_bounds: Tuple[int, int] = (800, 600) # ابعاد دنیا
+) -> Optional[List[Tuple[int, int]]]:
     """
-    # صف اولویت برای گره‌هایی که باید بررسی شوند.
-    # آیتم‌ها به صورت (هزینه_f, مختصات) ذخیره می‌شوند.
-    open_set = [(0, start)]
-    heapq.heapify(open_set)
+    الگوریتم مسیریابی A* برای پیدا کردن کوتاه‌ترین مسیر از نقطه شروع به پایان.
 
-    # دیکشنری برای نگهداری گره قبلی در بهترین مسیر پیدا شده تا کنون
-    came_from: dict[tuple[int, int], tuple[int, int]] = {}
+    :param start_pos: موقعیت شروع (x, y)
+    :param end_pos: موقعیت هدف (x, y)
+    :param obstacles: مجموعه‌ای از موقعیت‌های (x, y) که به عنوان مانع شناخته می‌شوند.
+                      اینها مرکز خانه‌های گرید هستند که مسدود شده‌اند.
+    :param grid_size: اندازه هر سلول در گرید برای گسسته‌سازی فضا.
+    :param world_bounds: ابعاد کلی نقشه (width, height).
+    :return: لیستی از نقاط مسیر از شروع تا پایان، یا None اگر مسیری پیدا نشود.
+    """
+    
+    # گسسته‌سازی نقاط شروع و پایان برای قرارگیری روی گرید
+    start_node = Node((round(start_pos[0] / grid_size), round(start_pos[1] / grid_size)))
+    end_node = Node((round(end_pos[0] / grid_size), round(end_pos[1] / grid_size)))
 
-    # هزینه مسیر از شروع تا هر گره (g_score)
-    g_score: dict[tuple[int, int], float] = {start: 0}
+    open_list = []      # صف اولویت برای گره‌هایی که باید بررسی شوند (heap)
+    closed_set = set()  # مجموعه‌ی گره‌هایی که قبلا بررسی شده‌اند
 
-    # هزینه کل تخمینی از شروع تا پایان از طریق هر گره (f_score)
-    # f_score = g_score + heuristic
-    f_score: dict[tuple[int, int], float] = {start: manhattan_distance(start, end)}
+    # اضافه کردن گره شروع به صف
+    heapq.heappush(open_list, start_node)
 
-    while open_set:
-        # گره با کمترین f_score را از صف اولویت بردار
-        _, current = heapq.heappop(open_set)
+    while open_list:
+        # گرفتن گره با کمترین هزینه f از صف
+        current_node = heapq.heappop(open_list)
+        closed_set.add(current_node)
 
-        # اگر به مقصد رسیدیم، مسیر را بازسازی کن
-        if current == end:
-            return reconstruct_path(came_from, current)
+        # اگر به گره هدف رسیدیم، مسیر را بازسازی کن و برگردان
+        if current_node == end_node:
+            path = []
+            current = current_node
+            while current is not None:
+                # تبدیل مختصات گرید به مختصات دنیای واقعی
+                path.append((current.position[0] * grid_size, current.position[1] * grid_size))
+                current = current.parent
+            return path[::-1]  # مسیر را معکوس کن تا از شروع به پایان باشد
 
-        # همسایه‌های معتبر گره فعلی را بررسی کن
-        for neighbor in env.get_neighbors(current):
-            # هزینه حرکت به همسایه همیشه 1 است (در شبکه ما)
-            tentative_g_score = g_score[current] + 1
+        # بررسی همسایه‌ها
+        (x, y) = current_node.position
+        # حرکت در 8 جهت (شامل حرکات مورب)
+        neighbors_positions = [(x - 1, y - 1), (x - 1, y), (x - 1, y + 1),
+                               (x,     y - 1),             (x,     y + 1),
+                               (x + 1, y - 1), (x + 1, y), (x + 1, y + 1)]
+
+        for next_pos in neighbors_positions:
+            # بررسی اینکه آیا همسایه خارج از نقشه است
+            if (next_pos[0] < 0 or next_pos[0] >= (world_bounds[0] / grid_size) or
+                next_pos[1] < 0 or next_pos[1] >= (world_bounds[1] / grid_size)):
+                continue
+
+            # بررسی اینکه آیا همسایه یک مانع است
+            if next_pos in obstacles:
+                continue
+
+            neighbor_node = Node(next_pos, current_node)
+
+            # اگر همسایه قبلا بررسی شده، از آن صرف نظر کن
+            if neighbor_node in closed_set:
+                continue
+
+            # محاسبه هزینه‌ها
+            # هزینه حرکت از گره فعلی تا همسایه (1 برای افقی/عمودی، sqrt(2) برای مورب)
+            move_cost = math.sqrt((neighbor_node.position[0] - current_node.position[0])**2 + 
+                                  (neighbor_node.position[1] - current_node.position[1])**2)
+            neighbor_node.g = current_node.g + move_cost
             
-            # اگر این مسیر به همسایه بهتر از مسیرهای قبلی است
-            if tentative_g_score < g_score.get(neighbor, float('inf')):
-                # این مسیر جدید به همسایه را ثبت کن
-                came_from[neighbor] = current
-                g_score[neighbor] = tentative_g_score
-                f_score[neighbor] = tentative_g_score + manhattan_distance(neighbor, end)
-                
-                # اگر همسایه در صف اولویت نبود، آن را اضافه کن
-                if (f_score[neighbor], neighbor) not in open_set:
-                    heapq.heappush(open_set, (f_score[neighbor], neighbor))
+            # تخمین هیوریستیک (فاصله اقلیدسی تا هدف)
+            neighbor_node.h = math.sqrt((neighbor_node.position[0] - end_node.position[0])**2 + 
+                                        (neighbor_node.position[1] - end_node.position[1])**2)
+            neighbor_node.f = neighbor_node.g + neighbor_node.h
 
-    # اگر حلقه تمام شد و به مقصد نرسیدیم، یعنی مسیری وجود ندارد
-    return None
+            # اگر همسایه در open_list است و مسیر جدید بهتر است، آن را آپدیت کن
+            for open_node in open_list:
+                if neighbor_node == open_node and neighbor_node.g > open_node.g:
+                    break # مسیر فعلی بهتر است، پس این همسایه را نادیده بگیر
+            else:
+                # اگر همسایه در open_list نیست یا مسیر جدید بهتر است، آن را اضافه کن
+                heapq.heappush(open_list, neighbor_node)
 
-
-def reconstruct_path(came_from: dict[tuple[int, int], tuple[int, int]], current: tuple[int, int]) -> list[tuple[int, int]]:
-    """
-    مسیر را از آخر به اول بازسازی می‌کند.
-    """
-    total_path = [current]
-    while current in came_from:
-        current = came_from[current]
-        total_path.append(current)
-    
-    # مسیر را برعکس کن تا از شروع به پایان باشد
-    return total_path[::-1]
+    return None # اگر حلقه تمام شد و به هدف نرسیدیم، یعنی مسیری وجود ندارد

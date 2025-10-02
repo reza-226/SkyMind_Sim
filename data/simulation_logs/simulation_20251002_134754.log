@@ -1,0 +1,5 @@
+2025-10-02 13:47:54,029 - root - INFO - Logging configured successfully.
+2025-10-02 13:47:54,030 - root - INFO - Log file created at: data/simulation_logs\simulation_20251002_134754.log
+2025-10-02 13:47:54,030 - root - INFO - Logging level set to: INFO
+2025-10-02 13:47:54,195 - skymind_sim.layer_1_simulation.simulation - INFO - Simulation (Layer 1) initialized.
+2025-10-02 13:47:54,195 - skymind_sim.layer_1_simulation.simulation - INFO - Attempting to load world from: data/maps/smart_map.json
