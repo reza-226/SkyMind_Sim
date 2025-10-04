@@ -1,26 +1,57 @@
-# skymind_sim/layer_1_simulation/scheduler.py
+import logging
+import time
 
 class Scheduler:
-    """
-    A simple time scheduler for the simulation.
-    It manages the simulation time and ticks.
-    Belongs to Layer 1 as it controls the flow of the simulation itself.
-    """
-    def __init__(self):
-        self.time: float = 0.0
-        self.tick_count: int = 0
-        print("Scheduler initialized.")
+    def __init__(self, environment, simulation_config):
+        self.environment = environment
+        self.simulation_config = simulation_config
 
-    def tick(self, dt: float):
-        """
-        Advances the simulation time by a delta.
+        # گرفتن logger
+        self.logger = logging.getLogger("SkyMind")
 
-        Args:
-            dt (float): The time step for this tick (e.g., 0.1 seconds).
-        """
-        self.time += dt
+        # مقداردهی اولیه شمارنده‌ها
+        self.time_step = float(self.simulation_config.get("time_step", 0.1))
+        self.max_time = self.simulation_config.get("max_time", None)
+        self.max_ticks = self.simulation_config.get("max_ticks", None)
+
+        self.current_time = 0.0
+        self.tick_count = 0
+        self._finished = False
+
+        self.logger.info(
+            f"[Scheduler] Started with time_step={self.time_step}, "
+            f"max_time={self.max_time}, max_ticks={self.max_ticks}"
+        )
+
+    def update(self):
+        """یک قدم شبیه‌سازی رو اجرا می‌کنه"""
+        if self._finished:
+            return
+
+        # انجام آپدیت محیط
+        self.environment.update(self.time_step)
+
+        # به‌روزرسانی زمان و شمارنده تیک‌ها
+        self.current_time += self.time_step
         self.tick_count += 1
-        print(f"--- Simulation Tick {self.tick_count}: Time = {self.time:.2f}s ---")
 
-    def get_time(self) -> float:
-        return self.time
+        # چک کردن پایان
+        if self.is_finished():
+            self.logger.info(
+                f"[Scheduler] Finished at time={self.current_time:.2f}s, "
+                f"ticks={self.tick_count}"
+            )
+            self._finished = True
+
+    def is_finished(self):
+        """بررسی می‌کنه که آیا شبیه‌سازی باید متوقف بشه یا نه"""
+        if self.max_time is not None and self.current_time >= self.max_time:
+            return True
+        if self.max_ticks is not None and self.tick_count >= self.max_ticks:
+            return True
+        return False
+
+    def stop(self):
+        """توقف دستی شبیه‌سازی"""
+        self._finished = True
+        self.logger.warning("[Scheduler] Simulation stopped manually.")

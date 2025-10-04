@@ -1,98 +1,48 @@
+# مسیر: skymind_sim/layer_1_simulation/simulation.py
 import pygame
 import logging
 from skymind_sim.layer_0_presentation.environment import Environment
-from skymind_sim.layer_1_simulation.entities.drone import Drone
+from skymind_sim.layer_0_presentation.renderer import Renderer
+from skymind_sim.layer_1_simulation.scheduler import Scheduler
+from skymind_sim.utils.logger import setup_logging
+from skymind_sim.utils.config_loader import load_json_config  # ← اصلاح این خط
 
 class Simulation:
-    """
-    کلاس اصلی مدیریت شبیه‌سازی.
-    این کلاس مسئول ایجاد محیط، پهپادها و اجرای حلقه اصلی شبیه‌سازی است.
-    """
-    def __init__(self, config: dict):
-        """
-        سازنده کلاس Simulation.
+    def __init__(self, map_data, drone_configs, simulation_config):
+        setup_logging(level="INFO", log_file="data/simulation_logs/simulation.log")
+        self.logger = logging.getLogger("SkyMind")
+        self.logger.info("Initializing Simulation...")
 
-        Args:
-            config (dict): دیکشنری حاوی تمام تنظیمات شبیه‌سازی.
-        """
-        self.config = config
-        self.running = False
-        
-        # مقداردهی اولیه Pygame
-        try:
-            pygame.init()
-            logging.info("Pygame با موفقیت مقداردهی اولیه شد.")
-        except pygame.error as e:
-            logging.critical(f"خطا در مقداردهی اولیه Pygame: {e}")
-            raise
+        # به جای load_config استفاده از load_json_config
+        self.window_config = load_json_config("data/config/window.json")
+        self.grid_config = load_json_config("data/config/grid.json")
+        self.simulation_config = simulation_config
 
-        # ایجاد محیط (شامل پنجره و موانع)
-        self.environment = Environment(config=self.config)
-        
-        # ایجاد پهپادها
-        self.drones = self._create_drones()
+        self.environment = Environment(self.window_config, self.grid_config, self.simulation_config)
+        self.renderer = Renderer(self.environment)
+        self.scheduler = Scheduler(self.environment, self.simulation_config)
 
-    def _create_drones(self) -> list:
-        """
-        لیستی از اشیاء پهپاد را بر اساس تنظیمات کانفیگ ایجاد می‌کند.
-        """
-        drones_list = []
-        drones_config = self.config.get("drones", [])
-        if not drones_config:
-            logging.warning("هیچ پهپادی در فایل کانفیگ تعریف نشده است.")
-            return drones_list
-            
-        for drone_conf in drones_config:
-            try:
-                drone = Drone(config=drone_conf)
-                drones_list.append(drone)
-            except Exception as e:
-                logging.error(f"خطا در ایجاد پهپاد با کانفیگ {drone_conf}: {e}")
-        return drones_list
+        self.logger.info("Environment & Renderer initialized successfully.")
 
     def run(self):
-        """
-        حلقه اصلی شبیه‌سازی را اجرا می‌کند.
-        """
-        logging.info("شبیه‌سازی شروع شد.")
-        self.running = True
+        self.logger.info("Simulation run started...")
+        pygame.init()
         clock = pygame.time.Clock()
-        time_step = self.config.get("simulation", {}).get("time_step", 1.0 / 60.0)
 
-        while self.running:
-            # 1. مدیریت رویدادها (Event Handling)
+        while not self.scheduler.is_finished():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.running = False
-                # سایر رویدادها مانند ورودی کیبورد در اینجا مدیریت می‌شوند
+                    self.stop()
+                    return
 
-            # 2. به‌روزرسانی وضعیت (Update State)
-            self._update(time_step)
+            self.scheduler.update()
+            self.renderer.render_frame()
+            clock.tick(60)
 
-            # 3. رندر کردن (Render)
-            self._render()
-
-            # تنظیم نرخ فریم
-            clock.tick(self.config.get("window", {}).get("fps", 60))
-
-        logging.info("حلقه شبیه‌سازی پایان یافت. در حال خروج...")
+        self.logger.info("Simulation run finished.")
         pygame.quit()
 
-    def _update(self, dt: float):
-        """
-        وضعیت تمام اشیاء داخل شبیه‌سازی را به‌روزرسانی می‌کند.
-        """
-        for drone in self.drones:
-            drone.update(dt)
-
-    def _render(self):
-        """
-        تمام اشیاء را روی صفحه رسم می‌کند.
-        """
-        self.environment.draw_background()
-        self.environment.draw_obstacles()
-        
-        for drone in self.drones:
-            self.environment.draw_drone(drone)
-            
-        pygame.display.flip()
+    def stop(self):
+        self.logger.info("Stopping simulation...")
+        self.scheduler.stop()
+        self.logger.info("Simulation stopped.")

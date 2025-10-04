@@ -1,0 +1,7 @@
+{
+    "width": 1024,
+    "height": 768,
+    "caption": "SkyMind Simulation",
+    "background_color": [255, 255, 255],
+    "fps": 60
+}

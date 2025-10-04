@@ -1,22 +1,11 @@
-import logging
-
-logger = logging.getLogger(__name__)
+# ============================================
+# D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\world\world.py
+# ============================================
 
 class World:
-    """
-    Represents the simulation environment, including its dimensions and entities.
-    """
-    def __init__(self, width: int, height: int):
-        self.width = width
-        self.height = height
-        self.drones = []
-        self.obstacles = []
-        logger.info(f"World created with size ({self.width}x{self.height}).")
+    def __init__(self, grid_map, obstacles):
+        self.grid_map = grid_map
+        self.obstacles = obstacles
 
-    def add_drone(self, drone):
-        self.drones.append(drone)
-        logger.info(f"Added {drone} to the world.")
-
-    def add_obstacle(self, obstacle):
-        self.obstacles.append(obstacle)
-        logger.info(f"Added {obstacle} to the world.")
+    def check_collision(self, position):
+        return position in self.obstacles

@@ -1,46 +1,52 @@
-# skymind_sim/main.py
-import logging
 import os
-from skymind_sim.config import load_config
+import json
 from skymind_sim.utils.logger import setup_logging
-# این import را از کامنت خارج کنید
+import logging
 from skymind_sim.layer_1_simulation.simulation import Simulation
 
-def main():
-    """
-    نقطه ورود اصلی برنامه شبیه‌سازی.
-    """
-    # ------------------ بخش بارگذاری کانفیگ ------------------
-    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-    config_path = os.path.join(project_root,'config.json')
-    print(f"DEBUG: Attempting to load config from: {config_path}")
-    try:
-        config = load_config(config_path)
-    except (FileNotFoundError, Exception) as e:
-        logging.basicConfig(level="ERROR", format='%(asctime)s - %(levelname)s - %(message)s')
-        logging.critical(f"بارگذاری پیکربندی از مسیر '{config_path}' با شکست مواجه شد. جزئیات: {e}", exc_info=True)
-        logging.critical("اجرای برنامه به دلیل عدم وجود یا خطای فایل کانفیگ متوقف شد.")
-        return
+# --- راه‌اندازی لاگر ---
+setup_logging(level="INFO", log_file="data/simulation_logs/simulation.log")
+logger = logging.getLogger("SkyMind")
 
-    # ------------------ بخش تنظیم لاگ‌گیری ------------------
-    log_config = config.get("logging", {})
-    setup_logging(
-        level=log_config.get("level", "INFO"),
-        log_file=os.path.join(project_root, log_config.get("file", "data/simulation_logs/sim.log"))
+
+def load_json(file_path):
+    """لود ساده یک فایل JSON"""
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception as e:
+        logger.error(f"خطا در خواندن {file_path}: {e}")
+        raise
+
+
+def main():
+    logger.info("Initializing SkyMind Simulation...")
+
+    # مسیر پایه داده‌ها
+    data_dir = os.path.join(os.path.dirname(__file__), "..", "data")
+
+    # --- خواندن کل فایل کانفیگ ---
+    config_all = load_json(os.path.join(data_dir, "config", "simulation.json"))
+
+    # استخراج بخش‌ها
+    map_data = config_all["map_data"]
+    drone_configs = config_all["drone_configs"]
+    simulation_config = config_all["simulation_config"]
+
+    # تضمین وجود map_path
+    if "map_path" not in simulation_config:
+        simulation_config["map_path"] = map_data.get("grid", "data/maps/multi_drone_map.txt")
+
+    # --- ساخت شبیه‌ساز ---
+    simulation = Simulation(
+        map_data=map_data,
+        drone_configs=drone_configs,
+        simulation_config=simulation_config
     )
 
-    # ------------------ بخش اصلی برنامه ------------------
-    try:
-        logging.info("پیکربندی با موفقیت بارگذاری شد. شروع شبیه‌سازی...")
-        
-        # این دو خط را از کامنت خارج کنید
-        simulation = Simulation(config)
-        simulation.run()
-        
-        logging.info("شبیه‌سازی با موفقیت به پایان رسید.")
+    logger.info("Starting simulation...")
+    simulation.run()
 
-    except Exception as e:
-        logging.critical(f"یک خطای پیش‌بینی نشده در حین اجرای شبیه‌سازی رخ داد: {e}", exc_info=True)
 
 if __name__ == "__main__":
     main()

@@ -1,111 +1,97 @@
-# skymind_sim/layer_0_presentation/renderer.py
-
+# مسیر: skymind_sim/layer_0_presentation/renderer.py
 import pygame
-from typing import List
-
-# از آنجایی که این فایل‌ها در لایه‌های مختلف هستند، از import نسبی استفاده می‌کنیم
-# این import ها برای Type Hinting لازم هستند تا کد خواناتر باشد
-from ..layer_1_simulation.entities.drone import Drone
-from .environment import Environment
-
+import logging
+from skymind_sim.layer_0_presentation.asset_loader import load_image
 
 class Renderer:
     """
-    این کلاس مسئولیت ترسیم تمام اجزای شبیه‌سازی روی صفحه را بر عهده دارد.
-    این کلاس مستقیماً اشیاء شبیه‌سازی (مانند Environment و Drone) را برای ترسیم دریافت می‌کند.
+    وظیفه: رندر محیط، مسیرها و پهپادها روی صفحه.
     """
-    def __init__(self, screen: pygame.Surface, config: dict):
+
+    def __init__(self, environment):
+        self.environment = environment
+        self.window_config = self.environment.window_config
+        self.grid_config = self.environment.grid_config
+
+        self.cell_size = self.grid_config.get("cell_size", 32)
+        width_px = self.grid_config.get("width", 20) * self.cell_size
+        height_px = self.grid_config.get("height", 20) * self.cell_size
+
+        pygame.init()
+        self.screen = pygame.display.set_mode((width_px, height_px))
+        pygame.display.set_caption(self.window_config.get("title", "SkyMind Simulation"))
+
+        self.drone_image = load_image("drone.png", scale=self.cell_size)
+        self.background_color = (255, 255, 255)
+        self.obstacle_color = (100, 100, 100)
+        self.path_color = (0, 255, 0)
+
+    def draw_grid(self):
+        for x in range(0, self.screen.get_width(), self.cell_size):
+            pygame.draw.line(self.screen, (200, 200, 200), (x, 0), (x, self.screen.get_height()))
+        for y in range(0, self.screen.get_height(), self.cell_size):
+            pygame.draw.line(self.screen, (200, 200, 200), (0, y), (self.screen.get_width(), y))
+
+    def draw_obstacles(self):
+        for (ox, oy, ow, oh) in self.environment.get_obstacles_data():
+            rect = pygame.Rect(ox, oy, ow, oh)
+            pygame.draw.rect(self.screen, self.obstacle_color, rect)
+
+    def draw_paths(self):
         """
-        سازنده کلاس Renderer.
-
-        Args:
-            screen (pygame.Surface): سطحی که ترسیم روی آن انجام می‌شود (پنجره اصلی).
-            config (dict): دیکشنری کلی تنظیمات برای دسترسی به رنگ‌ها، فونت‌ها و غیره.
+        رسم مسیرهای ذخیره شده در environment و (در آینده) مسیرهای دیگر پهپادها.
         """
-        self.screen = screen
-        self.config = config
-        
-        # استخراج تنظیمات رندر از کانفیگ کلی
-        render_settings = self.config.get("render_settings", {})
-        
-        # تعریف رنگ‌ها از کانفیگ
-        self.colors = render_settings.get("colors", {
-            "background": (240, 240, 240),
-            "obstacle": (50, 50, 50),
-            "drone": (200, 50, 50),
-            "grid": (220, 220, 220),
-            "path": (0, 150, 255),
-            "text": (10, 10, 10)
-        })
+        paths = self.environment.get_path_to_draw()
+        if not paths:
+            return
+        for path in paths:
+            for (px, py) in path:
+                rect = pygame.Rect(px, py, self.cell_size, self.cell_size)
+                pygame.draw.rect(self.screen, self.path_color, rect, 2)
 
-        # TODO: بارگذاری فونت و تصاویر پهپاد در آینده از طریق AssetLoader انجام شود
-        self.font = pygame.font.SysFont(None, 24) # استفاده از فونت پیش‌فرض برای سادگی
-        self.drone_img = None  # فعلا از تصویر استفاده نمی‌کنیم و دایره رسم می‌کنیم
-
-    def draw(self, environment: Environment, drones: List[Drone]):
+    def draw_test_drone(self):
         """
-        یک فریم کامل از شبیه‌سازی را ترسیم می‌کند.
-        این متد جایگزین متد render قبلی است و اشیاء را مستقیماً دریافت می‌کند.
-        
-        Args:
-            environment (Environment): آبجکت محیط شامل موانع و ابعاد.
-            drones (List[Drone]): لیستی از آبجکت‌های پهپاد برای ترسیم.
+        رسم تصویر پهپاد تستی در موقعیت فعلی.
         """
-        # 1. ترسیم پس‌زمینه
-        self.screen.fill(self.colors.get("background", (255, 255, 255)))
+        if hasattr(self.environment, "test_drone_pos") and self.environment.test_drone_pos is not None:
+            x_cell, y_cell = self.environment.test_drone_pos
+            self.screen.blit(self.drone_image, (x_cell * self.cell_size, y_cell * self.cell_size))
 
-        # 2. ترسیم گرید (اختیاری)
-        # self._draw_grid(environment.grid_size) # در صورت نیاز می‌توانید فعال کنید
+    def draw_path_overlay(self):
+        """
+        رسم یک لایه‌ی نیمه‌شفاف برای نمایش مسیر فعلی پهپاد (S=سبز، G=قرمز، *=آبی).
+        """
+        if not hasattr(self.environment, "test_drone_path") or not self.environment.test_drone_path:
+            return
 
-        # 3. ترسیم موانع از آبجکت environment
-        self._draw_obstacles(environment.obstacles)
+        overlay = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
+        path = self.environment.test_drone_path
+        start = path[0]
+        goal = path[-1]
 
-        # 4. ترسیم پهپادها
-        if drones:
-            self._draw_drones(drones)
-        
-        # نیازی به pygame.display.flip() در اینجا نیست، این کار در حلقه اصلی انجام می‌شود.
+        # مسیر → آبی نیمه‌شفاف
+        for px, py in path:
+            pygame.draw.rect(overlay, (0, 0, 255, 80),
+                             (px * self.cell_size, py * self.cell_size, self.cell_size, self.cell_size))
 
-    def _draw_grid(self, grid_size: int):
-        """یک گرید پس‌زمینه برای راهنمایی بصری ترسیم می‌کند."""
-        width = self.screen.get_width()
-        height = self.screen.get_height()
-        grid_color = self.colors.get("grid", (230, 230, 230))
-        for x in range(0, width, grid_size):
-            pygame.draw.line(self.screen, grid_color, (x, 0), (x, height))
-        for y in range(0, height, grid_size):
-            pygame.draw.line(self.screen, grid_color, (0, y), (width, y))
+        # نقطه شروع → سبز نیمه‌شفاف
+        pygame.draw.rect(overlay, (0, 255, 0, 120),
+                         (start[0] * self.cell_size, start[1] * self.cell_size, self.cell_size, self.cell_size))
 
-    def _draw_obstacles(self, obstacles: list):
-        """موانع را ترسیم می‌کند."""
-        obstacle_color = self.colors.get("obstacle", (50, 50, 50))
-        for obstacle in obstacles:
-            pygame.draw.rect(self.screen, obstacle_color, obstacle.rect)
+        # نقطه هدف → قرمز نیمه‌شفاف
+        pygame.draw.rect(overlay, (255, 0, 0, 120),
+                         (goal[0] * self.cell_size, goal[1] * self.cell_size, self.cell_size, self.cell_size))
 
-    def _draw_drone_path(self, drone: Drone):
-        """مسیر برنامه‌ریزی شده برای یک پهپاد را ترسیم می‌کند."""
-        path_color = self.colors.get("path", (0, 150, 255))
-        # TODO: مسیر پهپاد باید از آبجکت drone خوانده شود. فعلا این بخش غیرفعال است.
-        # if drone.path and len(drone.path) > 1:
-        #     pygame.draw.lines(self.screen, path_color, False, drone.path, 3)
-        pass # موقتاً غیرفعال
+        self.screen.blit(overlay, (0, 0))
 
-    def _draw_drones(self, drones: List[Drone]):
-        """پهپادها را ترسیم می‌کند."""
-        drone_color = self.colors.get("drone", (200, 50, 50))
-        text_color = self.colors.get("text", (10, 10, 10))
-
-        for drone in drones:
-            self._draw_drone_path(drone)
-            
-            if self.drone_img:
-                img_rect = self.drone_img.get_rect(center=drone.position)
-                self.screen.blit(self.drone_img, img_rect)
-            else:
-                # ترسیم یک دایره به جای تصویر پهپاد
-                pygame.draw.circle(self.screen, drone_color, (int(drone.position[0]), int(drone.position[1])), 15)
-
-            # نمایش ID پهپاد
-            id_text = self.font.render(str(drone.drone_id), True, text_color)
-            text_rect = id_text.get_rect(center=(drone.position[0], drone.position[1] - 25))
-            self.screen.blit(id_text, text_rect)
+    def render_frame(self):
+        """
+        رندر کامل یک فریم از شبیه سازی.
+        """
+        self.screen.fill(self.background_color)
+        self.draw_grid()
+        self.draw_obstacles()
+        self.draw_paths()
+        self.draw_test_drone()
+        self.draw_path_overlay()  # اضافه شدن مسیر گرافیکی به فریم
+        pygame.display.flip()

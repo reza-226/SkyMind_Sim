@@ -1,62 +1,64 @@
-import pygame
-import numpy as np
-import logging
+# ============================================
+# D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\entities\drone.py
+# ============================================
+
+import time
 
 class Drone:
-    """
-    این کلاس نمایانگر یک پهپاد در شبیه‌سازی است.
-    """
-    def __init__(self, config: dict):
-        """
-        سازنده کلاس Drone.
+    def __init__(self, drone_id, start_pos, destination,
+                 battery_capacity, energy_consumption_rate,
+                 max_speed, communication_delay,
+                 exec_level="Local", metrics_collector=None):
+        self.id = drone_id
+        self.position = start_pos
+        self.destination = destination
 
-        Args:
-            config (dict): دیکشنری تنظیمات مربوط به این پهپاد خاص.
-        """
-        try:
-            self.id = config["id"]
-            self.position = np.array(config["position"], dtype=float)
-            self.destination = np.array(config["destination"], dtype=float)
-            self.speed = config["speed"]
-            self.color = config.get("color", (0, 0, 255))
-            
-            # بارگذاری تصویر پهپاد
-            self.asset_path = config.get("asset_path")
-            self.asset = None
-            if self.asset_path:
-                try:
-                    self.asset = pygame.image.load(self.asset_path).convert_alpha()
-                    # می‌توانید اندازه تصویر را در اینجا تغییر دهید
-                    # self.asset = pygame.transform.scale(self.asset, (30, 30))
-                except pygame.error as e:
-                    logging.error(f"خطا در بارگذاری تصویر پهپاد از مسیر '{self.asset_path}': {e}")
-                    self.asset = None
+        self.battery_capacity = battery_capacity
+        self.energy_consumption_rate = energy_consumption_rate
+        self.max_speed = max_speed
+        self.communication_delay = communication_delay
+        self.exec_level = exec_level
+        self.metrics_collector = metrics_collector
 
-            logging.info(f"پهپاد {self.id} در موقعیت {self.position.tolist()} با مقصد اولیه {self.destination.tolist()} ایجاد شد.")
+        # مسیر فعلی پهپاد (توسط DroneMover محاسبه می‌شود)
+        self.path = []
+        self.distance_travelled = 0.0
+        self.battery_remaining = battery_capacity
+        self.start_time = time.time()
 
-        except KeyError as e:
-            logging.error(f"خطا در خواندن اطلاعات پهپاد از کانفیگ. کلید '{e.args[0]}' یافت نشد.")
-            raise
+        # متریک‌های مأموریت
+        self.stop_count = 0
+        self.collision_avoided = 0
 
-    def update(self, dt: float):
-        """
-        موقعیت پهپاد را بر اساس سرعت و مقصدش به‌روزرسانی می‌کند.
+        # ارتباطات
+        self.received_messages = []
+        self.neighbors = []
 
-        Args:
-            dt (float): زمان سپری شده از آخرین فریم (delta time).
-        """
-        direction = self.destination - self.position
-        distance = np.linalg.norm(direction)
+    def update_metrics_on_arrival(self):
+        mission_time = time.time() - self.start_time
+        if self.metrics_collector:
+            self.metrics_collector.log_task(
+                drone_id=self.id,
+                exec_level=self.exec_level,
+                path=self.path,
+                distance=self.distance_travelled,
+                battery_remaining=self.battery_remaining,
+                total_time=mission_time,
+                stop_count=self.stop_count,
+                collision_avoided=self.collision_avoided
+            )
 
-        # اگر پهپاد به مقصد نرسیده باشد، حرکت کن
-        if distance > 1.0:  # یک آستانه کوچک برای جلوگیری از لرزش در مقصد
-            # نرمال‌سازی بردار جهت
-            direction_normalized = direction / distance
-            # محاسبه جابجایی در این فریم
-            displacement = direction_normalized * self.speed * dt
-            
-            # اگر جابجایی بیشتر از فاصله تا مقصد باشد، پهپاد را مستقیم به مقصد ببر
-            if np.linalg.norm(displacement) > distance:
-                self.position = self.destination
-            else:
-                self.position += displacement
+    def receive_message(self, msg, latency, success):
+        self.received_messages.append({
+            "from_exec_level": msg.get("exec_level", None),
+            "battery_report": msg.get("battery", None),
+            "latency": latency,
+            "success": success
+        })
+        if self.metrics_collector:
+            self.metrics_collector.log_network_event(
+                drone_id=self.id,
+                latency=latency,
+                success=success,
+                neighbors_count=len(self.neighbors)
+            )

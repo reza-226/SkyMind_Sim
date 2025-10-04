@@ -1,17 +1,19 @@
+# مسیر: skymind_sim/layer_0_presentation/asset_loader.py
 import os
+import logging
 import pygame
 
 # --- Configuration for Asset Paths ---
-# This robustly finds the project root directory (SkyMind_Sim)
-# It assumes this file is at: SkyMind_Sim/skymind_sim/utils/asset_loader.py
-# So we need to go up three levels from this file's location.
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ASSETS_DIR = os.path.join(PROJECT_ROOT, "assets")
 IMAGE_DIR = os.path.join(ASSETS_DIR, "images")
 FONT_DIR = os.path.join(ASSETS_DIR, "fonts")
 
 def get_asset_path(asset_type: str, filename: str) -> str:
-    """Constructs the full path to an asset."""
+    """
+    ساخت مسیر کامل برای یک Asset بر اساس نوع و نام فایل.
+    در صورت نبودن فایل، پیام WARNING و بازگشت مسیر پیش‌فرض.
+    """
     if asset_type == 'image':
         path = os.path.join(IMAGE_DIR, filename)
     elif asset_type == 'font':
@@ -20,30 +22,38 @@ def get_asset_path(asset_type: str, filename: str) -> str:
         raise ValueError(f"Unknown asset type: {asset_type}")
     
     if not os.path.exists(path):
-        raise FileNotFoundError(f"Asset not found at path: {path}")
+        logging.warning(f"Asset not found: {path} — using fallback.")
+        # مسیر پیش‌فرض پایه برای جلوگیری از توقف
+        return os.path.join(IMAGE_DIR if asset_type == 'image' else FONT_DIR,
+                            "drone.png" if asset_type == 'image' else "Roboto-Regular.ttf")
     return path
 
-def load_image(filename: str, size: tuple = None) -> pygame.Surface:
+def load_image(filename: str, scale=None) -> pygame.Surface:
     """
-    Loads an image, handling transparency and optional resizing.
+    بارگذاری تصویر با مسیر امن و اعمال شفافیت.
     """
     path = get_asset_path('image', filename)
     try:
         image = pygame.image.load(path).convert_alpha()
-        if size:
-            image = pygame.transform.scale(image, size)
+        if scale:
+            if isinstance(scale, (int, float)):
+                scale = (int(scale), int(scale))
+            image = pygame.transform.scale(image, scale)
+        logging.info(f"Image loaded: {filename} from {path}")
         return image
     except pygame.error as e:
-        print(f"Pygame error loading image '{filename}': {e}")
-        raise
+        logging.warning(f"Pygame error loading image '{filename}': {e} — using blank surface.")
+        return pygame.Surface((scale if isinstance(scale, tuple) else (64, 64)), pygame.SRCALPHA)
 
 def load_font(filename: str, size: int) -> pygame.font.Font:
     """
-    Loads a font file from the assets directory.
+    بارگذاری فونت با مسیر امن.
     """
     path = get_asset_path('font', filename)
     try:
-        return pygame.font.Font(path, size)
+        font = pygame.font.Font(path, size)
+        logging.info(f"Font loaded: {filename} from {path}")
+        return font
     except pygame.error as e:
-        print(f"Pygame error loading font '{filename}': {e}")
-        raise
+        logging.warning(f"Pygame error loading font '{filename}': {e} — using default pygame font.")
+        return pygame.font.SysFont(None, size)

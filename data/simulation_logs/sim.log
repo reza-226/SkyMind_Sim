@@ -161,3 +161,40 @@ TypeError: Environment.__init__() missing 2 required positional arguments: 'map_
 2025-10-03 01:30:55,096 - root - INFO - شبیه‌سازی شروع شد.
 2025-10-03 01:31:01,450 - root - INFO - حلقه شبیه‌سازی پایان یافت. در حال خروج...
 2025-10-03 01:31:01,497 - root - INFO - شبیه‌سازی با موفقیت به پایان رسید.
+2025-10-03 10:21:15,828 - root - INFO - سیستم لاگ‌گیری با موفقیت تنظیم شد. سطح لاگ: INFO, فایل لاگ: D:\Payannameh\SkyMind_Sim\data/simulation_logs/sim.log
+2025-10-03 10:21:15,835 - root - INFO - پیکربندی با موفقیت بارگذاری شد. شروع شبیه‌سازی...
+2025-10-03 10:21:16,270 - root - INFO - Pygame با موفقیت مقداردهی اولیه شد.
+2025-10-03 10:21:16,411 - root - INFO - 2 مانع با موفقیت از 'data/maps/basic_map.json' بارگذاری شد.
+2025-10-03 10:21:16,411 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - در حال ساخت گرید مسیریابی با ابعاد 600x800.
+2025-10-03 10:21:16,412 - root - CRITICAL - یک خطای پیش‌بینی نشده در حین اجرای شبیه‌سازی رخ داد: 'list' object has no attribute 'get'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\main.py", line 37, in main
+    simulation = Simulation(config)
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 36, in __init__
+    self.path_planner = PathPlanner(
+                        ~~~~~~~~~~~^
+        world_dim=self.environment.get_world_dimensions(),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        obstacles=self.environment.get_obstacles_data()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_3_intelligence\pathfinding\path_planner.py", line 24, in __init__
+    self.grid = self._create_pathfinding_grid()
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_3_intelligence\pathfinding\path_planner.py", line 38, in _create_pathfinding_grid
+    if obs_data.get('type') == 'rect':
+       ^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'get'
+2025-10-03 10:29:49,033 - root - INFO - سیستم لاگ‌گیری با موفقیت تنظیم شد. سطح لاگ: INFO, فایل لاگ: D:\Payannameh\SkyMind_Sim\data/simulation_logs/sim.log
+2025-10-03 10:29:49,033 - root - INFO - پیکربندی با موفقیت بارگذاری شد. شروع شبیه‌سازی...
+2025-10-03 10:29:49,204 - root - INFO - Pygame با موفقیت مقداردهی اولیه شد.
+2025-10-03 10:29:49,263 - root - INFO - 2 مانع با موفقیت از 'data/maps/basic_map.json' بارگذاری شد.
+2025-10-03 10:29:49,270 - root - INFO - در حال ساخت گرید مسیریابی با ابعاد 600x800.
+2025-10-03 10:29:49,272 - root - INFO - پهپاد drone_0 در موقعیت [100.0, 100.0] با مقصد نهایی [700.0, 500.0] ایجاد شد.
+2025-10-03 10:29:49,273 - root - INFO - در حال برنامه‌ریزی مسیر برای پهپاد drone_0 از (100, 100) به (500, 700)
+2025-10-03 10:29:49,274 - root - ERROR - نقطه هدف (500, 700) خارج از محدوده دنیا است.
+2025-10-03 10:29:49,275 - root - WARNING - مسیری برای پهپاد drone_0 از (100, 100) به (500, 700) یافت نشد.
+2025-10-03 10:29:49,275 - root - INFO - شبیه‌سازی شروع شد.
+2025-10-03 10:30:00,941 - root - INFO - حلقه شبیه‌سازی پایان یافت. در حال خروج...
+2025-10-03 10:30:00,993 - root - INFO - شبیه‌سازی با موفقیت به پایان رسید.
