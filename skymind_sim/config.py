@@ -1,68 +1,52 @@
-# -*- coding: utf-8 -*-
-# مسیر: skymind_sim/config.py
-
+# =========================================================================
+#  File: skymind_sim/config.py
+#  Author: Reza & AI Assistant | 2025-10-14 (Final Version)
+# =========================================================================
 import configparser
-import logging
 import os
+import logging
 import json
-from typing import Any, Tuple
+from typing import Dict, Any
 
-class ConfigManager:
-    _instance = None
+logger = logging.getLogger(__name__)
 
-    def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super(ConfigManager, cls).__new__(cls)
-        return cls._instance
+def load_config(config_path: str = 'config.ini') -> Dict[str, Any]:
+    """
+    فایل پیکربندی (ini) را از مسیر مشخص شده می‌خواند و آن را به یک
+    دیکشنری پایتون تبدیل می‌کند.
+    انکودینگ UTF-8 برای پشتیبانی از کاراکترهای فارسی پشتیبانی می‌شود.
+    """
+    project_root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    absolute_config_path = os.path.join(project_root_dir, config_path)
+    absolute_config_path = os.path.normpath(absolute_config_path)
 
-    def __init__(self, config_file: str = 'config.ini'):
-        if hasattr(self, '_initialized') and self._initialized:
-            return
+    print(f"\nDEBUG: Attempting to read config from absolute path: {absolute_config_path}\n")
 
-        self.config = configparser.ConfigParser(interpolation=None)
+    if not os.path.exists(absolute_config_path):
+        logger.critical(f"Configuration file not found at: {absolute_config_path}")
+        return {}
 
-        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        config_path = os.path.join(project_root, config_file)
+    config_parser = configparser.ConfigParser()
+    try:
+        # مشخص کردن انکودینگ UTF-8 برای جلوگیری از خطای UnicodeDecodeError
+        config_parser.read(absolute_config_path, encoding='utf-8')
 
-        if not os.path.exists(config_path):
-            logging.error(f"فایل تنظیمات در مسیر '{config_path}' یافت نشد.")
-            raise FileNotFoundError(f"فایل تنظیمات در مسیر '{config_path}' یافت نشد.")
+        # تبدیل شیء ConfigParser به یک دیکشنری استاندارد
+        config_dict: Dict[str, Any] = {
+            section: dict(config_parser.items(section))
+            for section in config_parser.sections()
+        }
 
-        self.config.read(config_path, encoding='utf-8')
-        logging.info(f"تنظیمات با موفقیت از '{config_path}' بارگذاری شد.")
-        self._initialized = True
+        # چاپ محتوای تبدیل شده برای دیباگ
+        print("--- DEBUG: Content converted to Python dictionary ---")
+        print(json.dumps(config_dict, indent=4, ensure_ascii=False))
+        print("---------------------------------------------------\n")
 
-    # --- متدهای عمومی ---
-    def get(self, section: str, option: str, fallback: Any = None) -> Any:
-        return self.config.get(section, option, fallback=fallback)
+        return config_dict
 
-    def getint(self, section: str, option: str, fallback: Any = None) -> int:
-        return self.config.getint(section, option, fallback=fallback)
-
-    def getfloat(self, section: str, option: str, fallback: Any = None) -> float:
-        return self.config.getfloat(section, option, fallback=fallback)
-
-    def getboolean(self, section: str, option: str, fallback: Any = None) -> bool:
-        return self.config.getboolean(section, option, fallback=fallback)
-
-    def get_json(self, section: str, option: str, fallback: Any = None) -> Any:
-        raw_value = self.get(section, option, fallback=fallback)
-        if raw_value is None:
-            return fallback
-        try:
-            return json.loads(raw_value)
-        except json.JSONDecodeError as e:
-            raise ValueError(f"مقدار JSON معتبر نیست برای [{section}] {option}: {e}")
-
-    def get_tuple_int(self, section: str, option: str, fallback: Tuple[int, ...] = None) -> Tuple[int, ...]:
-        """رشته عددی جداشده با ویرگول را به tuple[int,...] تبدیل می‌کند."""
-        raw_value = self.get(section, option, fallback=None)
-        if raw_value is None:
-            return fallback
-        try:
-            return tuple(int(x.strip()) for x in raw_value.split(','))
-        except ValueError as e:
-            raise ValueError(f"مقدار tuple عددی معتبر نیست برای [{section}] {option}: {e}")
-
-# نمونه Singleton سراسری
-config = ConfigManager()
+    except configparser.Error as e:
+        logger.critical(f"Error parsing configuration file '{absolute_config_path}': {e}")
+        return {}
+    except UnicodeDecodeError as e:
+        logger.critical(f"Encoding error in '{absolute_config_path}'. Ensure it's saved as UTF-8. Error: {e}")
+        return {}

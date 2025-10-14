@@ -1,38 +1,43 @@
-# مسیر: skymind_sim/utils/config_loader.py
+# ============================================================
+#  File: config_loader.py
+#  Layer: Utils
+#  Author: Reza – October 2025
+# ============================================================
+
 import json
 import os
-import logging
+from skymind_sim.utils.logger import setup_logger
 
-DEFAULT_CONFIGS = {
-    "window.json": {"width": 800, "height": 600, "fullscreen": False},
-    "grid.json": {"rows": 20, "cols": 20, "cell_size": 32},
-    "simulation.json": {"speed": 1.0, "max_drones": 5}
-}
+def load_map_config(file_path="data/maps/basic_map.json"):
+    """
+    بارگذاری فایل JSON نقشه.
+    خروجی: دیکشنری شامل داده‌های پهپاد، موانع و اهداف.
+    """
+    logger = setup_logger("ConfigLoader")
 
-def load_json_config(file_path: str) -> dict:
-    """
-    خواندن و اعتبارسنجی فایل کانفیگ JSON.
-    اگر فایل نبود یا خراب بود، هشدار داده و از کانفیگ پیش‌فرض استفاده می‌کند.
-    """
-    filename = os.path.basename(file_path)
     if not os.path.exists(file_path):
-        logging.warning(f"فایل کانفیگ یافت نشد: {file_path} — استفاده از پیش‌فرض.")
-        return DEFAULT_CONFIGS.get(filename, {})
+        logger.error(f"❌ فایل نقشه یافت نشد: {file_path}")
+        raise FileNotFoundError(f"Map config not found: {file_path}")
 
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
-            logging.info(f"کانفیگ با موفقیت بارگذاری شد: {file_path}")
-            return data
+        logger.info(f"📁 نقشه با موفقیت لود شد: {file_path}")
+        return data
     except json.JSONDecodeError as e:
-        logging.warning(f"خطا در پارس فایل JSON ({file_path}): {e} — استفاده از پیش‌فرض.")
-        return DEFAULT_CONFIGS.get(filename, {})
+        logger.error(f"❌ خطا در تجزیه JSON: {e}")
+        raise
 
-def load_all_configs(config_dir: str) -> tuple:
+def load_simulation_config(sim_file="data/config/simulation.json"):
     """
-    بارگذاری همه کانفیگ‌ها از مسیر مشخص‌شده.
+    (اختیاری) بارگذاری پیکربندی شبیه‌سازی مثل Tmax و Δt.
     """
-    window_config = load_json_config(os.path.join(config_dir, "window.json"))
-    grid_config = load_json_config(os.path.join(config_dir, "grid.json"))
-    simulation_config = load_json_config(os.path.join(config_dir, "simulation.json"))
-    return window_config, grid_config, simulation_config
+    if not os.path.exists(sim_file):
+        return {"time_step": 0.1, "max_time": 60.0}
+
+    with open(sim_file, "r", encoding="utf-8") as f:
+        try:
+            cfg = json.load(f)
+            return cfg
+        except Exception:
+            return {"time_step": 0.1, "max_time": 60.0}

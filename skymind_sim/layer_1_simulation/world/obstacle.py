@@ -1,32 +1,58 @@
-# skymind_sim/layer_1_simulation/world/obstacle.py
+# ============================================================
+#  File: obstacle.py
+#  Layer: L1 - Simulation / World
+#  Author: Reza & AI Assistant | 2025-10-13
+# ============================================================
 
-import pygame
+from typing import Tuple
 
 class Obstacle:
     """
-    نشان‌دهنده یک مانع ثابت در محیط شبیه‌سازی.
-    این کلاس اطلاعات مربوط به موقعیت، اندازه و رنگ مانع را نگهداری می‌کند
-    و همچنین نحوه ترسیم آن روی صفحه را مدیریت می‌کند.
+    نمایانگر یک مانع ثابت در محیط شبیه‌سازی.
+    موقعیت و اندازه آن را برای بررسی برخورد و نمایش ذخیره می‌کند.
     """
-    def __init__(self, rect: pygame.Rect, color: tuple = (100, 100, 100)):
+
+    def __init__(self, position: Tuple[int, int], size: Tuple[int, int], id: int = None, color: Tuple[int, int, int] = (128, 128, 128)):
         """
-        سازنده کلاس Obstacle.
+        سازنده کلاس مانع.
 
         Args:
-            rect (pygame.Rect): یک شیء Rect از Pygame که موقعیت (x, y) و 
-                                اندازه (width, height) مانع را مشخص می‌کند.
-            color (tuple, optional): رنگ مانع به صورت (R, G, B). 
-                                     پیش‌فرض (100, 100, 100) است.
+            position (Tuple[int, int]): یک تاپل (x, y) برای گوشه بالا-چپ مانع.
+            size (Tuple[int, int]): یک تاپل (width, height) برای ابعاد مانع.
+            id (int, optional): شناسه منحصر به فرد مانع. Defaults to None.
+            color (Tuple[int, int, int], optional): رنگ RGB برای نمایش.
         """
-        self.rect = rect
+        self.id = id
+        # ما position و size را به عنوان تاپل ذخیره می‌کنیم تا کار با آنها راحت‌تر باشد.
+        self.position = tuple(position) # Ensure it's a tuple
+        self.size = tuple(size)         # Ensure it's a tuple
         self.color = color
 
-    def render(self, surface: pygame.Surface):
-        """
-        مانع را به صورت یک مستطیل روی سطح (surface) داده شده ترسیم می‌کند.
+    @property
+    def x(self) -> int:
+        """مختصات x گوشه بالا-چپ."""
+        return self.position[0]
 
-        Args:
-            surface (pygame.Surface): سطحی که مانع باید روی آن کشیده شود 
-                                      (معمولاً صفحه اصلی بازی).
+    @property
+    def y(self) -> int:
+        """مختصات y گوشه بالا-چپ."""
+        return self.position[1]
+
+    @property
+    def width(self) -> int:
+        """عرض مانع."""
+        return self.size[0]
+
+    @property
+    def height(self) -> int:
+        """ارتفاع مانع."""
+        return self.size[1]
+
+    def get_rect(self) -> Tuple[int, int, int, int]:
         """
-        pygame.draw.rect(surface, self.color, self.rect)
+        یک تاپل (x, y, width, height) برای استفاده در Pygame برمی‌گرداند.
+        """
+        return (self.x, self.y, self.width, self.height)
+
+    def __repr__(self) -> str:
+        return f"Obstacle(id={self.id}, position={self.position}, size={self.size})"

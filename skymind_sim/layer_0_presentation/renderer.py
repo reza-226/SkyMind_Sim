@@ -1,97 +1,125 @@
-# مسیر: skymind_sim/layer_0_presentation/renderer.py
+# =========================================================================
+#  File: skymind_sim/layer_0_presentation/renderer.py
+#  Author: Reza & AI Assistant | 2025-10-14 (Standardized Version)
+#  Description: Manages all visual aspects of the simulation using Pygame.
+# =========================================================================
+
 import pygame
 import logging
-from skymind_sim.layer_0_presentation.asset_loader import load_image
+import os
 
 class Renderer:
     """
-    وظیفه: رندر محیط، مسیرها و پهپادها روی صفحه.
+    کلاس مسئول رندر کردن تمام اجزای شبیه‌سازی روی صفحه با استفاده از Pygame.
+    این کلاس گرید، پهپادها و سایر اطلاعات را ترسیم می‌کند.
     """
 
-    def __init__(self, environment):
-        self.environment = environment
-        self.window_config = self.environment.window_config
-        self.grid_config = self.environment.grid_config
+    # تعریف رنگ‌ها به عنوان متغیرهای کلاس
+    COLOR_WHITE = (255, 255, 255)
+    COLOR_BLACK = (0, 0, 0)
+    COLOR_GRID_LINES = (200, 200, 200) # خاکستری روشن برای خطوط گرید
+    COLOR_DRONE = (50, 50, 200)       # آبی برای پهپادها
 
-        self.cell_size = self.grid_config.get("cell_size", 32)
-        width_px = self.grid_config.get("width", 20) * self.cell_size
-        height_px = self.grid_config.get("height", 20) * self.cell_size
+    def __init__(self, config: dict):
+        """
+        سازنده کلاس رندرکننده.
 
+        Args:
+            config (dict): دیکشنری حاوی تنظیمات کامل برنامه.
+        """
+        self.logger = logging.getLogger(__name__)
+        self.logger.info("Initializing Pygame Renderer...")
+        
+        self.config = config
+        
+        try:
+            # خواندن تنظیمات از کانفیگ
+            self.screen_width = int(config['renderer']['screen_width'])
+            self.screen_height = int(config['renderer']['screen_height'])
+            self.cell_size = int(config['renderer']['cell_size'])
+            self.fps = int(config['renderer']['fps'])
+        except (KeyError, ValueError) as e:
+            self.logger.error(f"Invalid renderer configuration: {e}")
+            raise ValueError("Renderer configuration is missing or invalid.") from e
+
+        # مقداردهی اولیه Pygame
         pygame.init()
-        self.screen = pygame.display.set_mode((width_px, height_px))
-        pygame.display.set_caption(self.window_config.get("title", "SkyMind Simulation"))
+        pygame.font.init()
 
-        self.drone_image = load_image("drone.png", scale=self.cell_size)
-        self.background_color = (255, 255, 255)
-        self.obstacle_color = (100, 100, 100)
-        self.path_color = (0, 255, 0)
+        # ایجاد صفحه نمایش اصلی
+        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
+        pygame.display.set_caption("SkyMind Simulator")
 
-    def draw_grid(self):
-        for x in range(0, self.screen.get_width(), self.cell_size):
-            pygame.draw.line(self.screen, (200, 200, 200), (x, 0), (x, self.screen.get_height()))
-        for y in range(0, self.screen.get_height(), self.cell_size):
-            pygame.draw.line(self.screen, (200, 200, 200), (0, y), (self.screen.get_width(), y))
+        self.drone_image = None
+        self.font = None
+        
+        self.logger.info("Pygame Renderer initialized successfully.")
 
-    def draw_obstacles(self):
-        for (ox, oy, ow, oh) in self.environment.get_obstacles_data():
-            rect = pygame.Rect(ox, oy, ow, oh)
-            pygame.draw.rect(self.screen, self.obstacle_color, rect)
-
-    def draw_paths(self):
+    def load_assets(self):
         """
-        رسم مسیرهای ذخیره شده در environment و (در آینده) مسیرهای دیگر پهپادها.
+        بارگذاری منابعی مانند تصاویر و فونت‌ها.
+        این متد باید پس از مقداردهی اولیه Pygame فراخوانی شود.
         """
-        paths = self.environment.get_path_to_draw()
-        if not paths:
-            return
-        for path in paths:
-            for (px, py) in path:
-                rect = pygame.Rect(px, py, self.cell_size, self.cell_size)
-                pygame.draw.rect(self.screen, self.path_color, rect, 2)
+        self.logger.info("Loading assets...")
+        try:
+            # بارگذاری تصویر پهپاد
+            drone_icon_path = os.path.join(os.path.dirname(__file__), '..', '..', 'assets', 'images', 'drone_icon.png')
+            raw_image = pygame.image.load(drone_icon_path).convert_alpha()
+            # تغییر اندازه تصویر به اندازه سلول گرید
+            self.drone_image = pygame.transform.scale(raw_image, (self.cell_size, self.cell_size))
+            
+            # بارگذاری فونت (اگر در کانفیگ مشخص شده باشد)
+            font_path_str = self.config['renderer'].get('font_path')
+            if font_path_str:
+                font_path = os.path.join(os.path.dirname(__file__), '..', '..', font_path_str)
+                font_size = int(self.config['renderer']['font_size'])
+                self.font = pygame.font.Font(font_path, font_size)
 
-    def draw_test_drone(self):
+            self.logger.info("Assets loaded successfully.")
+        except Exception as e:
+            self.logger.error(f"Failed to load assets: {e}")
+            # در صورت عدم موفقیت، برنامه می‌تواند با اشکال پیش‌فرض ادامه دهد
+            # بنابراین یک Exception ایجاد نمی‌کنیم، فقط لاگ می‌گیریم.
+
+    def render(self, grid, entities):
         """
-        رسم تصویر پهپاد تستی در موقعیت فعلی.
+        رندر کردن یک فریم کامل از شبیه‌سازی.
+
+        Args:
+            grid (Grid): شیء گرید برای ترسیم.
+            entities (list): لیستی از موجودیت‌ها (مانند پهپادها) برای ترسیم.
         """
-        if hasattr(self.environment, "test_drone_pos") and self.environment.test_drone_pos is not None:
-            x_cell, y_cell = self.environment.test_drone_pos
-            self.screen.blit(self.drone_image, (x_cell * self.cell_size, y_cell * self.cell_size))
+        # 1. پاک کردن صفحه با رنگ پس‌زمینه سفید
+        self.screen.fill(self.COLOR_WHITE)
 
-    def draw_path_overlay(self):
-        """
-        رسم یک لایه‌ی نیمه‌شفاف برای نمایش مسیر فعلی پهپاد (S=سبز، G=قرمز، *=آبی).
-        """
-        if not hasattr(self.environment, "test_drone_path") or not self.environment.test_drone_path:
-            return
+        # 2. ترسیم گرید
+        self._draw_grid(grid)
 
-        overlay = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
-        path = self.environment.test_drone_path
-        start = path[0]
-        goal = path[-1]
+        # 3. ترسیم موجودیت‌ها (پهپادها)
+        self._draw_entities(entities)
 
-        # مسیر → آبی نیمه‌شفاف
-        for px, py in path:
-            pygame.draw.rect(overlay, (0, 0, 255, 80),
-                             (px * self.cell_size, py * self.cell_size, self.cell_size, self.cell_size))
-
-        # نقطه شروع → سبز نیمه‌شفاف
-        pygame.draw.rect(overlay, (0, 255, 0, 120),
-                         (start[0] * self.cell_size, start[1] * self.cell_size, self.cell_size, self.cell_size))
-
-        # نقطه هدف → قرمز نیمه‌شفاف
-        pygame.draw.rect(overlay, (255, 0, 0, 120),
-                         (goal[0] * self.cell_size, goal[1] * self.cell_size, self.cell_size, self.cell_size))
-
-        self.screen.blit(overlay, (0, 0))
-
-    def render_frame(self):
-        """
-        رندر کامل یک فریم از شبیه سازی.
-        """
-        self.screen.fill(self.background_color)
-        self.draw_grid()
-        self.draw_obstacles()
-        self.draw_paths()
-        self.draw_test_drone()
-        self.draw_path_overlay()  # اضافه شدن مسیر گرافیکی به فریم
+        # 4. به‌روزرسانی صفحه نمایش برای نمایش تغییرات
         pygame.display.flip()
+
+    def _draw_grid(self, grid):
+        """خطوط گرید را بر روی صفحه ترسیم می‌کند."""
+        for x in range(0, grid.width * self.cell_size + 1, self.cell_size):
+            pygame.draw.line(self.screen, self.COLOR_GRID_LINES, (x, 0), (x, grid.height * self.cell_size))
+        for y in range(0, grid.height * self.cell_size + 1, self.cell_size):
+            pygame.draw.line(self.screen, self.COLOR_GRID_LINES, (0, y), (grid.width * self.cell_size, y))
+
+    def _draw_entities(self, entities):
+        """موجودیت‌ها را بر اساس موقعیت آن‌ها در گرید ترسیم می‌کند."""
+        for entity in entities:
+            # تبدیل مختصات گرید به مختصات پیکسل روی صفحه
+            pixel_x = entity.position[0] * self.cell_size
+            pixel_y = entity.position[1] * self.cell_size
+            
+            if self.drone_image:
+                # اگر تصویر پهپاد بارگذاری شده باشد، آن را ترسیم کن
+                self.screen.blit(self.drone_image, (pixel_x, pixel_y))
+            else:
+                # در غیر این صورت، یک دایره آبی به جای آن ترسیم کن
+                center_point = (pixel_x + self.cell_size // 2, pixel_y + self.cell_size // 2)
+                pygame.draw.circle(self.screen, self.COLOR_DRONE, center_point, self.cell_size // 2)
+

@@ -1,8 +1,25 @@
+{
+  "map_name": "Basic Test Map",
+  "dimensions": [1024, 768],
+  "cell_size": 32,
+
+  "obstacles": [
+    { "x": 200, "y": 150, "width": 50,  "height": 400 },
+    { "x": 500, "y": 300, "width": 300, "height": 50  }
+  ],
+
+  "drones": [
     {
-      "map_name": "Basic Test Map",
-      "dimensions": [1024, 768],
-      "obstacles": [
-        [200, 150, 50, 400],
-        [500, 300, 300, 50]
-      ]
+      "id": 1,
+      "x": 100,
+      "y": 100,
+      "speed": 2.0,
+      "color": [0, 255, 0]
     }
+  ],
+
+  "goals": [
+    { "x": 10, "y": 8 },
+    { "x": 20, "y": 5 }
+  ]
+}

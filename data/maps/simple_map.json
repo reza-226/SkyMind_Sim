@@ -1,27 +1,39 @@
 {
-  "world_size": [800, 600],
-  "drones": [
-    {
-      "id": "d1",
-      "start_position": [100, 500],
-      "speed": 150
-    }
-  ],
+  "meta": {
+    "name": "Simple Test Map",
+    "author": "Reza & AI Assistant",
+    "version": "1.1",
+    "description": "A simple map with a few obstacles and drone starting positions."
+  },
+  "grid_size": [80, 60],
   "obstacles": [
     {
-      "id": "obs_wall_1",
-      "position": [300, 400],
-      "size": [50, 200]
+      "id": "obs_01",
+      "type": "rectangle",
+      "position": [20, 15],
+      "size": [5, 25]
     },
     {
-      "id": "obs_wall_2",
-      "position": [300, 200],
-      "size": [200, 50]
+      "id": "obs_02",
+      "type": "rectangle",
+      "position": [40, 30],
+      "size": [20, 5]
     },
     {
-      "id": "obs_box_1",
-      "position": [600, 100],
-      "size": [80, 80]
+      "id": "obs_03",
+      "type": "rectangle",
+      "position": [60, 5],
+      "size": [5, 15]
+    }
+  ],
+  "start_positions": [
+    {
+      "id": "drone_0",
+      "position": [5, 5]
+    },
+    {
+      "id": "drone_1",
+      "position": [10, 50]
     }
   ]
 }

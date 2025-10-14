@@ -1,92 +1,87 @@
-# run_and_visualize.py
+# =========================================================================
+#  File: run_and_visualize.py
+#  Author: Reza & AI Assistant | 2025-10-14 (Finalized Version)
+#  Description: Entry point for running and visualizing the SkyMind simulation.
+# =========================================================================
 
-import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+import logging
+import sys
+import os
+import pygame
 
-from skymind_sim.core import Environment, Drone, Simulation
+# افزودن مسیر ریشه پروژه به sys.path تا ایمپورت‌ها به درستی کار کنند
+# This ensures that 'skymind_sim' can be imported as a top-level package
+project_root = os.path.dirname(os.path.abspath(__file__))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
-def plot_drone_paths(history, dimensions):
-    """
-    Plots the 3D paths of all drones from the simulation history.
-    """
-    fig = plt.figure(figsize=(10, 8))
-    ax = fig.add_subplot(111, projection='3d')
+# ایمپورت ماژول‌های پروژه پس از تنظیم path
+from skymind_sim.config import load_config
+from skymind_sim.utils.logger import setup_logging
+from skymind_sim.layer_1_simulation.simulation import Simulation
+from skymind_sim.layer_0_presentation.renderer import Renderer
 
-    for drone_id, path in history.items():
-        # Unzip the path data
-        times, x_coords, y_coords, z_coords = zip(*path)
-        
-        # Plot the path
-        ax.plot(x_coords, y_coords, z_coords, marker='o', linestyle='-', markersize=2, label=f'Drone {drone_id}')
-        
-        # Mark start (green) and end (red) points
-        ax.scatter(x_coords[0], y_coords[0], z_coords[0], c='green', s=100, label=f'Start D{drone_id}')
-        ax.scatter(x_coords[-1], y_coords[-1], z_coords[-1], c='red', s=100, label=f'End D{drone_id}')
-
-    # Set plot limits and labels
-    w, h, d = dimensions
-    ax.set_xlim(-w / 2, w / 2)
-    ax.set_ylim(-h / 2, h / 2)
-    ax.set_zlim(0, d)
-    ax.set_xlabel('X coordinate')
-    ax.set_ylabel('Y coordinate')
-    ax.set_zlabel('Z coordinate')
-    ax.set_title('Drone Simulation Paths')
-    ax.legend()
-    ax.grid(True)
-    
-    plt.show()
-
+# تعریف یک نام ثابت برای لاگر اصلی که از خطا جلوگیری می‌کند
+MAIN_LOGGER_NAME = 'skymind_main'
 
 def main():
     """
-    Main function to set up and run the simulation.
+    نقطه ورود اصلی برنامه.
+    کانفیگ را بارگیری کرده، لاگ‌گیری را تنظیم می‌کند، شبیه‌سازی و رندرکننده را
+    راه‌اندازی کرده و حلقه اصلی برنامه را اجرا می‌کند.
     """
-    print("--- Setting up the simulation environment ---")
-    
-    # 1. Create Environment
-    dims = (200, 200, 100) # Width, Height, Depth
-    print(f"Creating environment with dimensions (W: {dims[0]}, H: {dims[1]}, D: {dims[2]})...")
-    env = Environment(width=dims[0], height=dims[1], depth=dims[2])
+    # 1. بارگیری تنظیمات و پیکربندی لاگر
+    config = load_config()
+    setup_logging(config, main_logger_name=MAIN_LOGGER_NAME)
+    main_logger = logging.getLogger(MAIN_LOGGER_NAME)
 
-    # 2. Create and Add Drones
-    print("Creating and adding drones to the environment...")
-    
-    # FIX: Remove the `drone_id` argument as it's now auto-generated.
-    pos1 = np.array([50, 50, 10])
-    drone1 = Drone(position=pos1)
-    print(f"Drone {drone1.drone_id} created at position {drone1.position}")
+    try:
+        main_logger.info("=" * 40)
+        main_logger.info("  SkyMind Simulator Application Starting")
+        main_logger.info("=" * 40)
 
-    pos2 = np.array([-20, 30, 5])
-    drone2 = Drone(position=pos2)
-    print(f"Drone {drone2.drone_id} created at position {drone2.position}")
+        # 2. راه‌اندازی موتور شبیه‌سازی
+        main_logger.info("Initializing simulation...")
+        simulation = Simulation(config)
 
-    pos3 = np.array([0, -80, 15])
-    drone3 = Drone(position=pos3)
-    print(f"Drone {drone3.drone_id} created at position {drone3.position}")
-    
-    env.add_drone(drone1)
-    env.add_drone(drone2)
-    env.add_drone(drone3)
-    print("Drones added successfully.")
+        # 3. راه‌اندازی موتور رندر (Pygame)
+        main_logger.info("Initializing Pygame renderer...")
+        renderer = Renderer(config)
+        renderer.load_assets()
 
-    # 3. Assign Missions
-    print("Assigning missions to drones...")
-    drone1.set_mission(target=np.array([100, 100, 20]), speed=10.0)
-    drone2.set_mission(target=np.array([-50, -50, 10]), speed=12.0)
-    drone3.set_mission(target=np.array([80, -30, 25]), speed=8.0)
-    
-    print("--- Environment setup complete ---\n")
+        # 4. ورود به حلقه اصلی برنامه
+        main_logger.info("Starting the main application loop...")
 
-    # 4. Create and Run Simulation
-    print("--- Running simulation ---")
-    sim = Simulation(env)
-    history = sim.run(num_steps=300, dt=0.2)
-    
-    print("\n--- Visualizing results ---")
-    plot_drone_paths(history, dims)
+        # نیازی به simulation.start() نیست. حلقه زیر کار را شروع می‌کند.
+        
+        running = True
+        clock = pygame.time.Clock()
 
+        while running:
+            # --- بخش ۱: مدیریت ورودی و رویدادها (Event Handling) ---
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                # TODO: مدیریت سایر رویدادها مانند ورودی کیبورد، کلیک ماوس و ...
 
-if __name__ == "__main__":
+            # --- بخش ۲: به‌روزرسانی منطق شبیه‌سازی (Update State) ---
+            simulation.step()
+
+            # --- بخش ۳: رندر کردن وضعیت فعلی (Render Frame) ---
+            renderer.render(simulation.grid, simulation.entities)
+
+            # --- بخش ۴: کنترل نرخ فریم (Frame Rate Control) ---
+            # اطمینان از اینکه حلقه با سرعتی بیش از حد مشخص شده در کانفیگ اجرا نشود.
+            clock.tick(int(config['renderer']['fps']))
+
+    except Exception as e:
+        # ثبت هرگونه خطای پیش‌بینی نشده که باعث توقف برنامه شود
+        main_logger.critical(f"A fatal error occurred: {e}", exc_info=True)
+    finally:
+        # این بخش همیشه اجرا می‌شود، چه برنامه با موفقیت تمام شود چه با خطا
+        main_logger.info("Shutting down SkyMind Simulator.")
+        pygame.quit()
+        sys.exit()
+
+if __name__ == '__main__':
     main()

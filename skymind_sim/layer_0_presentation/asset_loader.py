@@ -1,59 +1,101 @@
-# مسیر: skymind_sim/layer_0_presentation/asset_loader.py
+# ============================================================
+#  File: asset_loader.py
+#  Layer: L0-Presentation
+#  Author: Reza & AI Assistant | 2025-10-13
+# ============================================================
+
+import pygame
 import os
 import logging
-import pygame
+from typing import Dict, Optional, Tuple
 
-# --- Configuration for Asset Paths ---
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-ASSETS_DIR = os.path.join(PROJECT_ROOT, "assets")
-IMAGE_DIR = os.path.join(ASSETS_DIR, "images")
-FONT_DIR = os.path.join(ASSETS_DIR, "fonts")
+class AssetLoader:
+    """
+    کلاسی برای مدیریت، بارگذاری و کش کردن منابع (assets) مانند تصاویر و فونت‌ها.
+    این کار از بارگذاری مکرر فایل‌ها از دیسک جلوگیری کرده و عملکرد را بهبود می‌بخشد.
+    """
+    def __init__(self, base_path: str):
+        """
+        سازنده کلاس AssetLoader.
 
-def get_asset_path(asset_type: str, filename: str) -> str:
-    """
-    ساخت مسیر کامل برای یک Asset بر اساس نوع و نام فایل.
-    در صورت نبودن فایل، پیام WARNING و بازگشت مسیر پیش‌فرض.
-    """
-    if asset_type == 'image':
-        path = os.path.join(IMAGE_DIR, filename)
-    elif asset_type == 'font':
-        path = os.path.join(FONT_DIR, filename)
-    else:
-        raise ValueError(f"Unknown asset type: {asset_type}")
-    
-    if not os.path.exists(path):
-        logging.warning(f"Asset not found: {path} — using fallback.")
-        # مسیر پیش‌فرض پایه برای جلوگیری از توقف
-        return os.path.join(IMAGE_DIR if asset_type == 'image' else FONT_DIR,
-                            "drone.png" if asset_type == 'image' else "Roboto-Regular.ttf")
-    return path
+        Args:
+            base_path (str): مسیر پوشه اصلی assets.
+        """
+        self.base_path = base_path
+        self.image_path = os.path.join(base_path, 'images')
+        self.font_path = os.path.join(base_path, 'fonts')
+        
+        self._image_cache: Dict[str, pygame.Surface] = {}
+        self._font_cache: Dict[Tuple[str, int], pygame.font.Font] = {}
+        
+        self.logger = logging.getLogger(__name__)
+        logging.basicConfig(level=logging.INFO)
+        self.logger.info(f"AssetLoader initialized with base path: {self.base_path}")
 
-def load_image(filename: str, scale=None) -> pygame.Surface:
-    """
-    بارگذاری تصویر با مسیر امن و اعمال شفافیت.
-    """
-    path = get_asset_path('image', filename)
-    try:
-        image = pygame.image.load(path).convert_alpha()
+    def get_image(self, filename: str, scale: Optional[Tuple[int, int]] = None) -> Optional[pygame.Surface]:
+        """
+        یک تصویر را بارگذاری کرده و در صورت نیاز مقیاس آن را تغییر می‌دهد.
+        تصاویر بارگذاری شده برای استفاده‌های بعدی کش می‌شوند.
+
+        Args:
+            filename (str): نام فایل تصویر.
+            scale (Optional[Tuple[int, int]]): اندازه جدید (عرض، ارتفاع) برای تصویر.
+
+        Returns:
+            Optional[pygame.Surface]: شیء تصویر بارگذاری شده یا None در صورت بروز خطا.
+        """
+        cache_key = filename
+        if cache_key in self._image_cache:
+            img = self._image_cache[cache_key]
+        else:
+            full_path = os.path.join(self.image_path, filename)
+            try:
+                img = pygame.image.load(full_path).convert_alpha()
+                self._image_cache[cache_key] = img
+            except pygame.error as e:
+                self.logger.error(f"Failed to load image '{full_path}': {e}")
+                return None
+        
         if scale:
-            if isinstance(scale, (int, float)):
-                scale = (int(scale), int(scale))
-            image = pygame.transform.scale(image, scale)
-        logging.info(f"Image loaded: {filename} from {path}")
-        return image
-    except pygame.error as e:
-        logging.warning(f"Pygame error loading image '{filename}': {e} — using blank surface.")
-        return pygame.Surface((scale if isinstance(scale, tuple) else (64, 64)), pygame.SRCALPHA)
+            try:
+                return pygame.transform.smoothscale(img, scale)
+            except Exception as e:
+                self.logger.error(f"Failed to scale image '{filename}' to {scale}: {e}")
+                return img
+        
+        return img
 
-def load_font(filename: str, size: int) -> pygame.font.Font:
-    """
-    بارگذاری فونت با مسیر امن.
-    """
-    path = get_asset_path('font', filename)
-    try:
-        font = pygame.font.Font(path, size)
-        logging.info(f"Font loaded: {filename} from {path}")
-        return font
-    except pygame.error as e:
-        logging.warning(f"Pygame error loading font '{filename}': {e} — using default pygame font.")
-        return pygame.font.SysFont(None, size)
+    def get_font(self, filename: str, size: int) -> Optional[pygame.font.Font]:
+        """
+        یک فونت را با اندازه مشخص بارگذاری می‌کند.
+        فونت‌های بارگذاری شده برای استفاده‌های بعدی کش می‌شوند.
+
+        Args:
+            filename (str): نام فایل فونت.
+            size (int): اندازه فونت.
+
+        Returns:
+            Optional[pygame.font.Font]: شیء فونت بارگذاری شده یا None در صورت بروز خطا.
+        """
+        cache_key = (filename, size)
+        if cache_key in self._font_cache:
+            return self._font_cache[cache_key]
+        
+        full_path = os.path.join(self.font_path, filename)
+        try:
+            font = pygame.font.Font(full_path, size)
+            self._font_cache[cache_key] = font
+            return font
+        except pygame.error as e:
+            self.logger.error(f"Failed to load font '{full_path}' with size {size}: {e}")
+            return None
+        except FileNotFoundError:
+            self.logger.error(f"Font file not found: '{full_path}'")
+            try:
+                default_font = pygame.font.SysFont('Arial', size)
+                self.logger.warning(f"Using system default font 'Arial' as a fallback.")
+                self._font_cache[cache_key] = default_font
+                return default_font
+            except Exception as e_sys:
+                 self.logger.error(f"Could not even load system default font: {e_sys}")
+                 return None

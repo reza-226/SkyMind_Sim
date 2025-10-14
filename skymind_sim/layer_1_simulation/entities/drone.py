@@ -1,64 +1,54 @@
-# ============================================
-# D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\entities\drone.py
-# ============================================
-
-import time
+# =========================================================================
+#  File: skymind_sim/layer_1_simulation/entities/drone.py
+#  Author: Reza & AI Assistant | 2025-10-14 (Refactored Version)
+# =========================================================================
+import logging
 
 class Drone:
-    def __init__(self, drone_id, start_pos, destination,
-                 battery_capacity, energy_consumption_rate,
-                 max_speed, communication_delay,
-                 exec_level="Local", metrics_collector=None):
-        self.id = drone_id
-        self.position = start_pos
-        self.destination = destination
+    """
+    نشان‌دهنده یک پهپاد در شبیه‌سازی. این یک عامل فعال است.
+    """
+    _id_counter = 0
 
-        self.battery_capacity = battery_capacity
-        self.energy_consumption_rate = energy_consumption_rate
-        self.max_speed = max_speed
-        self.communication_delay = communication_delay
-        self.exec_level = exec_level
-        self.metrics_collector = metrics_collector
+    def __init__(self, position: tuple[int, int], grid):
+        """
+        سازنده کلاس پهپاد.
 
-        # مسیر فعلی پهپاد (توسط DroneMover محاسبه می‌شود)
-        self.path = []
-        self.distance_travelled = 0.0
-        self.battery_remaining = battery_capacity
-        self.start_time = time.time()
+        Args:
+            position (tuple[int, int]): موقعیت اولیه (x, y) پهپاد روی گرید.
+            grid: ارجاعی به شیء گرید برای آگاهی از محیط.
+        """
+        Drone._id_counter += 1
+        self.id = Drone._id_counter
+        self.position = position
+        self.grid = grid  # پهپاد از محیط خود آگاه است
+        self.logger = logging.getLogger(f"{__name__}.Drone_{self.id}")
+        
+        self.logger.info(f"Drone {self.id} created at position {self.position}.")
 
-        # متریک‌های مأموریت
-        self.stop_count = 0
-        self.collision_avoided = 0
+    def step(self):
+        """
+        یک گام از منطق پهپاد را اجرا می‌کند.
+        این متد توسط Scheduler در هر تیک شبیه‌سازی فراخوانی می‌شود.
+        """
+        # در آینده: منطق حرکت، تصمیم‌گیری، مصرف باتری و ... اینجا قرار می‌گیرد.
+        self.logger.debug(f"Drone {self.id} is performing its step action at {self.position}.")
+        # مثال: حرکت تصادفی ساده (فعلا غیرفعال)
+        # self.move_randomly()
 
-        # ارتباطات
-        self.received_messages = []
-        self.neighbors = []
+    def move_randomly(self):
+        """یک مثال از حرکت تصادفی."""
+        import random
+        dx = random.choice([-1, 0, 1])
+        dy = random.choice([-1, 0, 1])
+        
+        new_x = self.position[0] + dx
+        new_y = self.position[1] + dy
 
-    def update_metrics_on_arrival(self):
-        mission_time = time.time() - self.start_time
-        if self.metrics_collector:
-            self.metrics_collector.log_task(
-                drone_id=self.id,
-                exec_level=self.exec_level,
-                path=self.path,
-                distance=self.distance_travelled,
-                battery_remaining=self.battery_remaining,
-                total_time=mission_time,
-                stop_count=self.stop_count,
-                collision_avoided=self.collision_avoided
-            )
+        # بررسی مرزهای گرید
+        if 0 <= new_x < self.grid.width and 0 <= new_y < self.grid.height:
+            self.position = (new_x, new_y)
+            self.logger.info(f"Drone {self.id} moved to {self.position}.")
 
-    def receive_message(self, msg, latency, success):
-        self.received_messages.append({
-            "from_exec_level": msg.get("exec_level", None),
-            "battery_report": msg.get("battery", None),
-            "latency": latency,
-            "success": success
-        })
-        if self.metrics_collector:
-            self.metrics_collector.log_network_event(
-                drone_id=self.id,
-                latency=latency,
-                success=success,
-                neighbors_count=len(self.neighbors)
-            )
+    def __repr__(self):
+        return f"Drone(id={self.id}, position={self.position})"

@@ -1,375 +1,178 @@
-2025-09-28 00:15:01,013 - simulation_log - INFO - Setting up the simulation scenario.
-2025-09-28 00:15:01,014 - simulation_log - INFO - Map 'data/maps/map1.txt' loaded successfully.
-2025-09-28 00:15:01,014 - simulation_log - INFO - Environment initialized with map 'data/maps/map1.txt' (11x20).
-2025-09-28 00:15:01,015 - simulation_log - INFO - Drone 'alpha-1839' created at position (1, 1).
-2025-09-28 00:15:01,015 - simulation_log - INFO - Adding drone 'alpha-1839' to environment. Start: (1, 1), End: (5, 17)
-2025-09-28 00:15:01,016 - simulation_log - INFO - Path found for drone 'alpha-1839' with 26 steps. Drone added.
-2025-09-28 00:15:01,016 - simulation_log - INFO - Drone 'bravo-6985' created at position (8, 1).
-2025-09-28 00:15:01,017 - simulation_log - INFO - Adding drone 'bravo-6985' to environment. Start: (8, 1), End: (1, 15)
-2025-09-28 00:15:01,017 - simulation_log - INFO - Path found for drone 'bravo-6985' with 21 steps. Drone added.
-2025-09-28 00:15:01,018 - simulation_log - INFO - Drone 'charlie-09f5' created at position (3, 3).
-2025-09-28 00:15:01,018 - simulation_log - INFO - Adding drone 'charlie-09f5' to environment. Start: (3, 3), End: (8, 12)
-2025-09-28 00:15:01,019 - simulation_log - INFO - Path found for drone 'charlie-09f5' with 14 steps. Drone added.
-2025-09-28 00:15:01,019 - simulation_log - INFO - Simulation initialized with a time step of 0.3s.
-2025-09-28 00:15:01,019 - simulation_log - INFO - Simulation started.
-2025-09-28 00:15:01,020 - simulation_log - INFO - --- Simulation Tick 1 ---
-2025-09-28 00:15:01,347 - simulation_log - INFO - --- Simulation Tick 2 ---
-2025-09-28 00:15:01,695 - simulation_log - INFO - --- Simulation Tick 3 ---
-2025-09-28 00:15:02,044 - simulation_log - INFO - --- Simulation Tick 4 ---
-2025-09-28 00:15:02,396 - simulation_log - INFO - --- Simulation Tick 5 ---
-2025-09-28 00:15:02,736 - simulation_log - INFO - --- Simulation Tick 6 ---
-2025-09-28 00:15:03,091 - simulation_log - INFO - --- Simulation Tick 7 ---
-2025-09-28 00:15:03,433 - simulation_log - INFO - --- Simulation Tick 8 ---
-2025-09-28 00:15:03,786 - simulation_log - INFO - --- Simulation Tick 9 ---
-2025-09-28 00:15:04,129 - simulation_log - INFO - --- Simulation Tick 10 ---
-2025-09-28 00:15:04,474 - simulation_log - INFO - --- Simulation Tick 11 ---
-2025-09-28 00:15:04,825 - simulation_log - INFO - --- Simulation Tick 12 ---
-2025-09-28 00:15:05,176 - simulation_log - INFO - --- Simulation Tick 13 ---
-2025-09-28 00:15:05,524 - simulation_log - INFO - --- Simulation Tick 14 ---
-2025-09-28 00:15:05,524 - simulation_log - INFO - Drone 'charlie-09f5' has reached its destination at (8, 12).
-2025-09-28 00:15:05,870 - simulation_log - INFO - --- Simulation Tick 15 ---
-2025-09-28 00:15:06,222 - simulation_log - INFO - --- Simulation Tick 16 ---
-2025-09-28 00:15:06,568 - simulation_log - INFO - --- Simulation Tick 17 ---
-2025-09-28 00:15:06,907 - simulation_log - INFO - --- Simulation Tick 18 ---
-2025-09-28 00:15:07,253 - simulation_log - INFO - --- Simulation Tick 19 ---
-2025-09-28 00:15:07,589 - simulation_log - INFO - --- Simulation Tick 20 ---
-2025-09-28 00:15:07,942 - simulation_log - INFO - --- Simulation Tick 21 ---
-2025-09-28 00:15:07,942 - simulation_log - INFO - Drone 'bravo-6985' has reached its destination at (1, 15).
-2025-09-28 00:15:08,278 - simulation_log - INFO - --- Simulation Tick 22 ---
-2025-09-28 00:15:08,617 - simulation_log - INFO - --- Simulation Tick 23 ---
-2025-09-28 00:15:08,960 - simulation_log - INFO - --- Simulation Tick 24 ---
-2025-09-28 00:15:09,303 - simulation_log - INFO - --- Simulation Tick 25 ---
-2025-09-28 00:15:09,654 - simulation_log - INFO - --- Simulation Tick 26 ---
-2025-09-28 00:15:09,655 - simulation_log - INFO - Drone 'alpha-1839' has reached its destination at (5, 17).
-2025-09-28 00:15:09,692 - simulation_log - INFO - All drones have completed their paths. Simulation finished.
-2025-10-02 20:43:32,320 - root - INFO - Logging system configured successfully.
-2025-10-02 20:43:32,321 - __main__ - INFO - SkyMind_Sim starting up...
-2025-10-02 20:43:32,321 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 20:43:32,321 - __main__ - ERROR - Failed during initialization: Simulation.__init__() got an unexpected keyword argument 'path_planner'
+2025-10-14 01:23:32 - skymind_main - [INFO] - Logger 'skymind_main' configured with level INFO.
+2025-10-14 01:23:32 - skymind_main - [INFO] - Log output will be saved to: D:\Payannameh\SkyMind_Sim\data\simulation_logs\sim_run.log
+2025-10-14 01:23:32 - skymind_main - [INFO] - ========================================
+2025-10-14 01:23:32 - skymind_main - [INFO] -   SkyMind Simulator Application Starting
+2025-10-14 01:23:32 - skymind_main - [INFO] - ========================================
+2025-10-14 01:23:32 - skymind_main - [INFO] - Initializing simulation...
+2025-10-14 01:23:32 - skymind_sim.layer_1_simulation.simulation - [INFO] - Initializing the simulation engine...
+2025-10-14 01:23:32 - skymind_sim.layer_1_simulation.world.grid - [INFO] - Grid created successfully with dimensions 50x30 and cell size 20px.
+2025-10-14 01:23:32 - skymind_sim.layer_1_simulation.simulation - [INFO] - Setting up 3 drone(s)...
+2025-10-14 01:23:32 - skymind_sim.layer_1_simulation.entities.drone - [INFO] - Drone 1 created at position (21, 10).
+2025-10-14 01:23:32 - skymind_sim.layer_1_simulation.entities.drone - [INFO] - Drone 2 created at position (11, 28).
+2025-10-14 01:23:32 - skymind_sim.layer_1_simulation.entities.drone - [INFO] - Drone 3 created at position (7, 23).
+2025-10-14 01:23:32 - skymind_sim.layer_1_simulation.simulation - [INFO] - Simulation initialized successfully with grid 50x30 and cell size 20.
+2025-10-14 01:23:32 - skymind_main - [INFO] - Initializing Pygame renderer...
+2025-10-14 01:23:32 - skymind_sim.layer_0_presentation.renderer - [INFO] - Initializing Pygame Renderer...
+2025-10-14 01:23:32 - skymind_sim.layer_0_presentation.renderer - [INFO] - Pygame Renderer initialized successfully.
+2025-10-14 01:23:32 - skymind_main - [INFO] - Starting the main application loop...
+2025-10-14 01:23:32 - skymind_sim.layer_1_simulation.simulation - [INFO] - Simulation started.
+2025-10-14 01:23:32 - skymind_main - [CRITICAL] - A fatal error occurred: 'Scheduler' object has no attribute 'step'
 Traceback (most recent call last):
-  File "D:\Payannameh\SkyMind_Sim\skymind_sim\main.py", line 25, in main
-    simulation = Simulation(
-        map_filepath="data/maps/smart_map.json",
-        path_planner=path_planner
-    )
-TypeError: Simulation.__init__() got an unexpected keyword argument 'path_planner'
-2025-10-02 20:50:14,265 - root - INFO - Logging system configured successfully.
-2025-10-02 20:50:14,265 - __main__ - INFO - SkyMind_Sim starting up...
-2025-10-02 20:50:14,266 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 20:50:14,266 - root - INFO - Initializing Simulation...
-2025-10-02 20:50:14,545 - root - INFO - Pygame initialized successfully.
-2025-10-02 20:50:14,546 - root - INFO - Initializing Environment...
-2025-10-02 20:50:14,546 - root - INFO - Initializing Environment...
-2025-10-02 20:50:14,546 - root - INFO - Pygame initialized successfully.
-2025-10-02 20:50:14,611 - root - ERROR - An unexpected error occurred while loading map: 'pygame.rect.Rect' object has no attribute 'get'
-2025-10-02 20:50:14,613 - root - INFO - Map 'data/maps/smart_map.json' loaded successfully with 0 obstacles.
-2025-10-02 20:50:14,614 - __main__ - ERROR - Failed during initialization: 'Environment' object has no attribute 'width'
+  File "D:\Payannameh\SkyMind_Sim\run_and_visualize.py", line 56, in main
+    simulation.step()
+    ~~~~~~~~~~~~~~~^^
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 91, in step
+    self.scheduler.step()
+    ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Scheduler' object has no attribute 'step'
+2025-10-14 01:23:32 - skymind_main - [INFO] - Shutting down SkyMind Simulator.
+2025-10-14 01:25:18 - skymind_main - [INFO] - Logger 'skymind_main' configured with level INFO.
+2025-10-14 01:25:18 - skymind_main - [INFO] - Log output will be saved to: D:\Payannameh\SkyMind_Sim\data\simulation_logs\sim_run.log
+2025-10-14 01:25:18 - skymind_main - [INFO] - ========================================
+2025-10-14 01:25:18 - skymind_main - [INFO] -   SkyMind Simulator Application Starting
+2025-10-14 01:25:18 - skymind_main - [INFO] - ========================================
+2025-10-14 01:25:18 - skymind_main - [INFO] - Initializing simulation...
+2025-10-14 01:25:18 - skymind_sim.layer_1_simulation.simulation - [INFO] - Initializing the simulation engine...
+2025-10-14 01:25:18 - skymind_sim.layer_1_simulation.world.grid - [INFO] - Grid created successfully with dimensions 50x30 and cell size 20px.
+2025-10-14 01:25:18 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Scheduler initialized.
+2025-10-14 01:25:18 - skymind_sim.layer_1_simulation.simulation - [INFO] - Setting up 3 drone(s)...
+2025-10-14 01:25:18 - skymind_main - [CRITICAL] - A fatal error occurred: Drone.__init__() got an unexpected keyword argument 'drone_id'
 Traceback (most recent call last):
-  File "D:\Payannameh\SkyMind_Sim\skymind_sim\main.py", line 25, in main
-    simulation = Simulation(
-        map_filepath="data/maps/smart_map.json",
-        path_planner=path_planner
-    )
-  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 34, in __init__
-    self.world_size = (self.environment.width, self.environment.height)
-                       ^^^^^^^^^^^^^^^^^^^^^^
-AttributeError: 'Environment' object has no attribute 'width'
-2025-10-02 20:53:58,030 - root - INFO - Logging system configured successfully.
-2025-10-02 20:53:58,030 - __main__ - INFO - SkyMind_Sim starting up...
-2025-10-02 20:53:58,030 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 20:53:58,031 - root - INFO - Initializing Simulation...
-2025-10-02 20:53:58,296 - root - INFO - Pygame initialized successfully.
-2025-10-02 20:53:58,296 - root - INFO - Initializing Environment...
-2025-10-02 20:53:58,296 - root - INFO - Initializing Environment...
-2025-10-02 20:53:58,365 - root - ERROR - An unexpected error occurred while loading map: 'pygame.rect.Rect' object has no attribute 'get'
-2025-10-02 20:53:58,367 - root - INFO - Map 'data/maps/smart_map.json' loaded successfully with 0 obstacles.
-2025-10-02 20:53:58,368 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 20:53:58,377 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - Navigation grid (64x36) built in 0.0000s. Obstacle cells: 0
-2025-10-02 20:53:58,378 - root - INFO - Navigation grid built with world_size=(1280, 720), grid_size=20, obstacles=0
-2025-10-02 20:53:58,379 - __main__ - INFO - Simulation layer initialized successfully.
-2025-10-02 20:53:58,380 - __main__ - INFO - Building navigation grid for path planner...
-2025-10-02 20:53:58,381 - __main__ - ERROR - Failed during initialization: 'list' object has no attribute 'values'
+  File "D:\Payannameh\SkyMind_Sim\run_and_visualize.py", line 42, in main
+    simulation = Simulation(config)
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 49, in __init__
+    self._setup_entities()
+    ~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 67, in _setup_entities
+    drone = Drone(drone_id=drone_id, position=start_pos, grid=self.grid)
+TypeError: Drone.__init__() got an unexpected keyword argument 'drone_id'
+2025-10-14 01:25:18 - skymind_main - [INFO] - Shutting down SkyMind Simulator.
+2025-10-14 01:27:04 - skymind_main - [INFO] - Logger 'skymind_main' configured with level INFO.
+2025-10-14 01:27:04 - skymind_main - [INFO] - Log output will be saved to: D:\Payannameh\SkyMind_Sim\data\simulation_logs\sim_run.log
+2025-10-14 01:27:04 - skymind_main - [INFO] - ========================================
+2025-10-14 01:27:04 - skymind_main - [INFO] -   SkyMind Simulator Application Starting
+2025-10-14 01:27:04 - skymind_main - [INFO] - ========================================
+2025-10-14 01:27:04 - skymind_main - [INFO] - Initializing simulation...
+2025-10-14 01:27:04 - skymind_sim.layer_1_simulation.simulation - [INFO] - Initializing the simulation engine...
+2025-10-14 01:27:04 - skymind_sim.layer_1_simulation.world.grid - [INFO] - Grid created successfully with dimensions 50x30 and cell size 20px.
+2025-10-14 01:27:04 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Scheduler initialized.
+2025-10-14 01:27:04 - skymind_sim.layer_1_simulation.simulation - [INFO] - Setting up 3 drone(s)...
+2025-10-14 01:27:04 - skymind_sim.layer_1_simulation.entities.drone.Drone_1 - [INFO] - Drone 1 created at position (30, 3).
+2025-10-14 01:27:04 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=1, position=(30, 3))' added to the scheduler.
+2025-10-14 01:27:04 - skymind_sim.layer_1_simulation.entities.drone.Drone_2 - [INFO] - Drone 2 created at position (10, 4).
+2025-10-14 01:27:04 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=2, position=(10, 4))' added to the scheduler.
+2025-10-14 01:27:04 - skymind_sim.layer_1_simulation.entities.drone.Drone_3 - [INFO] - Drone 3 created at position (35, 3).
+2025-10-14 01:27:04 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=3, position=(35, 3))' added to the scheduler.
+2025-10-14 01:27:04 - skymind_sim.layer_1_simulation.simulation - [INFO] - Simulation engine initialized successfully.
+2025-10-14 01:27:04 - skymind_sim.layer_1_simulation.simulation - [INFO] - Grid: 50x30, Drones: 3
+2025-10-14 01:27:04 - skymind_main - [INFO] - Initializing Pygame renderer...
+2025-10-14 01:27:04 - skymind_sim.layer_0_presentation.renderer - [INFO] - Initializing Pygame Renderer...
+2025-10-14 01:27:05 - skymind_sim.layer_0_presentation.renderer - [INFO] - Pygame Renderer initialized successfully.
+2025-10-14 01:27:05 - skymind_main - [INFO] - Starting the main application loop...
+2025-10-14 01:27:05 - skymind_main - [CRITICAL] - A fatal error occurred: 'Simulation' object has no attribute 'start'
 Traceback (most recent call last):
-  File "D:\Payannameh\SkyMind_Sim\skymind_sim\main.py", line 37, in main
-    obstacles=simulation.obstacles.values()
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AttributeError: 'list' object has no attribute 'values'
-2025-10-02 20:59:08,302 - root - INFO - Logging system configured successfully.
-2025-10-02 20:59:08,303 - __main__ - INFO - SkyMind_Sim starting up...
-2025-10-02 20:59:08,303 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 20:59:08,304 - root - INFO - Initializing Simulation...
-2025-10-02 20:59:08,647 - root - INFO - Pygame initialized successfully.
-2025-10-02 20:59:08,647 - root - INFO - Initializing Environment...
-2025-10-02 20:59:08,647 - root - INFO - Initializing Environment...
-2025-10-02 20:59:08,743 - root - ERROR - An unexpected error occurred while loading map: 'pygame.rect.Rect' object has no attribute 'get'
-2025-10-02 20:59:08,746 - root - INFO - Map 'data/maps/smart_map.json' loaded successfully with 0 obstacles.
-2025-10-02 20:59:08,753 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 20:59:08,755 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - Navigation grid (64x36) built in 0.0000s. Obstacle cells: 0
-2025-10-02 20:59:08,756 - root - INFO - Navigation grid built with world_size=(1280, 720), grid_size=20, obstacles=0
-2025-10-02 20:59:08,757 - __main__ - INFO - Simulation layer initialized successfully.
-2025-10-02 20:59:08,758 - __main__ - INFO - Building navigation grid for path planner...
-2025-10-02 20:59:08,759 - __main__ - ERROR - Failed during initialization: 'list' object has no attribute 'values'
-Traceback (most recent call last):
-  File "D:\Payannameh\SkyMind_Sim\skymind_sim\main.py", line 37, in main
-    obstacles=simulation.obstacles.values()
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AttributeError: 'list' object has no attribute 'values'
-2025-10-02 21:00:23,193 - root - INFO - Logging system configured successfully.
-2025-10-02 21:00:23,194 - __main__ - INFO - SkyMind_Sim starting up...
-2025-10-02 21:00:23,194 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 21:00:23,195 - root - INFO - Initializing Simulation...
-2025-10-02 21:00:23,409 - root - INFO - Pygame initialized successfully.
-2025-10-02 21:00:23,410 - root - INFO - Initializing Environment...
-2025-10-02 21:00:23,410 - root - INFO - Initializing Environment...
-2025-10-02 21:00:23,482 - root - ERROR - An unexpected error occurred while loading map: 'pygame.rect.Rect' object has no attribute 'get'
-2025-10-02 21:00:23,485 - root - INFO - Map 'data/maps/smart_map.json' loaded successfully with 0 obstacles.
-2025-10-02 21:00:23,486 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 21:00:23,487 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - Navigation grid (64x36) built in 0.0000s. Obstacle cells: 0
-2025-10-02 21:00:23,487 - root - INFO - Navigation grid built with world_size=(1280, 720), grid_size=20, obstacles=0
-2025-10-02 21:00:23,488 - __main__ - INFO - Simulation layer initialized successfully.
-2025-10-02 21:00:23,488 - __main__ - INFO - Building navigation grid for path planner...
-2025-10-02 21:00:23,489 - __main__ - ERROR - Failed during initialization: 'list' object has no attribute 'values'
-Traceback (most recent call last):
-  File "D:\Payannameh\SkyMind_Sim\skymind_sim\main.py", line 37, in main
-    obstacles=simulation.obstacles.values()
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AttributeError: 'list' object has no attribute 'values'
-2025-10-02 21:02:06,923 - root - INFO - Logging system configured successfully.
-2025-10-02 21:02:06,923 - __main__ - INFO - SkyMind_Sim starting up...
-2025-10-02 21:02:06,923 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 21:02:06,924 - root - INFO - Initializing Simulation...
-2025-10-02 21:02:07,105 - root - INFO - Pygame initialized successfully.
-2025-10-02 21:02:07,105 - root - INFO - Initializing Environment...
-2025-10-02 21:02:07,105 - root - INFO - Initializing Environment...
-2025-10-02 21:02:07,174 - root - ERROR - An unexpected error occurred while loading map: 'pygame.rect.Rect' object has no attribute 'get'
-2025-10-02 21:02:07,175 - root - INFO - Map 'data/maps/smart_map.json' loaded successfully with 0 obstacles.
-2025-10-02 21:02:07,176 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 21:02:07,177 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - Navigation grid (64x36) built in 0.0000s. Obstacle cells: 0
-2025-10-02 21:02:07,178 - root - INFO - Navigation grid built with world_size=(1280, 720), grid_size=20, obstacles=0
-2025-10-02 21:02:07,178 - __main__ - INFO - Simulation layer initialized successfully.
-2025-10-02 21:02:07,179 - __main__ - INFO - Building navigation grid for path planner...
-2025-10-02 21:02:07,179 - __main__ - ERROR - Failed during initialization: 'list' object has no attribute 'values'
-Traceback (most recent call last):
-  File "D:\Payannameh\SkyMind_Sim\skymind_sim\main.py", line 37, in main
-    obstacles=simulation.obstacles.values()
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AttributeError: 'list' object has no attribute 'values'
-2025-10-02 21:04:41,318 - root - INFO - Logging system configured successfully.
-2025-10-02 21:04:41,319 - __main__ - INFO - SkyMind_Sim starting up...
-2025-10-02 21:04:41,319 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 21:04:41,319 - root - INFO - Initializing Simulation...
-2025-10-02 21:04:41,483 - root - INFO - Pygame initialized successfully.
-2025-10-02 21:04:41,483 - root - INFO - Initializing Environment...
-2025-10-02 21:04:41,483 - root - INFO - Initializing Environment...
-2025-10-02 21:04:41,543 - root - ERROR - An unexpected error occurred while loading map: 'pygame.rect.Rect' object has no attribute 'get'
-2025-10-02 21:04:41,545 - root - INFO - Map 'data/maps/smart_map.json' loaded successfully with 0 obstacles.
-2025-10-02 21:04:41,546 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 21:04:41,548 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - Navigation grid (64x36) built in 0.0000s. Obstacle cells: 0
-2025-10-02 21:04:41,558 - root - INFO - Navigation grid built with world_size=(1280, 720), grid_size=20, obstacles=0
-2025-10-02 21:04:41,559 - __main__ - INFO - Simulation layer initialized successfully.
-2025-10-02 21:04:41,561 - __main__ - INFO - Building navigation grid for path planner...
-2025-10-02 21:04:41,562 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - Navigation grid (64x36) built in 0.0000s. Obstacle cells: 0
-2025-10-02 21:04:41,565 - __main__ - INFO - Navigation grid built.
-2025-10-02 21:04:41,567 - __main__ - ERROR - Failed during initialization: 'list' object has no attribute 'values'
-Traceback (most recent call last):
-  File "D:\Payannameh\SkyMind_Sim\skymind_sim\main.py", line 42, in main
-    for drone in simulation.drones.values():
-                 ^^^^^^^^^^^^^^^^^^^^^^^^
-AttributeError: 'list' object has no attribute 'values'
-2025-10-02 21:08:01,062 - root - INFO - Logging system configured successfully.
-2025-10-02 21:08:01,062 - __main__ - INFO - SkyMind_Sim starting up...
-2025-10-02 21:08:01,063 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 21:08:01,063 - root - INFO - Initializing Simulation...
-2025-10-02 21:08:01,259 - root - INFO - Pygame initialized successfully.
-2025-10-02 21:08:01,259 - root - INFO - Initializing Environment...
-2025-10-02 21:08:01,259 - root - INFO - Initializing Environment...
-2025-10-02 21:08:01,322 - root - ERROR - An unexpected error occurred while loading map: 'pygame.rect.Rect' object has no attribute 'get'
-2025-10-02 21:08:01,326 - root - INFO - Map 'data/maps/smart_map.json' loaded successfully with 0 obstacles.
-2025-10-02 21:08:01,330 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 21:08:01,331 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - Navigation grid (64x36) built in 0.0000s. Obstacle cells: 0
-2025-10-02 21:08:01,339 - root - INFO - Navigation grid built with world_size=(1280, 720), grid_size=20, obstacles=0
-2025-10-02 21:08:01,344 - __main__ - INFO - Simulation layer initialized successfully.
-2025-10-02 21:08:01,347 - __main__ - INFO - Building navigation grid for path planner...
-2025-10-02 21:08:01,347 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - Navigation grid (64x36) built in 0.0000s. Obstacle cells: 0
-2025-10-02 21:08:01,348 - __main__ - INFO - Navigation grid built.
-2025-10-02 21:08:01,369 - __main__ - INFO - Presentation layer initialized successfully.
-2025-10-02 21:10:52,602 - root - INFO - Logging system configured successfully.
-2025-10-02 21:10:52,603 - __main__ - INFO - SkyMind_Sim starting up...
-2025-10-02 21:10:52,603 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 21:10:52,603 - __main__ - ERROR - Failed during initialization: Simulation.__init__() got an unexpected keyword argument 'path_planner'
-Traceback (most recent call last):
-  File "D:\Payannameh\SkyMind_Sim\skymind_sim\main.py", line 25, in main
-    simulation = Simulation(
-        map_filepath="data/maps/smart_map.json",
-        path_planner=path_planner
-    )
-TypeError: Simulation.__init__() got an unexpected keyword argument 'path_planner'
-2025-10-02 21:12:45,431 - root - INFO - Logging system configured successfully.
-2025-10-02 21:12:45,432 - __main__ - INFO - SkyMind_Sim starting up...
-2025-10-02 21:12:45,432 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 21:12:45,432 - root - INFO - Initializing Simulation...
-2025-10-02 21:12:45,595 - root - INFO - Pygame initialized successfully.
-2025-10-02 21:12:45,595 - root - INFO - Initializing Environment...
-2025-10-02 21:12:45,595 - root - INFO - Initializing Environment...
-2025-10-02 21:12:45,668 - root - ERROR - An unexpected error occurred while loading map: 'pygame.rect.Rect' object has no attribute 'get'
-2025-10-02 21:12:45,669 - root - INFO - Map 'data/maps/smart_map.json' loaded with 0 obstacles.
-2025-10-02 21:12:45,670 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 21:12:45,672 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - Navigation grid (64x36) built in 0.0000s. Obstacle cells: 0
-2025-10-02 21:12:45,672 - root - INFO - Navigation grid built with 0 obstacle cells.
-2025-10-02 21:12:45,675 - __main__ - INFO - Simulation layer initialized successfully.
-2025-10-02 21:12:45,676 - __main__ - INFO - Building navigation grid for path planner...
-2025-10-02 21:12:45,677 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - Navigation grid (64x36) built in 0.0000s. Obstacle cells: 0
-2025-10-02 21:12:45,677 - __main__ - INFO - Navigation grid built.
-2025-10-02 21:12:45,693 - __main__ - INFO - Presentation layer initialized successfully.
-2025-10-02 21:15:04,470 - root - INFO - Logging system configured successfully.
-2025-10-02 21:15:04,470 - __main__ - INFO - SkyMind_Sim starting up...
-2025-10-02 21:15:04,470 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 21:15:04,471 - root - INFO - Initializing Simulation...
-2025-10-02 21:15:04,610 - root - INFO - Pygame initialized successfully.
-2025-10-02 21:15:04,610 - root - INFO - Initializing Environment...
-2025-10-02 21:15:04,610 - root - INFO - Initializing Environment...
-2025-10-02 21:15:04,675 - root - ERROR - An unexpected error occurred while loading map: 'pygame.rect.Rect' object has no attribute 'get'
-2025-10-02 21:15:04,679 - root - INFO - Map 'data/maps/smart_map.json' loaded with 0 obstacles.
-2025-10-02 21:15:04,681 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 21:15:04,682 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - Navigation grid (64x36) built in 0.0000s. Obstacle cells: 0
-2025-10-02 21:15:04,683 - root - INFO - Navigation grid built with 0 obstacle cells.
-2025-10-02 21:15:04,683 - __main__ - INFO - Simulation layer initialized successfully.
-2025-10-02 21:15:04,684 - __main__ - INFO - Building navigation grid for path planner...
-2025-10-02 21:15:04,684 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - Navigation grid (64x36) built in 0.0000s. Obstacle cells: 0
-2025-10-02 21:15:04,685 - __main__ - INFO - Navigation grid built.
-2025-10-02 21:15:04,702 - __main__ - INFO - Presentation layer initialized successfully.
-2025-10-02 21:15:37,209 - __main__ - INFO - SkyMind_Sim shutting down.
-2025-10-02 21:17:48,812 - root - INFO - Logging system configured successfully.
-2025-10-02 21:17:48,812 - __main__ - INFO - SkyMind_Sim starting up...
-2025-10-02 21:17:48,812 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 21:17:48,813 - root - INFO - Initializing Simulation...
-2025-10-02 21:17:49,013 - root - INFO - Pygame initialized successfully.
-2025-10-02 21:17:49,013 - root - INFO - Initializing Environment...
-2025-10-02 21:17:49,013 - root - INFO - Initializing Environment...
-2025-10-02 21:17:49,080 - root - WARNING - Skipping invalid obstacle data in map file: {'id': 'obs_wall_left', 'type': 'wall', 'rect': [0, 0, 20, 720]}
-2025-10-02 21:17:49,081 - root - WARNING - Skipping invalid obstacle data in map file: {'id': 'obs_wall_right', 'type': 'wall', 'rect': [1260, 0, 20, 720]}
-2025-10-02 21:17:49,082 - root - WARNING - Skipping invalid obstacle data in map file: {'id': 'obs_wall_top', 'type': 'wall', 'rect': [0, 0, 1280, 20]}
-2025-10-02 21:17:49,084 - root - WARNING - Skipping invalid obstacle data in map file: {'id': 'obs_wall_bottom', 'type': 'wall', 'rect': [0, 700, 1280, 20]}
-2025-10-02 21:17:49,085 - root - WARNING - Skipping invalid obstacle data in map file: {'id': 'obs_center_block', 'type': 'building', 'rect': [400, 300, 150, 80]}
-2025-10-02 21:17:49,087 - root - INFO - Map 'data/maps/smart_map.json' loaded successfully with 0 obstacles.
-2025-10-02 21:17:49,088 - root - INFO - Map 'data/maps/smart_map.json' loaded with 0 obstacles.
-2025-10-02 21:17:49,089 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 21:17:49,089 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - Navigation grid (64x36) built in 0.0000s. Obstacle cells: 0
-2025-10-02 21:17:49,090 - root - INFO - Navigation grid built with 0 obstacle cells.
-2025-10-02 21:17:49,090 - __main__ - INFO - Simulation layer initialized successfully.
-2025-10-02 21:17:49,091 - __main__ - INFO - Building navigation grid for path planner...
-2025-10-02 21:17:49,091 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - Navigation grid (64x36) built in 0.0000s. Obstacle cells: 0
-2025-10-02 21:17:49,093 - __main__ - INFO - Navigation grid built.
-2025-10-02 21:17:49,108 - __main__ - INFO - Presentation layer initialized successfully.
-2025-10-02 21:18:00,592 - __main__ - INFO - SkyMind_Sim shutting down.
-2025-10-02 21:21:00,338 - root - INFO - Logging system configured successfully.
-2025-10-02 21:21:00,338 - __main__ - INFO - SkyMind_Sim starting up...
-2025-10-02 21:21:00,339 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 21:21:00,339 - root - INFO - Initializing Simulation...
-2025-10-02 21:21:00,497 - root - INFO - Pygame initialized successfully.
-2025-10-02 21:21:00,498 - root - INFO - Initializing Environment...
-2025-10-02 21:21:00,498 - root - INFO - Initializing Environment...
-2025-10-02 21:21:00,559 - root - ERROR - An unexpected error occurred while loading map: 'pygame.rect.Rect' object has no attribute 'get'
-2025-10-02 21:21:00,561 - root - INFO - Map 'data/maps/smart_map.json' loaded with 0 obstacles.
-2025-10-02 21:21:00,563 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 21:21:00,564 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - Navigation grid (64x36) built in 0.0000s. Obstacle cells: 0
-2025-10-02 21:21:00,565 - root - INFO - Navigation grid built with 0 obstacle cells.
-2025-10-02 21:21:00,565 - __main__ - INFO - Simulation layer initialized successfully.
-2025-10-02 21:21:00,566 - __main__ - INFO - Building navigation grid for path planner...
-2025-10-02 21:21:00,567 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - Navigation grid (64x36) built in 0.0000s. Obstacle cells: 0
-2025-10-02 21:21:00,567 - __main__ - INFO - Navigation grid built.
-2025-10-02 21:21:00,594 - __main__ - INFO - Presentation layer initialized successfully.
-2025-10-02 21:21:14,159 - __main__ - INFO - SkyMind_Sim shutting down.
-2025-10-02 21:23:30,177 - root - INFO - Logging system configured successfully.
-2025-10-02 21:23:30,177 - __main__ - INFO - SkyMind_Sim starting up...
-2025-10-02 21:23:30,177 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 21:23:30,178 - root - INFO - Initializing Simulation...
-2025-10-02 21:23:30,379 - root - INFO - Pygame initialized successfully.
-2025-10-02 21:23:30,380 - root - INFO - Initializing Environment...
-2025-10-02 21:23:30,380 - root - INFO - Initializing Environment...
-2025-10-02 21:23:30,459 - root - ERROR - An unexpected error occurred while loading map: 'list' object has no attribute 'get'
-2025-10-02 21:23:30,462 - root - INFO - Map 'data/maps/smart_map.json' loaded with 0 obstacles.
-2025-10-02 21:23:30,463 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 21:23:30,464 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - Navigation grid (64x36) built in 0.0000s. Obstacle cells: 0
-2025-10-02 21:23:30,464 - root - INFO - Navigation grid built with 0 obstacle cells.
-2025-10-02 21:23:30,466 - __main__ - INFO - Simulation layer initialized successfully.
-2025-10-02 21:23:30,468 - __main__ - INFO - Building navigation grid for path planner...
-2025-10-02 21:23:30,469 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - Navigation grid (64x36) built in 0.0000s. Obstacle cells: 0
-2025-10-02 21:23:30,470 - __main__ - INFO - Navigation grid built.
-2025-10-02 21:23:30,501 - __main__ - INFO - Presentation layer initialized successfully.
-2025-10-02 21:23:37,278 - __main__ - INFO - SkyMind_Sim shutting down.
-2025-10-02 21:31:46,319 - root - INFO - Logging system configured successfully.
-2025-10-02 21:31:46,319 - __main__ - INFO - SkyMind_Sim starting up...
-2025-10-02 21:31:46,319 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 21:31:46,320 - root - INFO - Initializing Simulation...
-2025-10-02 21:31:46,584 - root - INFO - Pygame initialized successfully.
-2025-10-02 21:31:46,584 - root - INFO - Initializing Environment...
-2025-10-02 21:31:46,584 - root - INFO - Initializing Environment...
-2025-10-02 21:31:46,640 - root - ERROR - An unexpected error occurred while loading map: 'list' object has no attribute 'get'
-2025-10-02 21:31:46,641 - root - INFO - Map 'data/maps/smart_map.json' loaded with 0 obstacles.
-2025-10-02 21:31:46,642 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 21:31:46,643 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - Navigation grid (64x36) built in 0.0000s. Obstacle cells: 0
-2025-10-02 21:31:46,644 - root - INFO - Navigation grid built with 0 obstacle cells.
-2025-10-02 21:31:46,645 - __main__ - INFO - Simulation layer initialized successfully.
-2025-10-02 21:31:46,646 - __main__ - INFO - Building navigation grid for path planner...
-2025-10-02 21:31:46,650 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - Navigation grid (64x36) built in 0.0000s. Obstacle cells: 0
-2025-10-02 21:31:46,651 - __main__ - INFO - Navigation grid built.
-2025-10-02 21:31:46,734 - __main__ - INFO - Presentation layer initialized successfully.
-2025-10-02 21:31:53,930 - __main__ - INFO - SkyMind_Sim shutting down.
-2025-10-02 21:39:25,032 - root - INFO - Logging system configured successfully.
-2025-10-02 21:39:25,032 - __main__ - INFO - SkyMind_Sim starting up...
-2025-10-02 21:39:25,032 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 21:39:25,033 - root - INFO - Initializing Simulation...
-2025-10-02 21:39:25,298 - root - INFO - Pygame initialized successfully.
-2025-10-02 21:39:25,299 - root - INFO - Initializing Environment...
-2025-10-02 21:39:25,299 - __main__ - ERROR - Failed during initialization: Environment.__init__() got an unexpected keyword argument 'map_filepath'
-Traceback (most recent call last):
-  File "D:\Payannameh\SkyMind_Sim\skymind_sim\main.py", line 25, in main
-    simulation = Simulation(
-        map_filepath="data/maps/smart_map.json",
-    
-    )
-  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 30, in __init__
-    self.environment = Environment(
-                       ~~~~~~~~~~~^
-        map_filepath=map_filepath,
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^
-        window_settings=WINDOW_SETTINGS
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-TypeError: Environment.__init__() got an unexpected keyword argument 'map_filepath'
-2025-10-02 21:42:13,669 - root - INFO - Logging system configured successfully.
-2025-10-02 21:42:13,669 - __main__ - INFO - SkyMind_Sim starting up...
-2025-10-02 21:42:13,670 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 21:42:13,670 - root - INFO - Initializing Simulation...
-2025-10-02 21:42:13,871 - root - INFO - Pygame initialized successfully.
-2025-10-02 21:42:13,871 - root - INFO - Initializing Environment...
-2025-10-02 21:42:13,872 - __main__ - ERROR - Failed during initialization: Environment.__init__() missing 1 required positional argument: 'config'
-Traceback (most recent call last):
-  File "D:\Payannameh\SkyMind_Sim\skymind_sim\main.py", line 25, in main
-    simulation = Simulation(
-        map_filepath="data/maps/smart_map.json",
-    
-    )
-  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 30, in __init__
-    self.environment = Environment(
-                       ~~~~~~~~~~~^
-        map_filepath=map_filepath,
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^
-        window_settings=WINDOW_SETTINGS
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-TypeError: Environment.__init__() missing 1 required positional argument: 'config'
-2025-10-02 21:46:25,597 - root - INFO - Logging system configured successfully.
-2025-10-02 21:46:25,598 - __main__ - INFO - SkyMind_Sim starting up...
-2025-10-02 21:46:25,598 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with algorithm: a_star_numba
-2025-10-02 21:46:25,598 - __main__ - ERROR - Failed during initialization: Simulation.__init__() missing 1 required positional argument: 'config'
-Traceback (most recent call last):
-  File "D:\Payannameh\SkyMind_Sim\skymind_sim\main.py", line 25, in main
-    simulation = Simulation(
-        map_filepath="data/maps/smart_map.json",
-    
-    )
-TypeError: Simulation.__init__() missing 1 required positional argument: 'config'
+  File "D:\Payannameh\SkyMind_Sim\run_and_visualize.py", line 48, in main
+    simulation.start()
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'Simulation' object has no attribute 'start'
+2025-10-14 01:27:05 - skymind_main - [INFO] - Shutting down SkyMind Simulator.
+2025-10-14 01:30:51 - skymind_main - [INFO] - Logger 'skymind_main' configured with level INFO.
+2025-10-14 01:30:51 - skymind_main - [INFO] - Log output will be saved to: D:\Payannameh\SkyMind_Sim\data\simulation_logs\sim_run.log
+2025-10-14 01:30:51 - skymind_main - [INFO] - ========================================
+2025-10-14 01:30:51 - skymind_main - [INFO] -   SkyMind Simulator Application Starting
+2025-10-14 01:30:51 - skymind_main - [INFO] - ========================================
+2025-10-14 01:30:51 - skymind_main - [INFO] - Initializing simulation...
+2025-10-14 01:30:51 - skymind_sim.layer_1_simulation.simulation - [INFO] - Initializing the simulation engine...
+2025-10-14 01:30:51 - skymind_sim.layer_1_simulation.world.grid - [INFO] - Grid created successfully with dimensions 50x30 and cell size 20px.
+2025-10-14 01:30:51 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Scheduler initialized.
+2025-10-14 01:30:51 - skymind_sim.layer_1_simulation.simulation - [INFO] - Setting up 3 drone(s)...
+2025-10-14 01:30:51 - skymind_sim.layer_1_simulation.entities.drone.Drone_1 - [INFO] - Drone 1 created at position (24, 6).
+2025-10-14 01:30:51 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=1, position=(24, 6))' added to the scheduler.
+2025-10-14 01:30:51 - skymind_sim.layer_1_simulation.entities.drone.Drone_2 - [INFO] - Drone 2 created at position (2, 5).
+2025-10-14 01:30:51 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=2, position=(2, 5))' added to the scheduler.
+2025-10-14 01:30:51 - skymind_sim.layer_1_simulation.entities.drone.Drone_3 - [INFO] - Drone 3 created at position (20, 9).
+2025-10-14 01:30:51 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=3, position=(20, 9))' added to the scheduler.
+2025-10-14 01:30:51 - skymind_sim.layer_1_simulation.simulation - [INFO] - Simulation engine initialized successfully.
+2025-10-14 01:30:51 - skymind_sim.layer_1_simulation.simulation - [INFO] - Grid: 50x30, Drones: 3
+2025-10-14 01:30:51 - skymind_main - [INFO] - Initializing Pygame renderer...
+2025-10-14 01:30:51 - skymind_sim.layer_0_presentation.renderer - [INFO] - Initializing Pygame Renderer...
+2025-10-14 01:30:51 - skymind_sim.layer_0_presentation.renderer - [INFO] - Pygame Renderer initialized successfully.
+2025-10-14 01:30:51 - skymind_sim.layer_0_presentation.renderer - [INFO] - Loading assets...
+2025-10-14 01:30:52 - skymind_sim.layer_0_presentation.renderer - [INFO] - Assets loaded successfully.
+2025-10-14 01:30:52 - skymind_main - [INFO] - Starting the main application loop...
+2025-10-14 01:31:14 - skymind_main - [INFO] - Shutting down SkyMind Simulator.
+2025-10-14 01:32:28 - skymind_main - [INFO] - Logger 'skymind_main' configured with level INFO.
+2025-10-14 01:32:28 - skymind_main - [INFO] - Log output will be saved to: D:\Payannameh\SkyMind_Sim\data\simulation_logs\sim_run.log
+2025-10-14 01:32:28 - skymind_main - [INFO] - ========================================
+2025-10-14 01:32:28 - skymind_main - [INFO] -   SkyMind Simulator Application Starting
+2025-10-14 01:32:28 - skymind_main - [INFO] - ========================================
+2025-10-14 01:32:28 - skymind_main - [INFO] - Initializing simulation...
+2025-10-14 01:32:28 - skymind_sim.layer_1_simulation.simulation - [INFO] - Initializing the simulation engine...
+2025-10-14 01:32:28 - skymind_sim.layer_1_simulation.world.grid - [INFO] - Grid created successfully with dimensions 50x30 and cell size 20px.
+2025-10-14 01:32:28 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Scheduler initialized.
+2025-10-14 01:32:28 - skymind_sim.layer_1_simulation.simulation - [INFO] - Setting up 3 drone(s)...
+2025-10-14 01:32:28 - skymind_sim.layer_1_simulation.entities.drone.Drone_1 - [INFO] - Drone 1 created at position (49, 0).
+2025-10-14 01:32:28 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=1, position=(49, 0))' added to the scheduler.
+2025-10-14 01:32:28 - skymind_sim.layer_1_simulation.entities.drone.Drone_2 - [INFO] - Drone 2 created at position (33, 1).
+2025-10-14 01:32:28 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=2, position=(33, 1))' added to the scheduler.
+2025-10-14 01:32:28 - skymind_sim.layer_1_simulation.entities.drone.Drone_3 - [INFO] - Drone 3 created at position (34, 16).
+2025-10-14 01:32:28 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=3, position=(34, 16))' added to the scheduler.
+2025-10-14 01:32:28 - skymind_sim.layer_1_simulation.simulation - [INFO] - Simulation engine initialized successfully.
+2025-10-14 01:32:28 - skymind_sim.layer_1_simulation.simulation - [INFO] - Grid: 50x30, Drones: 3
+2025-10-14 01:32:28 - skymind_main - [INFO] - Initializing Pygame renderer...
+2025-10-14 01:32:28 - skymind_sim.layer_0_presentation.renderer - [INFO] - Initializing Pygame Renderer...
+2025-10-14 01:32:28 - skymind_sim.layer_0_presentation.renderer - [INFO] - Pygame Renderer initialized successfully.
+2025-10-14 01:32:28 - skymind_sim.layer_0_presentation.renderer - [INFO] - Loading assets...
+2025-10-14 01:32:28 - skymind_sim.layer_0_presentation.renderer - [INFO] - Assets loaded successfully.
+2025-10-14 01:32:28 - skymind_main - [INFO] - Starting the main application loop...
+2025-10-14 01:32:37 - skymind_main - [INFO] - Shutting down SkyMind Simulator.
+2025-10-14 18:25:29 - skymind_main - [INFO] - Logger 'skymind_main' configured with level INFO.
+2025-10-14 18:25:29 - skymind_main - [INFO] - Log output will be saved to: D:\Payannameh\SkyMind_Sim\data\simulation_logs\sim_run.log
+2025-10-14 18:25:29 - skymind_main - [INFO] - ========================================
+2025-10-14 18:25:29 - skymind_main - [INFO] -   SkyMind Simulator Application Starting
+2025-10-14 18:25:29 - skymind_main - [INFO] - ========================================
+2025-10-14 18:25:29 - skymind_main - [INFO] - Initializing simulation...
+2025-10-14 18:25:29 - skymind_sim.layer_1_simulation.simulation - [INFO] - Initializing the simulation engine...
+2025-10-14 18:25:29 - skymind_sim.layer_1_simulation.world.grid - [INFO] - Grid created successfully with dimensions 50x30 and cell size 20px.
+2025-10-14 18:25:29 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Scheduler initialized.
+2025-10-14 18:25:29 - skymind_sim.layer_1_simulation.simulation - [INFO] - Setting up 3 drone(s)...
+2025-10-14 18:25:29 - skymind_sim.layer_1_simulation.entities.drone.Drone_1 - [INFO] - Drone 1 created at position (18, 8).
+2025-10-14 18:25:29 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=1, position=(18, 8))' added to the scheduler.
+2025-10-14 18:25:29 - skymind_sim.layer_1_simulation.entities.drone.Drone_2 - [INFO] - Drone 2 created at position (14, 20).
+2025-10-14 18:25:29 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=2, position=(14, 20))' added to the scheduler.
+2025-10-14 18:25:29 - skymind_sim.layer_1_simulation.entities.drone.Drone_3 - [INFO] - Drone 3 created at position (6, 2).
+2025-10-14 18:25:29 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=3, position=(6, 2))' added to the scheduler.
+2025-10-14 18:25:29 - skymind_sim.layer_1_simulation.simulation - [INFO] - Simulation engine initialized successfully.
+2025-10-14 18:25:29 - skymind_sim.layer_1_simulation.simulation - [INFO] - Grid: 50x30, Drones: 3
+2025-10-14 18:25:29 - skymind_main - [INFO] - Initializing Pygame renderer...
+2025-10-14 18:25:29 - skymind_sim.layer_0_presentation.renderer - [INFO] - Initializing Pygame Renderer...
+2025-10-14 18:25:29 - skymind_sim.layer_0_presentation.renderer - [INFO] - Pygame Renderer initialized successfully.
+2025-10-14 18:25:29 - skymind_sim.layer_0_presentation.renderer - [INFO] - Loading assets...
+2025-10-14 18:25:29 - skymind_sim.layer_0_presentation.renderer - [INFO] - Assets loaded successfully.
+2025-10-14 18:25:29 - skymind_main - [INFO] - Starting the main application loop...
+2025-10-14 18:25:33 - skymind_main - [INFO] - Shutting down SkyMind Simulator.
+2025-10-14 18:33:55 - skymind_main - [INFO] - Logger 'skymind_main' configured with level INFO.
+2025-10-14 18:33:55 - skymind_main - [INFO] - Log output will be saved to: D:\Payannameh\SkyMind_Sim\data\simulation_logs\sim_run.log
+2025-10-14 18:33:55 - skymind_main - [INFO] - ========================================
+2025-10-14 18:33:55 - skymind_main - [INFO] -   SkyMind Simulator Application Starting
+2025-10-14 18:33:55 - skymind_main - [INFO] - ========================================
+2025-10-14 18:33:55 - skymind_main - [INFO] - Initializing simulation...
+2025-10-14 18:33:55 - skymind_sim.layer_1_simulation.simulation - [INFO] - Initializing the simulation engine...
+2025-10-14 18:33:55 - skymind_sim.layer_1_simulation.world.grid - [INFO] - Grid created successfully with dimensions 50x30 and cell size 20px.
+2025-10-14 18:33:55 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Scheduler initialized.
+2025-10-14 18:33:55 - skymind_sim.layer_1_simulation.simulation - [INFO] - Setting up 3 drone(s)...
+2025-10-14 18:33:55 - skymind_sim.layer_1_simulation.entities.drone.Drone_1 - [INFO] - Drone 1 created at position (34, 26).
+2025-10-14 18:33:55 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=1, position=(34, 26))' added to the scheduler.
+2025-10-14 18:33:55 - skymind_sim.layer_1_simulation.entities.drone.Drone_2 - [INFO] - Drone 2 created at position (43, 12).
+2025-10-14 18:33:55 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=2, position=(43, 12))' added to the scheduler.
+2025-10-14 18:33:55 - skymind_sim.layer_1_simulation.entities.drone.Drone_3 - [INFO] - Drone 3 created at position (26, 10).
+2025-10-14 18:33:55 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=3, position=(26, 10))' added to the scheduler.
+2025-10-14 18:33:55 - skymind_sim.layer_1_simulation.simulation - [INFO] - Simulation engine initialized successfully.
+2025-10-14 18:33:55 - skymind_sim.layer_1_simulation.simulation - [INFO] - Grid: 50x30, Drones: 3
+2025-10-14 18:33:55 - skymind_main - [INFO] - Initializing Pygame renderer...
+2025-10-14 18:33:55 - skymind_sim.layer_0_presentation.renderer - [INFO] - Initializing Pygame Renderer...
+2025-10-14 18:33:55 - skymind_sim.layer_0_presentation.renderer - [INFO] - Pygame Renderer initialized successfully.
+2025-10-14 18:33:55 - skymind_sim.layer_0_presentation.renderer - [INFO] - Loading assets...
+2025-10-14 18:33:55 - skymind_sim.layer_0_presentation.renderer - [INFO] - Assets loaded successfully.
+2025-10-14 18:33:55 - skymind_main - [INFO] - Starting the main application loop...
+2025-10-14 18:33:59 - skymind_main - [INFO] - Shutting down SkyMind Simulator.

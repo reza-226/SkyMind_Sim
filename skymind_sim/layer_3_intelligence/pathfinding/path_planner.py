@@ -1,31 +1,45 @@
-from skymind_sim.layer_3_intelligence.pathfinding.a_star import safe_a_star_search
-import random
+# ============================================================
+#  File: path_planner.py
+#  Layer: L3 - Intelligence (A* Path Planning)
+#  Author: Reza – October 2025
+# ============================================================
+
+import math
+from skymind_sim.layer_3_intelligence.pathfinding.a_star import AStar
 
 class PathPlanner:
-    def __init__(self, grid_map, obstacles=None):
-        self.grid_map = grid_map
-        self.obstacles = obstacles or []
+    """A* path planning manager for drones."""
 
-    def _find_free_goal(self, start):
+    def __init__(self, environment):
+        self.env = environment
+        self.astar = AStar(environment)
+
+    def find_nearest_goal(self, start):
         """
-        پیدا کردن یک سلول آزاد.
+        Find the nearest goal (x, y) for the drone based on Euclidean distance.
+        Compatible with Drone.compute_path().
         """
-        rows, cols = self.grid_map.shape
-        free_cells = [
-            (x, y)
-            for y in range(rows)
-            for x in range(cols)
-            if (x, y) not in self.obstacles and (x, y) != start
-        ]
-        random.shuffle(free_cells)
-        return free_cells[0] if free_cells else start
+        goals = []
+        # در محیط بررسی کن آیا پهپادها یا اهداف درون JSON تعریف شده‌اند
+        for drone_data in getattr(self.env, "drones", []):
+            if hasattr(drone_data, "goal"):
+                goals.append(drone_data.goal)
+            elif isinstance(drone_data, dict) and "goal" in drone_data:
+                goals.append(drone_data["goal"])
+
+        if not goals:
+            return None
+
+        # انتخاب نزدیک‌ترین هدف نسبت به نقطه شروع
+        nearest = min(goals, key=lambda g: math.dist(start, (g["x"], g["y"])))
+        return (nearest["x"], nearest["y"])
 
     def plan_path(self, start, goal):
         """
-        مسیرسازی امن با استفاده از safe_a_star_search.
+        Compute the A* path between start and goal positions.
+        Returns a list of (x, y) coords.
         """
-        path = safe_a_star_search(self.grid_map, start, goal, obstacles=self.obstacles)
-        if not path or path == [start]:
-            alt_goal = self._find_free_goal(start)
-            path = safe_a_star_search(self.grid_map, start, alt_goal, obstacles=self.obstacles)
-        return path
+        if not goal:
+            return []
+
+        return self.astar.find_path(start, goal)
