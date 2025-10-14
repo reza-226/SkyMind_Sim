@@ -1,139 +1,105 @@
+# FILE: skymind_sim/layer_3_intelligence/pathfinding/a_star.py
+
 import heapq
 import logging
-from typing import List, Tuple, Optional
+from typing import List, Tuple
 
-# اصلاح کلیدی: ایمپورت مطلق از ریشه پکیج برای جلوگیری از خطای
-# "attempted relative import beyond top-level package"
-from skymind_sim.layer_1_simulation.world.grid import Grid
+# ایمپورت‌های جدید برای سازگاری با ساختار شما
+from skymind_sim.layer_1_simulation.world.grid import Grid, Cell
 
-# دریافت لاگر برای ثبت اطلاعات این ماژول
 logger = logging.getLogger(__name__)
 
 class Node:
     """
-    یک کلاس کمکی برای نمایش یک گره در جستجوی A*.
-    حاوی موقعیت، گره والد و هزینه‌های g, h, f است.
+    کلاس کمکی برای A*. یک Cell را در خود نگه می‌دارد و هزینه‌های f, g, h را محاسبه می‌کند.
     """
-    def __init__(self, parent=None, position=None):
+    def __init__(self, parent=None, cell: Cell = None):
         self.parent = parent
-        self.position = position
+        self.cell = cell
 
-        self.g = 0  # هزینه از گره شروع تا گره فعلی
-        self.h = 0  # هزینه تخمینی (هیوریستیک) از گره فعلی تا گره هدف
-        self.f = 0  # هزینه کل (f = g + h)
+        self.g = 0  # Cost from start to current node
+        self.h = 0  # Heuristic cost from current node to end
+        self.f = 0  # Total cost (f = g + h)
 
     def __eq__(self, other):
-        return self.position == other.position
+        return self.cell == other.cell
 
     def __lt__(self, other):
         return self.f < other.f
 
     def __repr__(self):
-        return f"Node(pos={self.position}, f={self.f})"
+        # از مختصات سلول برای نمایش استفاده می‌کنیم
+        return f"Node(pos=({self.cell.x}, {self.cell.y}), f={self.f})"
 
 
 class AStarPlanner:
     """
-    کلاس مسیریاب که الگوریتم A* را برای پیدا کردن کوتاه‌ترین مسیر در یک گرید پیاده‌سازی می‌کند.
+    مسیریاب A* که با کلاس‌های Grid و Cell جدید شما کار می‌کند.
     """
-
     def __init__(self, grid: Grid):
-        """
-        سازنده کلاس AStarPlanner.
-
-        Args:
-            grid (Grid): آبجکت گریدی که جستجو در آن انجام می‌شود.
-        """
         if not isinstance(grid, Grid):
             raise TypeError(f"AStarPlanner expects a Grid object, but got {type(grid)}")
         self.grid = grid
         logger.info(f"AStarPlanner initialized with a grid of size ({self.grid.width}, {self.grid.height})")
 
-    def plan_path(self, start: Tuple[int, int], end: Tuple[int, int]) -> List[Tuple[int, int]]:
+    def plan_path(self, start_coords: Tuple[int, int], end_coords: Tuple[int, int]) -> List[Tuple[int, int]]:
         """
-        محاسبه کوتاه‌ترین مسیر بین دو نقطه با استفاده از الگوریتم A*.
-
-        Args:
-            start (Tuple[int, int]): مختصات نقطه شروع (x, y).
-            end (Tuple[int, int]): مختصات نقطه هدف (x, y).
-
-        Returns:
-            List[Tuple[int, int]]: لیستی از مختصات (x, y) که مسیر از شروع به هدف را نشان می‌دهد.
-                                    اگر مسیری پیدا نشود، لیست خالی برمی‌گرداند.
+        محاسبه کوتاه‌ترین مسیر بین دو مختصات.
         """
-        logger.debug(f"Planning path from {start} to {end}")
+        logger.debug(f"Planning path from {start_coords} to {end_coords}")
 
-        # اطمینان از اینکه نقاط شروع و هدف معتبر هستند
-        if not self.grid.is_walkable(start[0], start[1]) or not self.grid.is_walkable(end[0], end[1]):
-            logger.warning(f"Start {start} or end {end} position is not walkable.")
+        # گرفتن اشیاء Cell از روی مختصات
+        start_cell = self.grid.get_cell(start_coords[0], start_coords[1])
+        end_cell = self.grid.get_cell(end_coords[0], end_coords[1])
+
+        if not start_cell or start_cell.is_obstacle:
+            logger.warning(f"Start position {start_coords} is invalid or an obstacle.")
             return []
+        if not end_cell or end_cell.is_obstacle:
+            logger.warning(f"End position {end_coords} is invalid or an obstacle.")
+            return []
+            
+        start_node = Node(None, start_cell)
+        end_node = Node(None, end_cell)
 
-        # ایجاد گره‌های شروع و هدف
-        start_node = Node(None, start)
-        end_node = Node(None, end)
-
-        # لیست باز (open_list) برای گره‌هایی که باید بررسی شوند
-        # و لیست بسته (closed_set) برای گره‌های بررسی شده
         open_list = []
         closed_set = set()
-
-        # استفاده از heapq برای پیاده‌سازی صف اولویت (برای انتخاب گره با کمترین هزینه f)
         heapq.heappush(open_list, start_node)
 
-        # حلقه اصلی تا زمانی که گره‌ای برای بررسی وجود داشته باشد
         while open_list:
-            # دریافت گره با کمترین هزینه f از صف
             current_node = heapq.heappop(open_list)
-            closed_set.add(current_node.position)
+            closed_set.add(current_node.cell)
 
-            # اگر به گره هدف رسیدیم، مسیر را بازسازی و برگردان
             if current_node == end_node:
-                logger.info(f"Path found from {start} to {end}.")
                 path = []
                 current = current_node
                 while current is not None:
-                    path.append(current.position)
+                    # مختصات سلول را به مسیر اضافه می‌کنیم
+                    path.append((current.cell.x, current.cell.y))
                     current = current.parent
-                return path[::-1]  # مسیر را معکوس کن تا از شروع به هدف باشد
+                logger.info(f"Path found from {start_coords} to {end_coords}.")
+                return path[::-1]
 
-            # تولید گره‌های همسایه (حرکت در 8 جهت)
-            children = []
-            for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)]: # 8 جهت
-                node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
-
-                # اطمینان از اینکه همسایه در محدوده گرید است
-                if not (0 <= node_position[0] < self.grid.width and 0 <= node_position[1] < self.grid.height):
-                    continue
-
-                # اطمینان از اینکه همسایه یک مانع نیست
-                if not self.grid.is_walkable(node_position[0], node_position[1]):
+            # **استفاده از متد قدرتمند get_neighbors از کلاس Grid شما**
+            neighbors = self.grid.get_neighbors(current_node.cell)
+            
+            for neighbor_cell in neighbors:
+                if neighbor_cell in closed_set:
                     continue
                 
-                # اگر همسایه قبلا بررسی شده، از آن صرف نظر کن
-                if node_position in closed_set:
-                    continue
+                # ساخت گره جدید برای همسایه
+                child_node = Node(current_node, neighbor_cell)
 
-                # ایجاد گره جدید
-                new_node = Node(current_node, node_position)
-                children.append(new_node)
-
-            # پردازش همسایه‌ها
-            for child in children:
                 # محاسبه هزینه‌ها
-                # هزینه حرکت قطری 1.4 و حرکت مستقیم 1 است
-                move_cost = 1.4 if child.position[0] != current_node.position[0] and child.position[1] != current_node.position[1] else 1
-                child.g = current_node.g + move_cost
-                
-                # هیوریستیک: فاصله اقلیدسی
-                child.h = ((child.position[0] - end_node.position[0]) ** 2) + ((child.position[1] - end_node.position[1]) ** 2)
-                child.f = child.g + child.h
+                move_cost = 1.4 if child_node.cell.x != current_node.cell.x and child_node.cell.y != current_node.cell.y else 1
+                child_node.g = current_node.g + move_cost
+                child_node.h = ((child_node.cell.x - end_node.cell.x) ** 2) + ((child_node.cell.y - end_node.cell.y) ** 2)
+                child_node.f = child_node.g + child_node.h
 
-                # اگر گره همسایه در لیست باز است و هزینه g فعلی بیشتر است، آن را به‌روز نکن
-                if any(open_node for open_node in open_list if child == open_node and child.g > open_node.g):
+                if any(open_node for open_node in open_list if child_node == open_node and child_node.g >= open_node.g):
                     continue
 
-                # اضافه کردن همسایه به لیست باز
-                heapq.heappush(open_list, child)
+                heapq.heappush(open_list, child_node)
 
-        logger.warning(f"No path found from {start} to {end}.")
-        return [] # اگر حلقه تمام شد و به هدف نرسیدیم، یعنی مسیری وجود ندارد
+        logger.warning(f"No path found from {start_coords} to {end_coords}.")
+        return []

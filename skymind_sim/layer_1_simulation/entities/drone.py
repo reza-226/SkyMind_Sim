@@ -1,71 +1,67 @@
-# =========================================================================
-#  File: skymind_sim/layer_1_simulation/entities/drone.py
-#  Author: Reza & AI Assistant | 2025-10-14 (Updated for Movement)
-#  Description: Defines the Drone entity in the simulation.
-# =========================================================================
+# FILE: skymind_sim/layer_1_simulation/entities/drone.py
 
 import logging
-import random # <--- ایمپورت کردن کتابخانه random
+import random
+from typing import TYPE_CHECKING
+
+from skymind_sim.config import Config
+if TYPE_CHECKING:
+    from skymind_sim.layer_1_simulation.world.grid import Grid
 
 class Drone:
-    """
-    نشان‌دهنده یک پهپاد در شبیه‌سازی. این کلاس ویژگی‌ها و رفتارهای
-    پهپاد مانند موقعیت، حرکت و وضعیت باتری را مدیریت می‌کند.
-    """
-    _id_counter = 0
-
-    @classmethod
-    def _generate_id(cls):
-        """یک شناسه منحصر به فرد برای هر پهپاد جدید تولید می‌کند."""
-        cls._id_counter += 1
-        return cls._id_counter
-    
-    @classmethod
-    def reset_id_counter(cls):
-        """شمارنده شناسه را برای تست‌ها یا اجرای مجدد شبیه‌سازی ریست می‌کند."""
-        cls._id_counter = 0
-
-    def __init__(self, config: dict, grid, position: tuple[int, int]):
-        """
-        سازنده کلاس پهپاد.
-
-        Args:
-            config (dict): دیکشنری تنظیمات.
-            grid (Grid): شیء گرید که پهپاد در آن قرار دارد.
-            position (tuple[int, int]): موقعیت اولیه (x, y) پهپاد.
-        """
-        self.id = self._generate_id()
+    def __init__(self, id: str, x: int, y: int, config: Config, grid: 'Grid'):
+        self.id = id
+        self.x = x
+        self.y = y
         self.config = config
         self.grid = grid
-        self.position = position
         
-        # نام لاگر را بر اساس شناسه پهپاد تنظیم می‌کنیم تا لاگ‌ها قابل تفکیک باشند
-        self.logger = logging.getLogger(f"{__name__}.Drone_{self.id}")
-        self.logger.info(f"Drone {self.id} created at position {self.position}.")
+        self.logger = logging.getLogger(f"Drone.{self.id}")
+        
+        try:
+            fps = self.config.getint('renderer', 'fps')
+            speed = self.config.getfloat('drone_properties', 'speed') 
+            
+            if speed <= 0:
+                self.logger.warning(f"Drone speed ({speed}) must be positive. Defaulting to 1.0.")
+                speed = 1.0
+            
+            # Cooldown is the number of frames to wait for one move.
+            # A speed of 1 cell/sec at 30 fps means moving every 30 frames.
+            # A speed of 30 cells/sec at 30 fps means moving every 1 frame.
+            self.move_cooldown = max(1, round(fps / speed)) 
+            self.move_timer = 0
+            
+            self.logger.info(
+                f"Drone '{self.id}' created at ({self.x}, {self.y}). "
+                f"Move cooldown set to {self.move_cooldown} frames (for speed {speed} cells/sec at {fps} FPS)."
+            )
+            
+        except (KeyError, ValueError) as e:
+            self.logger.error(f"Error reading drone properties from config: {e}. Using default values.")
+            self.move_cooldown = 5  # Default cooldown if config fails
+            self.move_timer = 0
 
     def step(self):
-        """
-        یک گام از منطق پهپاد را اجرا می‌کند.
-        در این پیاده‌سازی اولیه، پهپاد به صورت تصادفی حرکت می‌کند.
-        """
-        # انتخاب یک جهت تصادفی: (dx, dy)
-        # (0, 1): پایین, (0, -1): بالا, (1, 0): راست, (-1, 0): چپ
-        move_x, move_y = random.choice([(0, 1), (0, -1), (1, 0), (-1, 0)])
+        self.move_timer += 1
+        if self.move_timer < self.move_cooldown:
+            return 
         
-        # محاسبه موقعیت جدید
-        new_x = self.position[0] + move_x
-        new_y = self.position[1] + move_y
+        # Reset timer and attempt to move
+        self.move_timer = 0
+        possible_moves = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+        move_x, move_y = random.choice(possible_moves)
+        
+        new_x = self.x + move_x
+        new_y = self.y + move_y
 
-        # بررسی اینکه آیا موقعیت جدید داخل مرزهای گرید است
-        if 0 <= new_x < self.grid.width and 0 <= new_y < self.grid.height:
-            # اگر معتبر بود، موقعیت را به‌روز کن
-            self.position = (new_x, new_y)
-            # این لاگ برای دیباگ کردن حرکت بسیار مفید است
-            self.logger.debug(f"Drone {self.id} moved to {self.position}")
+        # Check for obstacles and grid boundaries before moving
+        if not self.grid.is_obstacle(new_x, new_y):
+            self.x = new_x
+            self.y = new_y
+            self.logger.debug(f"Moved to ({self.x}, {self.y})")
         else:
-            # اگر حرکت خارج از مرز بود، در جای خود باقی بمان
-            self.logger.debug(f"Drone {self.id} attempted to move out of bounds to ({new_x}, {new_y}). Staying at {self.position}.")
+            self.logger.debug(f"Movement to ({new_x}, {new_y}) blocked. Position remains ({self.x}, {self.y}).")
 
-    def __repr__(self):
-        """بازنمایی رشته‌ای شیء پهپاد برای نمایش بهتر در لاگ‌ها و دیباگ."""
-        return f"Drone(id={self.id}, position={self.position})"
+    def __repr__(self) -> str:
+        return f"Drone(id='{self.id}', x={self.x}, y={self.y})"

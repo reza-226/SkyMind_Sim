@@ -441,3 +441,185 @@ TypeError: Simulation.__init__() got an unexpected keyword argument 'map_file_pa
 2025-10-13 23:31:43,955 - Simulation - INFO - Loading map from data/maps/simple_map.json...
 2025-10-13 23:31:43,955 - Simulation - INFO - Map 'data/maps/simple_map.json' loaded. Grid size: [80, 60], Obstacles: 3
 2025-10-13 23:31:43,956 - Simulation - INFO - Setting up simulation entities (drones)...
+2025-10-14 21:07:33,791 - SkyMindSim - INFO - [run_and_visualize.py:32] - ==============================================
+2025-10-14 21:07:33,792 - SkyMindSim - INFO - [run_and_visualize.py:33] -         SkyMind Simulator Initializing        
+2025-10-14 21:07:33,792 - SkyMindSim - INFO - [run_and_visualize.py:34] - ==============================================
+2025-10-14 21:07:33,792 - SkyMindSim - INFO - [run_and_visualize.py:39] - Preparing to load map: data/maps/simple_map.json
+2025-10-14 21:07:33,793 - SkyMindSim - INFO - [simulation.py:17] - Initializing the simulation engine...
+2025-10-14 21:07:33,793 - SkyMindSim - INFO - [simulation.py:36] - Loading map from 'data/maps/simple_map.json'...
+2025-10-14 21:07:33,793 - SkyMindSim - ERROR - [simulation.py:41] - Map file not found at: data/maps\data/maps/simple_map.json
+2025-10-14 21:07:33,794 - SkyMindSim - WARNING - [simulation.py:42] - Falling back to default world dimensions.
+2025-10-14 21:07:33,794 - SkyMindSim - ERROR - [run_and_visualize.py:56] - Failed to initialize simulation. Error: Grid.__init__() missing 1 required positional argument: 'cell_size'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\run_and_visualize.py", line 41, in main
+    simulation = Simulation(config=config, logger=logger, map_filename=map_filename)
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 26, in __init__
+    self._load_map(map_filename)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 46, in _load_map
+    self.grid = Grid(self.world_width, self.world_height)
+                ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: Grid.__init__() missing 1 required positional argument: 'cell_size'
+2025-10-14 21:12:34,747 - SkyMindSim - INFO - [run_and_visualize.py:32] - ==============================================
+2025-10-14 21:12:34,747 - SkyMindSim - INFO - [run_and_visualize.py:33] -         SkyMind Simulator Initializing        
+2025-10-14 21:12:34,747 - SkyMindSim - INFO - [run_and_visualize.py:34] - ==============================================
+2025-10-14 21:12:34,748 - SkyMindSim - INFO - [run_and_visualize.py:39] - Preparing to load map: data/maps/simple_map.json
+2025-10-14 21:12:34,748 - SkyMindSim - INFO - [simulation.py:16] - Initializing the simulation engine...
+2025-10-14 21:12:34,748 - SkyMindSim - INFO - [simulation.py:42] - Loading map from 'data/maps\simple_map.json'...
+2025-10-14 21:12:34,749 - SkyMindSim - ERROR - [simulation.py:70] - Failed to load or parse map file 'data/maps\simple_map.json'. Error: 'width'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 47, in _load_map
+    self.world_width = map_data['width']
+                       ~~~~~~~~^^^^^^^^^
+KeyError: 'width'
+2025-10-14 21:12:34,756 - SkyMindSim - INFO - [simulation.py:76] - Created default grid due to parsing error. World size: 20x15
+2025-10-14 21:12:34,756 - SkyMindSim - ERROR - [run_and_visualize.py:56] - Failed to initialize simulation. Error: PathPlanner.__init__() takes 2 positional arguments but 3 were given
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\run_and_visualize.py", line 41, in main
+    simulation = Simulation(config=config, logger=logger, map_filename=map_filename)
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 31, in __init__
+    self.path_planner = PathPlanner(self.grid, self.logger)
+                        ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: PathPlanner.__init__() takes 2 positional arguments but 3 were given
+2025-10-14 21:23:59,072 - SkyMindSim - INFO - [run_and_visualize.py:34] - Starting SkyMind Simulation...
+2025-10-14 21:23:59,072 - SkyMindSim - INFO - [run_and_visualize.py:35] - Root directory added to path: D:\Payannameh\SkyMind_Sim
+2025-10-14 21:23:59,073 - SkyMindSim - INFO - [run_and_visualize.py:36] - Attempting to load map: simple_map.json
+2025-10-14 21:23:59,073 - SkyMindSim - INFO - [simulation.py:14] - Initializing the simulation engine...
+2025-10-14 21:23:59,073 - SkyMindSim - INFO - [simulation.py:34] - Attempting to load map from 'data/maps\simple_map.json'...
+2025-10-14 21:23:59,074 - SkyMindSim - ERROR - [simulation.py:53] - Failed to load or parse map 'data/maps\simple_map.json'. Error: 'width'. Falling back to default.
+2025-10-14 21:23:59,074 - SkyMindSim - INFO - [simulation.py:60] - Creating default world with size: 20x15
+2025-10-14 21:23:59,075 - SkyMindSim - INFO - [simulation.py:26] - Path Planner initialized successfully.
+2025-10-14 21:23:59,373 - SkyMindSim - CRITICAL - [run_and_visualize.py:69] - An unhandled exception occurred: unsupported operand type(s) for *: 'int' and 'Logger'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\run_and_visualize.py", line 54, in main
+    renderer = PygameRenderer(screen_width, screen_height, logger)
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_0_presentation\renderer.py", line 41, in __init__
+    self.screen_width = world_width * cell_size
+                        ~~~~~~~~~~~~^~~~~~~~~~~
+TypeError: unsupported operand type(s) for *: 'int' and 'Logger'
+2025-10-14 21:28:15,227 - SkyMindSim - INFO - [run_and_visualize.py:34] - Starting SkyMind Simulation...
+2025-10-14 21:28:15,227 - SkyMindSim - INFO - [run_and_visualize.py:35] - Root directory added to path: D:\Payannameh\SkyMind_Sim
+2025-10-14 21:28:15,228 - SkyMindSim - INFO - [run_and_visualize.py:36] - Attempting to load map: simple_map.json
+2025-10-14 21:28:15,228 - SkyMindSim - INFO - [simulation.py:14] - Initializing the simulation engine...
+2025-10-14 21:28:15,229 - SkyMindSim - INFO - [simulation.py:34] - Attempting to load map from 'data/maps\simple_map.json'...
+2025-10-14 21:28:15,230 - SkyMindSim - ERROR - [simulation.py:53] - Failed to load or parse map 'data/maps\simple_map.json'. Error: 'width'. Falling back to default.
+2025-10-14 21:28:15,230 - SkyMindSim - INFO - [simulation.py:60] - Creating default world with size: 20x15
+2025-10-14 21:28:15,231 - SkyMindSim - INFO - [simulation.py:26] - Path Planner initialized successfully.
+2025-10-14 21:28:15,402 - SkyMindSim - CRITICAL - [run_and_visualize.py:69] - An unhandled exception occurred: unsupported operand type(s) for *: 'int' and 'Logger'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\run_and_visualize.py", line 54, in main
+    renderer = PygameRenderer(screen_width, screen_height, logger)
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_0_presentation\renderer.py", line 41, in __init__
+    self.screen_width = world_width * cell_size
+                        ~~~~~~~~~~~~^~~~~~~~~~~
+TypeError: unsupported operand type(s) for *: 'int' and 'Logger'
+2025-10-14 22:32:32,530 - SkyMindSim - INFO - [run_and_visualize.py:34] - Starting SkyMind Simulation...
+2025-10-14 22:32:32,530 - SkyMindSim - INFO - [run_and_visualize.py:35] - Root directory added to path: D:\Payannameh\SkyMind_Sim
+2025-10-14 22:32:32,530 - SkyMindSim - INFO - [run_and_visualize.py:36] - Attempting to load map: simple_map.json
+2025-10-14 22:32:32,531 - SkyMindSim - INFO - [simulation.py:14] - Initializing the simulation engine...
+2025-10-14 22:32:32,531 - SkyMindSim - INFO - [simulation.py:34] - Attempting to load map from 'data/maps\simple_map.json'...
+2025-10-14 22:32:32,532 - SkyMindSim - ERROR - [simulation.py:53] - Failed to load or parse map 'data/maps\simple_map.json'. Error: 'width'. Falling back to default.
+2025-10-14 22:32:32,532 - SkyMindSim - INFO - [simulation.py:60] - Creating default world with size: 20x15
+2025-10-14 22:32:32,533 - SkyMindSim - INFO - [simulation.py:26] - Path Planner initialized successfully.
+2025-10-14 22:32:32,872 - SkyMindSim - INFO - [renderer.py:37] - Pygame screen initialized with size 600x450.
+2025-10-14 22:32:32,877 - SkyMindSim - INFO - [run_and_visualize.py:55] - Pygame renderer initialized.
+2025-10-14 22:32:45,423 - SkyMindSim - INFO - [renderer.py:55] - Quit event detected. Shutting down.
+2025-10-14 22:32:45,473 - SkyMindSim - INFO - [renderer.py:103] - Pygame has been quit.
+2025-10-14 22:32:45,473 - SkyMindSim - INFO - [run_and_visualize.py:66] - Simulation finished gracefully.
+2025-10-14 22:35:58,171 - SkyMindSim - INFO - [run_and_visualize.py:34] - Starting SkyMind Simulation...
+2025-10-14 22:35:58,171 - SkyMindSim - INFO - [run_and_visualize.py:35] - Root directory added to path: D:\Payannameh\SkyMind_Sim
+2025-10-14 22:35:58,171 - SkyMindSim - INFO - [run_and_visualize.py:36] - Attempting to load map: simple_map.json
+2025-10-14 22:35:58,172 - SkyMindSim - INFO - [simulation.py:14] - Initializing the simulation engine...
+2025-10-14 22:35:58,172 - SkyMindSim - INFO - [simulation.py:34] - Attempting to load map from 'data/maps\simple_map.json'...
+2025-10-14 22:35:58,173 - SkyMindSim - ERROR - [simulation.py:53] - Failed to load or parse map 'data/maps\simple_map.json'. Error: 'width'. Falling back to default.
+2025-10-14 22:35:58,173 - SkyMindSim - INFO - [simulation.py:60] - Creating default world with size: 20x15
+2025-10-14 22:35:58,173 - SkyMindSim - INFO - [simulation.py:26] - Path Planner initialized successfully.
+2025-10-14 22:35:58,394 - SkyMindSim - INFO - [renderer.py:37] - Pygame screen initialized with size 600x450.
+2025-10-14 22:35:58,399 - SkyMindSim - INFO - [run_and_visualize.py:55] - Pygame renderer initialized.
+2025-10-14 22:35:59,869 - SkyMindSim - INFO - [renderer.py:55] - Quit event detected. Shutting down.
+2025-10-14 22:35:59,920 - SkyMindSim - INFO - [renderer.py:103] - Pygame has been quit.
+2025-10-14 22:35:59,921 - SkyMindSim - INFO - [run_and_visualize.py:66] - Simulation finished gracefully.
+2025-10-14 22:43:02,532 - SkyMindSim - INFO - [run_and_visualize.py:34] - Starting SkyMind Simulation...
+2025-10-14 22:43:02,533 - SkyMindSim - INFO - [run_and_visualize.py:35] - Root directory added to path: D:\Payannameh\SkyMind_Sim
+2025-10-14 22:43:02,533 - SkyMindSim - INFO - [run_and_visualize.py:36] - Attempting to load map: simple_map.json
+2025-10-14 22:43:02,533 - SkyMindSim - CRITICAL - [run_and_visualize.py:69] - An unhandled exception occurred: Simulation.__init__() got an unexpected keyword argument 'config'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\run_and_visualize.py", line 40, in main
+    simulation = Simulation(config=config, logger=logger, map_filename=map_filename)
+TypeError: Simulation.__init__() got an unexpected keyword argument 'config'
+2025-10-14 23:02:31,924 - MainRunner - INFO - Application starting...
+2025-10-14 23:02:31,924 - MainRunner - INFO - Initializing PygameRenderer...
+2025-10-14 23:02:32,299 - MainRunner - INFO - PygameRenderer initialized successfully.
+2025-10-14 23:02:32,306 - MainRunner - CRITICAL - Failed to initialize Simulation: Simulation.__init__() missing 1 required positional argument: 'map_filename'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\run_and_visualize.py", line 46, in main
+    simulation = Simulation(logger=main_logger)
+TypeError: Simulation.__init__() missing 1 required positional argument: 'map_filename'
+2025-10-14 23:02:32,400 - MainRunner - INFO - Closing Pygame.
+2025-10-14 23:05:30,503 - MainRunner - INFO - Application starting...
+2025-10-14 23:05:30,503 - MainRunner - INFO - Initializing PygameRenderer...
+2025-10-14 23:05:30,503 - MainRunner - CRITICAL - An unexpected error occurred: PygameRenderer.__init__() missing 1 required positional argument: 'logger'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\run_and_visualize.py", line 20, in main
+    renderer = PygameRenderer(800, 600)
+TypeError: PygameRenderer.__init__() missing 1 required positional argument: 'logger'
+2025-10-14 23:05:30,515 - MainRunner - INFO - Application finished gracefully.
+2025-10-14 23:09:36,299 - MainRunner - INFO - Application starting...
+2025-10-14 23:09:36,299 - MainRunner - INFO - Initializing PygameRenderer...
+2025-10-14 23:09:36,635 - MainRunner - INFO - Pygame initialized successfully.
+2025-10-14 23:09:36,640 - MainRunner - INFO - Initializing Simulation with map: data/maps/simple_map.json
+2025-10-14 23:09:36,642 - MainRunner - CRITICAL - An unexpected error occurred: Grid.__init__() got an unexpected keyword argument 'map_filename'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\run_and_visualize.py", line 23, in main
+    simulation = Simulation(logger=main_logger, map_filename=map_path)
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 24, in __init__
+    self.grid = Grid(map_filename=map_filename, logger=self.logger)
+                ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: Grid.__init__() got an unexpected keyword argument 'map_filename'
+2025-10-14 23:09:36,658 - MainRunner - INFO - Closing Pygame window.
+2025-10-14 23:09:36,712 - MainRunner - INFO - Application finished gracefully.
+2025-10-14 23:14:14,348 - MainRunner - INFO - Application starting...
+2025-10-14 23:14:14,348 - MainRunner - INFO - Initializing PygameRenderer...
+2025-10-14 23:14:14,588 - MainRunner - INFO - Pygame initialized successfully.
+2025-10-14 23:14:14,593 - MainRunner - INFO - Initializing Simulation with map: data/maps/simple_map.json
+2025-10-14 23:14:14,597 - MainRunner - INFO - Grid loaded successfully from data/maps/simple_map.json.
+2025-10-14 23:14:14,597 - MainRunner - INFO - Starting main loop...
+2025-10-14 23:14:14,615 - MainRunner - CRITICAL - An unexpected error occurred: 'Grid' object has no attribute 'cell_size'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\run_and_visualize.py", line 37, in main
+    world_state = simulation.get_world_state()
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 41, in get_world_state
+    "cell_size": self.grid.cell_size,
+                 ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Grid' object has no attribute 'cell_size'
+2025-10-14 23:14:14,620 - MainRunner - INFO - Closing Pygame window.
+2025-10-14 23:14:14,667 - MainRunner - INFO - Application finished gracefully.
+2025-10-14 23:18:25,855 - MainRunner - INFO - Application starting...
+2025-10-14 23:18:25,855 - MainRunner - INFO - Initializing PygameRenderer...
+2025-10-14 23:18:26,032 - MainRunner - CRITICAL - An unexpected error occurred: Window is too large.
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\run_and_visualize.py", line 19, in main
+    renderer = PygameRenderer(800, 600, logger=main_logger)
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_0_presentation\renderer.py", line 32, in __init__
+    self.screen = pygame.display.set_mode((screen_width, screen_height))
+                  ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pygame.error: Window is too large.
+2025-10-14 23:18:26,035 - MainRunner - INFO - Application finished gracefully.
+2025-10-14 23:28:41,824 - root - INFO - LogManager initialized successfully.
+2025-10-14 23:28:41,825 - MainRunner - INFO - Application starting...
+2025-10-14 23:28:41,825 - MainRunner - INFO - Initializing Simulation with map: data/maps/simple_map.json
+2025-10-14 23:28:41,826 - Simulation - INFO - Grid loaded successfully from 'data/maps/simple_map.json'.
+2025-10-14 23:28:41,826 - Simulation - INFO - Simulation initialized.
+2025-10-14 23:28:41,826 - MainRunner - INFO - Initializing PygameRenderer with grid dimensions: 25x20
+2025-10-14 23:28:42,150 - Renderer - INFO - Pygame screen initialized. Size: 625x500
+2025-10-14 23:28:48,926 - MainRunner - INFO - Closing Pygame window.
+2025-10-14 23:28:48,981 - MainRunner - INFO - Application finished gracefully.
+2025-10-14 23:31:01,657 - root - INFO - LogManager initialized successfully.
+2025-10-14 23:31:01,657 - MainRunner - INFO - Application starting...
+2025-10-14 23:31:01,657 - MainRunner - INFO - Initializing Simulation with map: data/maps/simple_map.json
+2025-10-14 23:31:01,658 - Simulation - INFO - Grid loaded successfully from 'data/maps/simple_map.json'.
+2025-10-14 23:31:01,658 - Simulation - INFO - Simulation initialized.
+2025-10-14 23:31:01,659 - MainRunner - INFO - Initializing PygameRenderer with grid dimensions: 25x20
+2025-10-14 23:31:01,911 - Renderer - INFO - Pygame screen initialized. Size: 625x500
+2025-10-14 23:37:07,986 - MainRunner - INFO - Closing Pygame window.
+2025-10-14 23:37:08,039 - MainRunner - INFO - Application finished gracefully.

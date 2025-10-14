@@ -1,79 +1,56 @@
-# =========================================================================
-#  File: skymind_sim/utils/logger.py
-#  Author: Reza & AI Assistant | 2025-10-14 (Final Corrected Version)
-# =========================================================================
+# skymind_sim/utils/logger.py
 import logging
-import os
+import sys
 from logging.handlers import RotatingFileHandler
-from typing import Dict, Any
 
-# یک متغیر برای جلوگیری از تنظیم چندباره لاگر ریشه
-_is_root_configured = False
+class LogManager:
+    _loggers = {}
+    _initialized = False
 
-def setup_logging(config: Dict[str, Any], main_logger_name: str):
-    """
-    سیستم لاگ‌گیری را بر اساس تنظیمات پیکربندی می‌کند.
-    این تابع باید فقط یک بار در ابتدای برنامه فراخوانی شود.
+    @staticmethod
+    def _initialize():
+        if LogManager._initialized:
+            return
 
-    Args:
-        config (Dict[str, Any]): دیکشنری کامل تنظیمات.
-        main_logger_name (str): نام لاگر اصلی برنامه (مثلاً 'skymind_main').
-    """
-    global _is_root_configured
-    if _is_root_configured:
-        # اگر لاگر قبلاً تنظیم شده، فقط یک هشدار می‌دهیم و خارج می‌شویم.
-        # این کار از لاگ‌های تکراری جلوگیری می‌کند.
-        logging.getLogger(main_logger_name).debug("setup_logging called more than once. Skipping reconfiguration.")
-        return
-
-    try:
-        log_config = config['logging']
-        log_level_str = log_config.get('log_level', 'INFO').upper()
-        log_file_path = log_config.get('log_file', 'data/logs/default.log')
-        log_level = getattr(logging, log_level_str, logging.INFO)
-
-    except KeyError:
-        # اگر بخش 'logging' در کانفیگ نباشد، از تنظیمات پایه استفاده می‌کنیم.
-        logging.basicConfig(
-            level=logging.INFO,
-            format='%(asctime)s - %(name)s - [%(levelname)s] - %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S'
+        # تنظیمات کلی برای root logger
+        log_format = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         )
-        logging.warning("Logging configuration section not found. Using default INFO level.")
-        _is_root_configured = True
-        return
 
-    # ایجاد دایرکتوری لاگ در صورت عدم وجود
-    log_dir = os.path.dirname(log_file_path)
-    if log_dir:
-        os.makedirs(log_dir, exist_ok=True)
-    
-    # فرمت لاگ
-    log_format = '%(asctime)s - %(name)s - [%(levelname)s] - %(message)s'
-    formatter = logging.Formatter(log_format, datefmt='%Y-%m-%d %H:%M:%S')
+        # Handler برای چاپ در کنسول (stdout)
+        stream_handler = logging.StreamHandler(sys.stdout)
+        stream_handler.setLevel(logging.INFO)
+        stream_handler.setFormatter(log_format)
 
-    # تنظیم لاگر ریشه (Root Logger)
-    root_logger = logging.getLogger()
-    root_logger.setLevel(log_level)
-    
-    # پاک کردن handlerهای قبلی برای جلوگیری از تکرار لاگ
-    if root_logger.hasHandlers():
-        root_logger.handlers.clear()
+        # Handler برای نوشتن در فایل با قابلیت چرخش
+        # فایل در پوشه data/simulation_logs ذخیره می‌شود.
+        file_handler = RotatingFileHandler(
+            'data/simulation_logs/simulation.log', 
+            maxBytes=5*1024*1024, # 5 MB
+            backupCount=2
+        )
+        file_handler.setLevel(logging.DEBUG)
+        file_handler.setFormatter(log_format)
 
-    # Handler برای نمایش لاگ در کنسول
-    console_handler = logging.StreamHandler()
-    console_handler.setFormatter(formatter)
-    root_logger.addHandler(console_handler)
+        # اضافه کردن handlerها به root logger
+        root_logger = logging.getLogger()
+        root_logger.setLevel(logging.DEBUG) # حداقل سطح برای ثبت لاگ
+        root_logger.addHandler(stream_handler)
+        root_logger.addHandler(file_handler)
 
-    # Handler برای ذخیره لاگ در فایل با قابلیت چرخش
-    # 5MB per file, keep 3 backup files
-    file_handler = RotatingFileHandler(log_file_path, maxBytes=5*1024*1024, backupCount=3, encoding='utf-8')
-    file_handler.setFormatter(formatter)
-    root_logger.addHandler(file_handler)
+        LogManager._initialized = True
+        root_logger.info("LogManager initialized successfully.")
 
-    _is_root_configured = True
-    
-    # لاگ اولیه برای تایید صحت عملکرد
-    logger = logging.getLogger(main_logger_name)
-    logger.info(f"Logger '{main_logger_name}' configured with level {log_level_str}.")
-    logger.info(f"Log output will be saved to: {os.path.abspath(log_file_path)}")
+
+    @staticmethod
+    def get_logger(name: str) -> logging.Logger:
+        """
+        یک لاگر با نام مشخص دریافت یا ایجاد می‌کند.
+        """
+        if not LogManager._initialized:
+            LogManager._initialize()
+
+        if name not in LogManager._loggers:
+            LogManager._loggers[name] = logging.getLogger(name)
+        
+        return LogManager._loggers[name]

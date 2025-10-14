@@ -1,39 +1,14 @@
 {
-  "meta": {
-    "name": "Simple Test Map",
-    "author": "Reza & AI Assistant",
-    "version": "1.1",
-    "description": "A simple map with a few obstacles and drone starting positions."
-  },
-  "grid_size": [80, 60],
-  "obstacles": [
-    {
-      "id": "obs_01",
-      "type": "rectangle",
-      "position": [20, 15],
-      "size": [5, 25]
-    },
-    {
-      "id": "obs_02",
-      "type": "rectangle",
-      "position": [40, 30],
-      "size": [20, 5]
-    },
-    {
-      "id": "obs_03",
-      "type": "rectangle",
-      "position": [60, 5],
-      "size": [5, 15]
-    }
-  ],
-  "start_positions": [
-    {
-      "id": "drone_0",
-      "position": [5, 5]
-    },
-    {
-      "id": "drone_1",
-      "position": [10, 50]
-    }
-  ]
+    "width": 25,
+    "height": 20,
+    "start": [2, 2],
+    "goals": [
+        [22, 18]
+    ],
+    "obstacles": [
+        [5, 5], [5, 6], [5, 7], [5, 8], [5, 9],
+        [6, 9], [7, 9], [8, 9],
+        [15, 10], [15, 11], [15, 12], [15, 13], [15, 14], [15, 15],
+        [16, 15], [17, 15], [18, 15]
+    ]
 }

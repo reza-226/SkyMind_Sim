@@ -1,80 +1,51 @@
-# =========================================================================
-#  File: run_and_visualize.py
-#  Author: Reza & AI Assistant | 2025-10-14 (Updated for Main Loop)
-#  Description: Main entry point to run the simulation with visualization.
-# =========================================================================
-
-import logging
-import sys
-import os
-import pygame  # <--- ایمپورت pygame برای مدیریت حلقه
-
-# افزودن مسیر ریشه پروژه به sys.path برای ایمپورت‌های ماژولار
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__))))
-
-from skymind_sim.utils.logger import setup_logging
-from skymind_sim.config import load_config
+# run_and_visualize.py
+import pygame
+from skymind_sim.utils.logger import LogManager
 from skymind_sim.layer_1_simulation.simulation import Simulation
-from skymind_sim.layer_0_presentation.renderer import Renderer
-
-# تعریف نام اصلی لاگر
-MAIN_LOGGER_NAME = "skymind_main"
+from skymind_sim.layer_0_presentation.renderer import PygameRenderer
 
 def main():
-    """
-    تابع اصلی برای راه‌اندازی و اجرای شبیه‌سازی.
-    """
-    # بارگذاری کانفیگ و راه‌اندازی لاگر
-    config = load_config()
-    setup_logging(config, main_logger_name=MAIN_LOGGER_NAME)
-    
-    main_logger = logging.getLogger(MAIN_LOGGER_NAME)
-    
-    main_logger.info("========================================")
-    main_logger.info("  SkyMind Simulator Application Starting  ")
-    main_logger.info("========================================")
+    # 1. راه اندازی Logger اصلی با استفاده از get_logger
+    main_logger = LogManager.get_logger("MainRunner")
+    main_logger.info("Application starting...")
 
     try:
-        # ۱. ساخت شبیه‌ساز
-        main_logger.info("Initializing simulation...")
-        simulation = Simulation(config)
+        # 2. راه اندازی شبیه‌ساز (دیگر به آن لاگر پاس نمی‌دهیم)
+        map_path = "data/maps/simple_map.json"
+        main_logger.info(f"Initializing Simulation with map: {map_path}")
+        sim = Simulation(map_filename=map_path) # فراخوانی اصلاح شد
 
-        # ۲. ساخت رندرکننده
-        main_logger.info("Initializing Pygame renderer...")
-        renderer = Renderer(config)
-        renderer.load_assets() # بارگذاری تصاویر و فونت‌ها
-
-        # ۳. حلقه اصلی برنامه
-        main_logger.info("Starting the main application loop...")
+        # 3. دریافت ابعاد گرید از شبیه‌ساز
+        grid_width, grid_height = sim.grid_dimensions
         
-        # استفاده از ساعت Pygame برای کنترل نرخ فریم
-        clock = pygame.time.Clock()
+        # 4. راه اندازی رندرکننده
+        main_logger.info(f"Initializing PygameRenderer with grid dimensions: {grid_width}x{grid_height}")
+        renderer = PygameRenderer(
+            grid_width=grid_width, 
+            grid_height=grid_height,
+            # لاگر رندرکننده را هم مستقیم از LogManager می‌گیریم
+            logger=LogManager.get_logger("Renderer") 
+        )
+
+        # 5. حلقه اصلی برنامه
         running = True
-        
         while running:
-            # مدیریت رویدادها (مانند بستن پنجره)
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
+                if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                     running = False
-
-            # >>> بخش کلیدی جدید <<<
-            # اجرای یک گام از منطق شبیه‌سازی
-            simulation.step()
-
-            # رندر کردن وضعیت فعلی شبیه‌سازی
-            renderer.render(simulation.grid, simulation.scheduler.agents)
             
-            # کنترل نرخ فریم (مثلاً 30 فریم بر ثانیه)
-            clock.tick(renderer.fps)
+            sim.run_step()
+            world_state = sim.get_world_state()
+            renderer.render(world_state)
 
-    except (ValueError, FileNotFoundError) as e:
-        main_logger.error(f"A critical error occurred: {e}")
-        sys.exit(1)
+        # 6. پایان کار
+        main_logger.info("Closing Pygame window.")
+        renderer.close()
+
     except Exception as e:
-        main_logger.critical(f"An unexpected critical error occurred: {e}", exc_info=True)
-        sys.exit(1)
+        main_logger.critical(f"An unexpected error occurred: {e}", exc_info=True)
     finally:
-        main_logger.info("Shutting down SkyMind Simulator.")
+        main_logger.info("Application finished gracefully.")
         pygame.quit()
 
 if __name__ == "__main__":

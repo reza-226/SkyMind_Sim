@@ -248,3 +248,326 @@ AttributeError: 'Scheduler' object has no attribute 'get_agent_count'
 2025-10-14 18:46:40 - skymind_sim.layer_0_presentation.renderer - [INFO] - Assets loaded successfully.
 2025-10-14 18:46:40 - skymind_main - [INFO] - Starting the main application loop...
 2025-10-14 18:46:57 - skymind_main - [INFO] - Shutting down SkyMind Simulator.
+2025-10-14 18:54:38 - skymind_main - [INFO] - Logger 'skymind_main' configured with level INFO.
+2025-10-14 18:54:38 - skymind_main - [INFO] - Log output will be saved to: D:\Payannameh\SkyMind_Sim\data\simulation_logs\sim_run.log
+2025-10-14 18:54:38 - skymind_main - [INFO] - ========================================
+2025-10-14 18:54:38 - skymind_main - [INFO] -   SkyMind Simulator Application Starting  
+2025-10-14 18:54:38 - skymind_main - [INFO] - ========================================
+2025-10-14 18:54:38 - skymind_main - [INFO] - Initializing simulation...
+2025-10-14 18:54:38 - skymind_sim.layer_1_simulation.simulation - [INFO] - Initializing the simulation engine...
+2025-10-14 18:54:38 - skymind_sim.layer_1_simulation.world.grid - [INFO] - Grid created successfully with dimensions 50x30 and cell size 20px.
+2025-10-14 18:54:38 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Scheduler initialized.
+2025-10-14 18:54:38 - skymind_sim.layer_1_simulation.simulation - [INFO] - Setting up 3 drone(s)...
+2025-10-14 18:54:38 - skymind_sim.layer_1_simulation.entities.drone.Drone_1 - [INFO] - Drone 1 created at position (20, 20).
+2025-10-14 18:54:38 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=1, position=(20, 20))' added to the scheduler.
+2025-10-14 18:54:38 - skymind_sim.layer_1_simulation.entities.drone.Drone_2 - [INFO] - Drone 2 created at position (25, 9).
+2025-10-14 18:54:38 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=2, position=(25, 9))' added to the scheduler.
+2025-10-14 18:54:38 - skymind_sim.layer_1_simulation.entities.drone.Drone_3 - [INFO] - Drone 3 created at position (13, 16).
+2025-10-14 18:54:38 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=3, position=(13, 16))' added to the scheduler.
+2025-10-14 18:54:38 - skymind_sim.layer_1_simulation.simulation - [INFO] - Simulation engine initialized successfully.
+2025-10-14 18:54:38 - skymind_sim.layer_1_simulation.simulation - [INFO] - Grid: 50x30, Drones: 3
+2025-10-14 18:54:38 - skymind_main - [INFO] - Initializing Pygame renderer...
+2025-10-14 18:54:38 - skymind_sim.layer_0_presentation.renderer - [INFO] - Initializing Pygame Renderer...
+2025-10-14 18:54:39 - skymind_sim.layer_0_presentation.renderer - [INFO] - Pygame Renderer initialized successfully.
+2025-10-14 18:54:39 - skymind_sim.layer_0_presentation.renderer - [INFO] - Loading assets...
+2025-10-14 18:54:39 - skymind_sim.layer_0_presentation.renderer - [INFO] - Assets loaded successfully.
+2025-10-14 18:54:39 - skymind_main - [INFO] - Starting the main application loop...
+2025-10-14 18:54:48 - skymind_main - [INFO] - Shutting down SkyMind Simulator.
+2025-10-14 18:57:08 - skymind_main - [INFO] - Logger 'skymind_main' configured with level INFO.
+2025-10-14 18:57:08 - skymind_main - [INFO] - Log output will be saved to: D:\Payannameh\SkyMind_Sim\data\simulation_logs\sim_run.log
+2025-10-14 18:57:08 - skymind_main - [INFO] - ========================================
+2025-10-14 18:57:08 - skymind_main - [INFO] -   SkyMind Simulator Application Starting  
+2025-10-14 18:57:08 - skymind_main - [INFO] - ========================================
+2025-10-14 18:57:08 - skymind_main - [INFO] - Initializing simulation...
+2025-10-14 18:57:08 - skymind_sim.layer_1_simulation.simulation - [INFO] - Initializing the simulation engine...
+2025-10-14 18:57:08 - skymind_sim.layer_1_simulation.world.grid - [INFO] - Grid created successfully with dimensions 50x30 and cell size 20px.
+2025-10-14 18:57:08 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Scheduler initialized.
+2025-10-14 18:57:08 - skymind_sim.layer_1_simulation.simulation - [INFO] - Setting up 3 drone(s)...
+2025-10-14 18:57:08 - skymind_sim.layer_1_simulation.entities.drone.Drone_1 - [INFO] - Drone 1 created at position (3, 23). Move cooldown set to 6 frames.
+2025-10-14 18:57:08 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=1, position=(3, 23))' added to the scheduler.
+2025-10-14 18:57:08 - skymind_sim.layer_1_simulation.entities.drone.Drone_2 - [INFO] - Drone 2 created at position (27, 27). Move cooldown set to 6 frames.
+2025-10-14 18:57:08 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=2, position=(27, 27))' added to the scheduler.
+2025-10-14 18:57:08 - skymind_sim.layer_1_simulation.entities.drone.Drone_3 - [INFO] - Drone 3 created at position (39, 24). Move cooldown set to 6 frames.
+2025-10-14 18:57:08 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=3, position=(39, 24))' added to the scheduler.
+2025-10-14 18:57:08 - skymind_sim.layer_1_simulation.simulation - [INFO] - Simulation engine initialized successfully.
+2025-10-14 18:57:08 - skymind_sim.layer_1_simulation.simulation - [INFO] - Grid: 50x30, Drones: 3
+2025-10-14 18:57:08 - skymind_main - [INFO] - Initializing Pygame renderer...
+2025-10-14 18:57:08 - skymind_sim.layer_0_presentation.renderer - [INFO] - Initializing Pygame Renderer...
+2025-10-14 18:57:08 - skymind_sim.layer_0_presentation.renderer - [INFO] - Pygame Renderer initialized successfully.
+2025-10-14 18:57:08 - skymind_sim.layer_0_presentation.renderer - [INFO] - Loading assets...
+2025-10-14 18:57:08 - skymind_sim.layer_0_presentation.renderer - [INFO] - Assets loaded successfully.
+2025-10-14 18:57:08 - skymind_main - [INFO] - Starting the main application loop...
+2025-10-14 18:57:34 - skymind_main - [INFO] - Shutting down SkyMind Simulator.
+2025-10-14 19:07:42 - skymind_main - [INFO] - Logger 'skymind_main' configured with level INFO.
+2025-10-14 19:07:42 - skymind_main - [INFO] - Log output will be saved to: D:\Payannameh\SkyMind_Sim\data\simulation_logs\sim_run.log
+2025-10-14 19:07:42 - skymind_main - [INFO] - ========================================
+2025-10-14 19:07:42 - skymind_main - [INFO] -   SkyMind Simulator Application Starting  
+2025-10-14 19:07:42 - skymind_main - [INFO] - ========================================
+2025-10-14 19:07:42 - skymind_main - [INFO] - Initializing simulation...
+2025-10-14 19:07:42 - skymind_sim.layer_1_simulation.simulation - [INFO] - Initializing the simulation engine...
+2025-10-14 19:07:42 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Scheduler initialized.
+2025-10-14 19:07:42 - skymind_sim.layer_1_simulation.simulation - [INFO] - Successfully loaded map file from 'data\maps\simple_map.json'.
+2025-10-14 19:07:42 - skymind_sim.layer_1_simulation.simulation - [INFO] - Setting up environment from map data...
+2025-10-14 19:07:42 - skymind_sim.layer_1_simulation.world.grid - [INFO] - Grid created successfully with dimensions 80x60 and cell size 20px.
+2025-10-14 19:07:42 - skymind_sim.layer_1_simulation.simulation - [INFO] - Environment setup complete. Grid size: 80x60.
+2025-10-14 19:07:42 - skymind_sim.layer_1_simulation.simulation - [INFO] - Setting up entities from map data...
+2025-10-14 19:07:42 - skymind_sim.layer_1_simulation.simulation - [WARNING] - Config `num_drones` (3) does not match `start_positions` in map (2). Using positions from map file.
+2025-10-14 19:07:42 - Drone_0 - [INFO] - Drone 0 created at position (5, 5). Move cooldown set to 6 frames for speed 5.0 grid/s at 30 FPS.
+2025-10-14 19:07:42 - skymind_main - [CRITICAL] - An unexpected critical error occurred: 'Scheduler' object has no attribute 'add_agent'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\run_and_visualize.py", line 40, in main
+    simulation = Simulation(config)
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 31, in __init__
+    self._setup_entities_from_map()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 121, in _setup_entities_from_map
+    self.scheduler.add_agent(drone)
+    ^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Scheduler' object has no attribute 'add_agent'
+2025-10-14 19:07:42 - skymind_main - [INFO] - Shutting down SkyMind Simulator.
+2025-10-14 19:08:53 - skymind_main - [INFO] - Logger 'skymind_main' configured with level INFO.
+2025-10-14 19:08:53 - skymind_main - [INFO] - Log output will be saved to: D:\Payannameh\SkyMind_Sim\data\simulation_logs\sim_run.log
+2025-10-14 19:08:53 - skymind_main - [INFO] - ========================================
+2025-10-14 19:08:53 - skymind_main - [INFO] -   SkyMind Simulator Application Starting  
+2025-10-14 19:08:53 - skymind_main - [INFO] - ========================================
+2025-10-14 19:08:53 - skymind_main - [INFO] - Initializing simulation...
+2025-10-14 19:08:53 - skymind_sim.layer_1_simulation.simulation - [INFO] - Initializing the simulation engine...
+2025-10-14 19:08:53 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Scheduler initialized.
+2025-10-14 19:08:53 - skymind_sim.layer_1_simulation.simulation - [INFO] - Successfully loaded map file from 'data\maps\simple_map.json'.
+2025-10-14 19:08:53 - skymind_sim.layer_1_simulation.simulation - [INFO] - Setting up environment from map data...
+2025-10-14 19:08:53 - skymind_sim.layer_1_simulation.world.grid - [INFO] - Grid created successfully with dimensions 80x60 and cell size 20px.
+2025-10-14 19:08:53 - skymind_sim.layer_1_simulation.simulation - [INFO] - Environment setup complete. Grid size: 80x60.
+2025-10-14 19:08:53 - skymind_sim.layer_1_simulation.simulation - [INFO] - Setting up entities from map data...
+2025-10-14 19:08:53 - skymind_sim.layer_1_simulation.simulation - [WARNING] - Config `num_drones` (3) does not match `start_positions` in map (2). Using positions from map file.
+2025-10-14 19:08:53 - Drone_0 - [INFO] - Drone 0 created at position (5, 5). Move cooldown set to 6 frames for speed 5.0 grid/s at 30 FPS.
+2025-10-14 19:08:53 - Drone_1 - [INFO] - Drone 1 created at position (10, 50). Move cooldown set to 6 frames for speed 5.0 grid/s at 30 FPS.
+2025-10-14 19:08:53 - skymind_sim.layer_1_simulation.simulation - [INFO] - Simulation engine initialized successfully.
+2025-10-14 19:08:53 - skymind_sim.layer_1_simulation.simulation - [INFO] - Grid: 80x60, Drones: 2
+2025-10-14 19:08:53 - skymind_main - [INFO] - Initializing Pygame renderer...
+2025-10-14 19:08:53 - skymind_sim.layer_0_presentation.renderer - [INFO] - Initializing Pygame Renderer...
+2025-10-14 19:08:54 - skymind_sim.layer_0_presentation.renderer - [INFO] - Pygame Renderer initialized successfully.
+2025-10-14 19:08:54 - skymind_sim.layer_0_presentation.renderer - [INFO] - Loading assets...
+2025-10-14 19:08:54 - skymind_sim.layer_0_presentation.renderer - [INFO] - Assets loaded successfully.
+2025-10-14 19:08:54 - skymind_main - [INFO] - Starting the main application loop...
+2025-10-14 19:08:54 - skymind_main - [CRITICAL] - An unexpected critical error occurred: 'Scheduler' object has no attribute 'agents'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\run_and_visualize.py", line 65, in main
+    renderer.render(simulation.grid, simulation.scheduler.agents)
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Scheduler' object has no attribute 'agents'
+2025-10-14 19:08:54 - skymind_main - [INFO] - Shutting down SkyMind Simulator.
+2025-10-14 19:10:01 - skymind_main - [INFO] - Logger 'skymind_main' configured with level INFO.
+2025-10-14 19:10:01 - skymind_main - [INFO] - Log output will be saved to: D:\Payannameh\SkyMind_Sim\data\simulation_logs\sim_run.log
+2025-10-14 19:10:01 - skymind_main - [INFO] - ========================================
+2025-10-14 19:10:01 - skymind_main - [INFO] -   SkyMind Simulator Application Starting  
+2025-10-14 19:10:01 - skymind_main - [INFO] - ========================================
+2025-10-14 19:10:01 - skymind_main - [INFO] - Initializing simulation...
+2025-10-14 19:10:01 - skymind_sim.layer_1_simulation.simulation - [INFO] - Initializing the simulation engine...
+2025-10-14 19:10:01 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Scheduler initialized.
+2025-10-14 19:10:01 - skymind_sim.layer_1_simulation.simulation - [INFO] - Successfully loaded map file from 'data\maps\simple_map.json'.
+2025-10-14 19:10:01 - skymind_sim.layer_1_simulation.simulation - [INFO] - Setting up environment from map data...
+2025-10-14 19:10:01 - skymind_sim.layer_1_simulation.world.grid - [INFO] - Grid created successfully with dimensions 80x60 and cell size 20px.
+2025-10-14 19:10:01 - skymind_sim.layer_1_simulation.simulation - [INFO] - Environment setup complete. Grid size: 80x60.
+2025-10-14 19:10:01 - skymind_sim.layer_1_simulation.simulation - [INFO] - Setting up entities from map data...
+2025-10-14 19:10:01 - skymind_sim.layer_1_simulation.simulation - [WARNING] - Config `num_drones` (3) does not match `start_positions` in map (2). Using positions from map file.
+2025-10-14 19:10:01 - Drone_0 - [INFO] - Drone 0 created at position (5, 5). Move cooldown set to 6 frames for speed 5.0 grid/s at 30 FPS.
+2025-10-14 19:10:01 - Drone_1 - [INFO] - Drone 1 created at position (10, 50). Move cooldown set to 6 frames for speed 5.0 grid/s at 30 FPS.
+2025-10-14 19:10:01 - skymind_sim.layer_1_simulation.simulation - [INFO] - Simulation engine initialized successfully.
+2025-10-14 19:10:01 - skymind_sim.layer_1_simulation.simulation - [INFO] - Grid: 80x60, Drones: 2
+2025-10-14 19:10:01 - skymind_main - [INFO] - Initializing Pygame renderer...
+2025-10-14 19:10:01 - skymind_sim.layer_0_presentation.renderer - [INFO] - Initializing Pygame Renderer...
+2025-10-14 19:10:01 - skymind_sim.layer_0_presentation.renderer - [INFO] - Pygame Renderer initialized successfully.
+2025-10-14 19:10:01 - skymind_sim.layer_0_presentation.renderer - [INFO] - Loading assets...
+2025-10-14 19:10:01 - skymind_sim.layer_0_presentation.renderer - [INFO] - Assets loaded successfully.
+2025-10-14 19:10:01 - skymind_main - [INFO] - Starting the main application loop...
+2025-10-14 19:10:29 - skymind_main - [INFO] - Shutting down SkyMind Simulator.
+2025-10-14 19:11:14 - skymind_main - [INFO] - Logger 'skymind_main' configured with level INFO.
+2025-10-14 19:11:14 - skymind_main - [INFO] - Log output will be saved to: D:\Payannameh\SkyMind_Sim\data\simulation_logs\sim_run.log
+2025-10-14 19:11:14 - skymind_main - [INFO] - ========================================
+2025-10-14 19:11:14 - skymind_main - [INFO] -   SkyMind Simulator Application Starting  
+2025-10-14 19:11:14 - skymind_main - [INFO] - ========================================
+2025-10-14 19:11:14 - skymind_main - [INFO] - Initializing simulation...
+2025-10-14 19:11:14 - skymind_sim.layer_1_simulation.simulation - [INFO] - Initializing the simulation engine...
+2025-10-14 19:11:14 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Scheduler initialized.
+2025-10-14 19:11:14 - skymind_sim.layer_1_simulation.simulation - [INFO] - Successfully loaded map file from 'data\maps\simple_map.json'.
+2025-10-14 19:11:14 - skymind_sim.layer_1_simulation.simulation - [INFO] - Setting up environment from map data...
+2025-10-14 19:11:14 - skymind_sim.layer_1_simulation.world.grid - [INFO] - Grid created successfully with dimensions 80x60 and cell size 20px.
+2025-10-14 19:11:14 - skymind_sim.layer_1_simulation.simulation - [INFO] - Environment setup complete. Grid size: 80x60.
+2025-10-14 19:11:14 - skymind_sim.layer_1_simulation.simulation - [INFO] - Setting up entities from map data...
+2025-10-14 19:11:14 - skymind_sim.layer_1_simulation.simulation - [WARNING] - Config `num_drones` (3) does not match `start_positions` in map (2). Using positions from map file.
+2025-10-14 19:11:14 - Drone_0 - [INFO] - Drone 0 created at position (5, 5). Move cooldown set to 6 frames for speed 5.0 grid/s at 30 FPS.
+2025-10-14 19:11:14 - Drone_1 - [INFO] - Drone 1 created at position (10, 50). Move cooldown set to 6 frames for speed 5.0 grid/s at 30 FPS.
+2025-10-14 19:11:14 - skymind_sim.layer_1_simulation.simulation - [INFO] - Simulation engine initialized successfully.
+2025-10-14 19:11:14 - skymind_sim.layer_1_simulation.simulation - [INFO] - Grid: 80x60, Drones: 2
+2025-10-14 19:11:14 - skymind_main - [INFO] - Initializing Pygame renderer...
+2025-10-14 19:11:14 - skymind_sim.layer_0_presentation.renderer - [INFO] - Initializing Pygame Renderer...
+2025-10-14 19:11:14 - skymind_sim.layer_0_presentation.renderer - [INFO] - Pygame Renderer initialized successfully.
+2025-10-14 19:11:14 - skymind_sim.layer_0_presentation.renderer - [INFO] - Loading assets...
+2025-10-14 19:11:14 - skymind_sim.layer_0_presentation.renderer - [INFO] - Assets loaded successfully.
+2025-10-14 19:11:14 - skymind_main - [INFO] - Starting the main application loop...
+2025-10-14 19:11:17 - skymind_main - [INFO] - Shutting down SkyMind Simulator.
+2025-10-14 19:56:32 - __main__ - [INFO] - Logger '__main__' configured with level INFO.
+2025-10-14 19:56:32 - __main__ - [INFO] - Log output will be saved to: D:\Payannameh\SkyMind_Sim\data\simulation_logs\sim_run.log
+2025-10-14 19:56:32 - __main__ - [INFO] - Application starting...
+2025-10-14 19:56:32 - __main__ - [INFO] - Today's Date (Jalali): 1404/07/22 | Gregorian: 2025/10/14
+2025-10-14 19:56:32 - skymind_sim.layer_1_simulation.simulation - [INFO] - Initializing the simulation engine...
+2025-10-14 19:56:32 - skymind_sim.layer_1_simulation.simulation - [INFO] - Attempting to load map from absolute path: D:\Payannameh\data/maps/simple_map.json
+2025-10-14 19:56:32 - skymind_sim.layer_1_simulation.simulation - [CRITICAL] - FATAL: Failed to load or parse map file at 'D:\Payannameh\data/maps/simple_map.json'. Error: [Errno 2] No such file or directory: 'D:\\Payannameh\\data/maps/simple_map.json'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 44, in _load_map
+    with open(map_path, 'r', encoding='utf-8') as f:
+         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'D:\\Payannameh\\data/maps/simple_map.json'
+2025-10-14 19:56:32 - __main__ - [CRITICAL] - An unhandled exception occurred: [Errno 2] No such file or directory: 'D:\\Payannameh\\data/maps/simple_map.json'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\run_and_visualize.py", line 42, in main
+    simulation = Simulation(config_manager)
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 23, in __init__
+    self._load_map()
+    ~~~~~~~~~~~~~~^^
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 44, in _load_map
+    with open(map_path, 'r', encoding='utf-8') as f:
+         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'D:\\Payannameh\\data/maps/simple_map.json'
+2025-10-14 19:57:58 - __main__ - [INFO] - Logger '__main__' configured with level INFO.
+2025-10-14 19:57:58 - __main__ - [INFO] - Log output will be saved to: D:\Payannameh\SkyMind_Sim\data\simulation_logs\sim_run.log
+2025-10-14 19:57:58 - __main__ - [INFO] - Application starting...
+2025-10-14 19:57:58 - __main__ - [INFO] - Today's Date (Jalali): 1404/07/22 | Gregorian: 2025/10/14
+2025-10-14 19:57:58 - skymind_sim.layer_1_simulation.simulation - [INFO] - Initializing the simulation engine...
+2025-10-14 19:57:58 - skymind_sim.layer_1_simulation.simulation - [INFO] - Attempting to load map from absolute path: D:\Payannameh\data/maps/simple_map.json
+2025-10-14 19:57:58 - skymind_sim.layer_1_simulation.simulation - [CRITICAL] - FATAL: Failed to load or parse map file at 'D:\Payannameh\data/maps/simple_map.json'. Error: [Errno 2] No such file or directory: 'D:\Payannameh\data/maps/simple_map.json'
+2025-10-14 19:57:58 - __main__ - [CRITICAL] - An unhandled exception occurred: [Errno 2] No such file or directory: 'D:\\Payannameh\\data/maps/simple_map.json'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\run_and_visualize.py", line 42, in main
+    simulation = Simulation(config_manager)
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 26, in __init__
+    self._load_map()
+    ~~~~~~~~~~~~~~^^
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 31, in _load_map
+    with open(self.map_path, 'r', encoding='utf-8') as f:
+         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'D:\\Payannameh\\data/maps/simple_map.json'
+2025-10-14 20:00:14 - __main__ - [INFO] - Logger '__main__' configured with level INFO.
+2025-10-14 20:00:14 - __main__ - [INFO] - Log output will be saved to: D:\Payannameh\SkyMind_Sim\data\simulation_logs\sim_run.log
+2025-10-14 20:00:14 - __main__ - [INFO] - Application starting...
+2025-10-14 20:00:14 - __main__ - [INFO] - Today's Date (Jalali): 1404/07/22 | Gregorian: 2025/10/14
+2025-10-14 20:00:14 - skymind_sim.layer_1_simulation.simulation - [INFO] - Initializing the simulation engine...
+2025-10-14 20:00:14 - skymind_sim.layer_1_simulation.simulation - [INFO] - Attempting to load map from calculated absolute path: D:\Payannameh\SkyMind_Sim\data/maps/simple_map.json
+2025-10-14 20:00:14 - skymind_sim.layer_1_simulation.simulation - [INFO] - Successfully loaded map from 'D:\Payannameh\SkyMind_Sim\data/maps/simple_map.json'
+2025-10-14 20:00:14 - __main__ - [CRITICAL] - An unhandled exception occurred: Renderer.__init__() missing 3 required positional arguments: 'cell_size', 'font_path', and 'font_size'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\run_and_visualize.py", line 43, in main
+    renderer = Renderer(simulation, config_manager)
+TypeError: Renderer.__init__() missing 3 required positional arguments: 'cell_size', 'font_path', and 'font_size'
+2025-10-14 20:01:38 - __main__ - [INFO] - Logger '__main__' configured with level INFO.
+2025-10-14 20:01:38 - __main__ - [INFO] - Log output will be saved to: D:\Payannameh\SkyMind_Sim\data\simulation_logs\sim_run.log
+2025-10-14 20:01:38 - __main__ - [INFO] - Application starting...
+2025-10-14 20:01:38 - __main__ - [INFO] - Today's Date (Jalali): 1404/07/22 | Gregorian: 2025/10/14
+2025-10-14 20:01:38 - skymind_sim.layer_1_simulation.simulation - [INFO] - Initializing the simulation engine...
+2025-10-14 20:01:38 - skymind_sim.layer_1_simulation.simulation - [INFO] - Attempting to load map from calculated absolute path: D:\Payannameh\SkyMind_Sim\data/maps/simple_map.json
+2025-10-14 20:01:38 - skymind_sim.layer_1_simulation.simulation - [INFO] - Successfully loaded map from 'D:\Payannameh\SkyMind_Sim\data/maps/simple_map.json'
+2025-10-14 20:01:38 - skymind_sim.layer_0_presentation.renderer - [INFO] - Initializing Renderer...
+2025-10-14 20:01:38 - skymind_sim.layer_0_presentation.renderer - [WARNING] - Could not load custom font from 'D:\Payannameh\SkyMind_Sim\assets/fonts/Vazirmatn-Regular.ttf'. Falling back to default font. Error: font not initialized
+2025-10-14 20:01:38 - __main__ - [CRITICAL] - An unhandled exception occurred: font not initialized
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_0_presentation\renderer.py", line 46, in __init__
+    self.font = pygame.font.Font(self.font_path, font_size)
+                ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pygame.error: font not initialized
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\run_and_visualize.py", line 43, in main
+    renderer = Renderer(simulation, config_manager)
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_0_presentation\renderer.py", line 50, in __init__
+    self.font = pygame.font.Font(None, font_size) # استفاده از فونت پیش‌فرض Pygame
+                ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+pygame.error: font not initialized
+2025-10-14 20:10:24,044 - __main__ - INFO - Logging setup complete. Level: INFO. Log file: D:\Payannameh\SkyMind_Sim\data\simulation_logs\sim_run.log
+2025-10-14 20:10:24,045 - __main__ - INFO - ==================================================
+2025-10-14 20:10:24,045 - __main__ - INFO - SkyMind Simulation Application Starting...
+2025-10-14 20:10:24,046 - __main__ - INFO - Run Date (Jalali): 1404/07/22 | Gregorian: 2025-10-14
+2025-10-14 20:10:24,046 - __main__ - INFO - ==================================================
+2025-10-14 20:10:24,047 - skymind_sim.layer_1_simulation.simulation - INFO - Initializing the simulation engine...
+2025-10-14 20:10:24,048 - skymind_sim.layer_1_simulation.simulation - INFO - Attempting to load map from calculated absolute path: D:\Payannameh\SkyMind_Sim\data/maps/simple_map.json
+2025-10-14 20:10:24,048 - skymind_sim.layer_1_simulation.simulation - INFO - Successfully loaded map from 'D:\Payannameh\SkyMind_Sim\data/maps/simple_map.json'
+2025-10-14 20:10:24,325 - skymind_sim.layer_0_presentation.renderer - INFO - Initializing Renderer...
+2025-10-14 20:10:24,327 - skymind_sim.layer_0_presentation.renderer - INFO - Font loaded successfully from: D:\Payannameh\SkyMind_Sim\assets/fonts/Vazirmatn-Regular.ttf
+2025-10-14 20:10:24,386 - skymind_sim.layer_0_presentation.renderer - INFO - Renderer initialized with screen size 800x600
+2025-10-14 20:10:24,390 - __main__ - INFO - Target FPS set to 60
+2025-10-14 20:10:34,399 - __main__ - INFO - Pygame has been shut down.
+2025-10-14 20:10:34,400 - __main__ - INFO - Application finished.
+2025-10-14 20:14:52,770 - __main__ - INFO - Logging setup complete. Level: INFO. Log file: D:\Payannameh\SkyMind_Sim\data\simulation_logs\sim_run.log
+2025-10-14 20:14:52,771 - __main__ - INFO - ==================================================
+2025-10-14 20:14:52,771 - __main__ - INFO - SkyMind Simulation Application Starting...
+2025-10-14 20:14:52,772 - __main__ - INFO - Run Date (Jalali): 1404/07/22 | Gregorian: 2025-10-14
+2025-10-14 20:14:52,772 - __main__ - INFO - ==================================================
+2025-10-14 20:14:52,772 - skymind_sim.layer_1_simulation.simulation - INFO - Initializing the simulation engine...
+2025-10-14 20:14:52,773 - skymind_sim.layer_1_simulation.simulation - INFO - Attempting to load map from calculated absolute path: D:\Payannameh\SkyMind_Sim\data/maps/simple_map.json
+2025-10-14 20:14:52,774 - skymind_sim.layer_1_simulation.simulation - INFO - Successfully loaded map from 'D:\Payannameh\SkyMind_Sim\data/maps/simple_map.json' with 9 obstacles and 2 drones.
+2025-10-14 20:14:52,775 - skymind_sim.layer_1_simulation.simulation - INFO - World size set to: 20x15
+2025-10-14 20:14:52,969 - skymind_sim.layer_0_presentation.renderer - INFO - Initializing Renderer...
+2025-10-14 20:14:53,037 - skymind_sim.layer_0_presentation.renderer - INFO - Font loaded successfully from: D:\Payannameh\SkyMind_Sim\assets/fonts/Vazirmatn-Regular.ttf
+2025-10-14 20:14:53,038 - skymind_sim.layer_0_presentation.renderer - INFO - Renderer initialized with screen size 800x600
+2025-10-14 20:14:53,039 - __main__ - INFO - Target FPS set to 60
+2025-10-14 20:15:10,380 - __main__ - INFO - Pygame has been shut down.
+2025-10-14 20:15:10,381 - __main__ - INFO - Application finished.
+2025-10-14 20:23:29,447 - __main__ - INFO - Logging setup complete. Level: INFO. Log file: D:\Payannameh\SkyMind_Sim\data\simulation_logs\sim_run.log
+2025-10-14 20:23:29,447 - __main__ - INFO - ==================================================
+2025-10-14 20:23:29,448 - __main__ - INFO - SkyMind Simulation Application Starting...
+2025-10-14 20:23:29,448 - __main__ - INFO - Run Date (Jalali): 1404/07/22 | Gregorian: 2025-10-14
+2025-10-14 20:23:29,449 - __main__ - INFO - ==================================================
+2025-10-14 20:23:29,449 - skymind_sim.layer_1_simulation.simulation - INFO - Initializing the simulation engine...
+2025-10-14 20:23:29,451 - skymind_sim.layer_1_simulation.simulation - INFO - Attempting to load map from: D:\Payannameh\SkyMind_Sim\data/maps/simple_map.json
+2025-10-14 20:23:29,452 - skymind_sim.layer_1_simulation.world.grid - INFO - Grid created successfully with dimensions 20x15 and cell size 20px.
+2025-10-14 20:23:29,453 - skymind_sim.layer_1_simulation.simulation - INFO - Successfully loaded map: 9 obstacles, 2 drones.
+2025-10-14 20:23:29,453 - skymind_sim.layer_1_simulation.simulation - INFO - World grid initialized with size: 20x15
+2025-10-14 20:23:29,453 - skymind_sim.layer_3_intelligence.pathfinding.a_star - INFO - AStarPlanner initialized with a grid of size (20, 15)
+2025-10-14 20:23:29,454 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with AStarPlanner.
+2025-10-14 20:23:29,454 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - Attempting to find path from (2, 2) to (15, 4)
+2025-10-14 20:23:29,455 - skymind_sim.layer_3_intelligence.pathfinding.a_star - INFO - Path found from (2, 2) to (15, 4).
+2025-10-14 20:23:29,456 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - Path found with 14 steps.
+2025-10-14 20:23:29,742 - skymind_sim.layer_0_presentation.renderer - INFO - Initializing Renderer...
+2025-10-14 20:23:29,841 - skymind_sim.layer_0_presentation.renderer - INFO - Font loaded successfully from: D:\Payannameh\SkyMind_Sim\assets/fonts/Vazirmatn-Regular.ttf
+2025-10-14 20:23:29,842 - skymind_sim.layer_0_presentation.renderer - INFO - Renderer initialized with screen size 800x600
+2025-10-14 20:23:29,842 - __main__ - INFO - Target FPS set to 60
+2025-10-14 20:23:37,235 - __main__ - INFO - Pygame has been shut down.
+2025-10-14 20:23:37,239 - __main__ - INFO - Application finished.
+2025-10-14 20:29:12,668 - __main__ - INFO - Logging setup complete. Level: INFO. Log file: D:\Payannameh\SkyMind_Sim\data\simulation_logs\sim_run.log
+2025-10-14 20:29:12,669 - __main__ - INFO - ==================================================
+2025-10-14 20:29:12,669 - __main__ - INFO - SkyMind Simulation Application Starting...
+2025-10-14 20:29:12,670 - __main__ - INFO - Run Date (Jalali): 1404/07/22 | Gregorian: 2025-10-14
+2025-10-14 20:29:12,671 - __main__ - INFO - ==================================================
+2025-10-14 20:29:12,671 - skymind_sim.layer_1_simulation.simulation - INFO - Initializing the simulation engine...
+2025-10-14 20:29:12,672 - skymind_sim.layer_1_simulation.simulation - INFO - Attempting to load map from: D:\Payannameh\SkyMind_Sim\data\maps\data/maps/simple_map.json
+2025-10-14 20:29:12,673 - skymind_sim.layer_1_simulation.simulation - ERROR - Map file not found at D:\Payannameh\SkyMind_Sim\data\maps\data/maps/simple_map.json
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 50, in _load_map
+    with open(map_path, 'r') as f:
+         ~~~~^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'D:\\Payannameh\\SkyMind_Sim\\data\\maps\\data/maps/simple_map.json'
+2025-10-14 20:29:12,681 - skymind_sim.layer_1_simulation.world.grid - INFO - Grid created successfully with dimensions 20x15 and cell size 20px.
+2025-10-14 20:29:12,681 - skymind_sim.layer_1_simulation.simulation - INFO - World grid initialized with size: 20x15
+2025-10-14 20:29:12,682 - skymind_sim.layer_3_intelligence.pathfinding.a_star - INFO - AStarPlanner initialized with a grid of size (20, 15)
+2025-10-14 20:29:12,682 - skymind_sim.layer_3_intelligence.pathfinding.path_planner - INFO - PathPlanner initialized with AStarPlanner.
+2025-10-14 20:29:12,683 - skymind_sim.layer_1_simulation.simulation - WARNING - No drones available to plan paths for.
+2025-10-14 20:29:12,966 - skymind_sim.layer_0_presentation.renderer - INFO - Initializing Renderer...
+2025-10-14 20:29:13,047 - skymind_sim.layer_0_presentation.renderer - INFO - Font loaded successfully from: D:\Payannameh\SkyMind_Sim\assets/fonts/Vazirmatn-Regular.ttf
+2025-10-14 20:29:13,060 - skymind_sim.layer_0_presentation.renderer - INFO - Renderer initialized with screen size 800x600
+2025-10-14 20:29:13,074 - __main__ - INFO - Target FPS set to 60
+2025-10-14 20:29:13,091 - __main__ - CRITICAL - An unhandled exception occurred: 'Simulation' object has no attribute 'world_width'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\run_and_visualize.py", line 105, in main
+    renderer.render()
+    ~~~~~~~~~~~~~~~^^
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_0_presentation\renderer.py", line 67, in render
+    self._draw_grid()
+    ~~~~~~~~~~~~~~~^^
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_0_presentation\renderer.py", line 80, in _draw_grid
+    map_width_px = self.simulation.world_width * self.cell_size
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Simulation' object has no attribute 'world_width'
+2025-10-14 20:29:13,159 - __main__ - INFO - Pygame has been shut down.
+2025-10-14 20:29:13,160 - __main__ - INFO - Application finished.
+2025-10-14 20:32:09,858 - skymind_sim - INFO - Logging setup complete. Level: INFO. Log file: D:\Payannameh\SkyMind_Sim\data\simulation_logs\sim_run.log

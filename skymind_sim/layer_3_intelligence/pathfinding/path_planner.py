@@ -1,45 +1,32 @@
-# ============================================================
-#  File: path_planner.py
-#  Layer: L3 - Intelligence (A* Path Planning)
-#  Author: Reza – October 2025
-# ============================================================
+# مسیر فایل: skymind_sim/layer_3_intelligence/pathfinding/path_planner.py
 
-import math
-from skymind_sim.layer_3_intelligence.pathfinding.a_star import AStar
+import logging
+from typing import List, Tuple
+
+# ایمپورت صحیح کلاس AStarPlanner
+from skymind_sim.layer_3_intelligence.pathfinding.a_star import AStarPlanner
+# ایمپورت کلاس Grid برای Type Hinting و بررسی نوع
+from skymind_sim.layer_1_simulation.world.grid import Grid
 
 class PathPlanner:
-    """A* path planning manager for drones."""
+    def __init__(self, grid: Grid):
+        self.logger = logging.getLogger(__name__)
+        
+        if not isinstance(grid, Grid):
+            raise TypeError(f"PathPlanner expects a Grid object, but got {type(grid)}")
+        
+        self.astar_planner = AStarPlanner(grid)
+        self.logger.info("PathPlanner initialized with AStarPlanner.")
 
-    def __init__(self, environment):
-        self.env = environment
-        self.astar = AStar(environment)
+    def find_path(self, start_pos: Tuple[int, int], end_pos: Tuple[int, int]) -> List[Tuple[int, int]]:
+        self.logger.info(f"Attempting to find path from {start_pos} to {end_pos}")
+        
+        # فرض بر اینکه متد در A*، `plan_path` نام دارد
+        path = self.astar_planner.plan_path(start_pos, end_pos) 
 
-    def find_nearest_goal(self, start):
-        """
-        Find the nearest goal (x, y) for the drone based on Euclidean distance.
-        Compatible with Drone.compute_path().
-        """
-        goals = []
-        # در محیط بررسی کن آیا پهپادها یا اهداف درون JSON تعریف شده‌اند
-        for drone_data in getattr(self.env, "drones", []):
-            if hasattr(drone_data, "goal"):
-                goals.append(drone_data.goal)
-            elif isinstance(drone_data, dict) and "goal" in drone_data:
-                goals.append(drone_data["goal"])
-
-        if not goals:
-            return None
-
-        # انتخاب نزدیک‌ترین هدف نسبت به نقطه شروع
-        nearest = min(goals, key=lambda g: math.dist(start, (g["x"], g["y"])))
-        return (nearest["x"], nearest["y"])
-
-    def plan_path(self, start, goal):
-        """
-        Compute the A* path between start and goal positions.
-        Returns a list of (x, y) coords.
-        """
-        if not goal:
-            return []
-
-        return self.astar.find_path(start, goal)
+        if path:
+            self.logger.info(f"Path found with {len(path)} steps.")
+        else:
+            self.logger.warning(f"No path found from {start_pos} to {end_pos}.")
+            
+        return path
