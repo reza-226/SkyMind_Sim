@@ -75,8 +75,10 @@ class Simulation:
                 start_pos = (start_x, start_y)
                 break  # فعلاً هر موقعیتی معتبر است
 
-            # ساخت پهپاد بدون ارسال drone_id. شناسه به صورت خودکار توسط کلاس Drone تولید می‌شود.
-            drone = Drone(position=start_pos, grid=self.grid)
+            # --- START: CHANGE HERE ---
+            # پاس دادن دیکشنری config به سازنده Drone
+            drone = Drone(config=self.config, position=start_pos, grid=self.grid)
+            # --- END: CHANGE HERE ---
 
             # افزودن پهپاد به زمان‌بند تا در هر گام شبیه‌سازی، متد step آن فراخوانی شود.
             self.scheduler.add(drone)

@@ -1,87 +1,81 @@
 # =========================================================================
 #  File: run_and_visualize.py
-#  Author: Reza & AI Assistant | 2025-10-14 (Finalized Version)
-#  Description: Entry point for running and visualizing the SkyMind simulation.
+#  Author: Reza & AI Assistant | 2025-10-14 (Updated for Main Loop)
+#  Description: Main entry point to run the simulation with visualization.
 # =========================================================================
 
 import logging
 import sys
 import os
-import pygame
+import pygame  # <--- ایمپورت pygame برای مدیریت حلقه
 
-# افزودن مسیر ریشه پروژه به sys.path تا ایمپورت‌ها به درستی کار کنند
-# This ensures that 'skymind_sim' can be imported as a top-level package
-project_root = os.path.dirname(os.path.abspath(__file__))
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
+# افزودن مسیر ریشه پروژه به sys.path برای ایمپورت‌های ماژولار
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__))))
 
-# ایمپورت ماژول‌های پروژه پس از تنظیم path
-from skymind_sim.config import load_config
 from skymind_sim.utils.logger import setup_logging
+from skymind_sim.config import load_config
 from skymind_sim.layer_1_simulation.simulation import Simulation
 from skymind_sim.layer_0_presentation.renderer import Renderer
 
-# تعریف یک نام ثابت برای لاگر اصلی که از خطا جلوگیری می‌کند
-MAIN_LOGGER_NAME = 'skymind_main'
+# تعریف نام اصلی لاگر
+MAIN_LOGGER_NAME = "skymind_main"
 
 def main():
     """
-    نقطه ورود اصلی برنامه.
-    کانفیگ را بارگیری کرده، لاگ‌گیری را تنظیم می‌کند، شبیه‌سازی و رندرکننده را
-    راه‌اندازی کرده و حلقه اصلی برنامه را اجرا می‌کند.
+    تابع اصلی برای راه‌اندازی و اجرای شبیه‌سازی.
     """
-    # 1. بارگیری تنظیمات و پیکربندی لاگر
+    # بارگذاری کانفیگ و راه‌اندازی لاگر
     config = load_config()
     setup_logging(config, main_logger_name=MAIN_LOGGER_NAME)
+    
     main_logger = logging.getLogger(MAIN_LOGGER_NAME)
+    
+    main_logger.info("========================================")
+    main_logger.info("  SkyMind Simulator Application Starting  ")
+    main_logger.info("========================================")
 
     try:
-        main_logger.info("=" * 40)
-        main_logger.info("  SkyMind Simulator Application Starting")
-        main_logger.info("=" * 40)
-
-        # 2. راه‌اندازی موتور شبیه‌سازی
+        # ۱. ساخت شبیه‌ساز
         main_logger.info("Initializing simulation...")
         simulation = Simulation(config)
 
-        # 3. راه‌اندازی موتور رندر (Pygame)
+        # ۲. ساخت رندرکننده
         main_logger.info("Initializing Pygame renderer...")
         renderer = Renderer(config)
-        renderer.load_assets()
+        renderer.load_assets() # بارگذاری تصاویر و فونت‌ها
 
-        # 4. ورود به حلقه اصلی برنامه
+        # ۳. حلقه اصلی برنامه
         main_logger.info("Starting the main application loop...")
-
-        # نیازی به simulation.start() نیست. حلقه زیر کار را شروع می‌کند.
         
-        running = True
+        # استفاده از ساعت Pygame برای کنترل نرخ فریم
         clock = pygame.time.Clock()
-
+        running = True
+        
         while running:
-            # --- بخش ۱: مدیریت ورودی و رویدادها (Event Handling) ---
+            # مدیریت رویدادها (مانند بستن پنجره)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-                # TODO: مدیریت سایر رویدادها مانند ورودی کیبورد، کلیک ماوس و ...
 
-            # --- بخش ۲: به‌روزرسانی منطق شبیه‌سازی (Update State) ---
+            # >>> بخش کلیدی جدید <<<
+            # اجرای یک گام از منطق شبیه‌سازی
             simulation.step()
 
-            # --- بخش ۳: رندر کردن وضعیت فعلی (Render Frame) ---
-            renderer.render(simulation.grid, simulation.entities)
+            # رندر کردن وضعیت فعلی شبیه‌سازی
+            renderer.render(simulation.grid, simulation.scheduler.agents)
+            
+            # کنترل نرخ فریم (مثلاً 30 فریم بر ثانیه)
+            clock.tick(renderer.fps)
 
-            # --- بخش ۴: کنترل نرخ فریم (Frame Rate Control) ---
-            # اطمینان از اینکه حلقه با سرعتی بیش از حد مشخص شده در کانفیگ اجرا نشود.
-            clock.tick(int(config['renderer']['fps']))
-
+    except (ValueError, FileNotFoundError) as e:
+        main_logger.error(f"A critical error occurred: {e}")
+        sys.exit(1)
     except Exception as e:
-        # ثبت هرگونه خطای پیش‌بینی نشده که باعث توقف برنامه شود
-        main_logger.critical(f"A fatal error occurred: {e}", exc_info=True)
+        main_logger.critical(f"An unexpected critical error occurred: {e}", exc_info=True)
+        sys.exit(1)
     finally:
-        # این بخش همیشه اجرا می‌شود، چه برنامه با موفقیت تمام شود چه با خطا
         main_logger.info("Shutting down SkyMind Simulator.")
         pygame.quit()
-        sys.exit()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

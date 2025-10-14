@@ -176,3 +176,75 @@ AttributeError: 'Simulation' object has no attribute 'start'
 2025-10-14 18:33:55 - skymind_sim.layer_0_presentation.renderer - [INFO] - Assets loaded successfully.
 2025-10-14 18:33:55 - skymind_main - [INFO] - Starting the main application loop...
 2025-10-14 18:33:59 - skymind_main - [INFO] - Shutting down SkyMind Simulator.
+2025-10-14 18:41:24 - skymind_main - [INFO] - Logger 'skymind_main' configured with level INFO.
+2025-10-14 18:41:24 - skymind_main - [INFO] - Log output will be saved to: D:\Payannameh\SkyMind_Sim\data\simulation_logs\sim_run.log
+2025-10-14 18:41:24 - skymind_main - [INFO] - ========================================
+2025-10-14 18:41:24 - skymind_main - [INFO] -   SkyMind Simulator Application Starting  
+2025-10-14 18:41:24 - skymind_main - [INFO] - ========================================
+2025-10-14 18:41:24 - skymind_main - [INFO] - Initializing simulation...
+2025-10-14 18:41:24 - skymind_sim.layer_1_simulation.simulation - [INFO] - Initializing the simulation engine...
+2025-10-14 18:41:24 - skymind_sim.layer_1_simulation.world.grid - [INFO] - Grid created successfully with dimensions 50x30 and cell size 20px.
+2025-10-14 18:41:24 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Scheduler initialized.
+2025-10-14 18:41:24 - skymind_sim.layer_1_simulation.simulation - [INFO] - Setting up 3 drone(s)...
+2025-10-14 18:41:24 - skymind_main - [CRITICAL] - An unexpected critical error occurred: Drone.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\run_and_visualize.py", line 40, in main
+    simulation = Simulation(config)
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 54, in __init__
+    self._setup_entities()
+    ~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 79, in _setup_entities
+    drone = Drone(position=start_pos, grid=self.grid)
+TypeError: Drone.__init__() missing 1 required positional argument: 'config'
+2025-10-14 18:41:24 - skymind_main - [INFO] - Shutting down SkyMind Simulator.
+2025-10-14 18:44:44 - skymind_main - [INFO] - Logger 'skymind_main' configured with level INFO.
+2025-10-14 18:44:44 - skymind_main - [INFO] - Log output will be saved to: D:\Payannameh\SkyMind_Sim\data\simulation_logs\sim_run.log
+2025-10-14 18:44:44 - skymind_main - [INFO] - ========================================
+2025-10-14 18:44:44 - skymind_main - [INFO] -   SkyMind Simulator Application Starting  
+2025-10-14 18:44:44 - skymind_main - [INFO] - ========================================
+2025-10-14 18:44:44 - skymind_main - [INFO] - Initializing simulation...
+2025-10-14 18:44:44 - skymind_sim.layer_1_simulation.simulation - [INFO] - Initializing the simulation engine...
+2025-10-14 18:44:44 - skymind_sim.layer_1_simulation.world.grid - [INFO] - Grid created successfully with dimensions 50x30 and cell size 20px.
+2025-10-14 18:44:44 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Scheduler initialized.
+2025-10-14 18:44:44 - skymind_sim.layer_1_simulation.simulation - [INFO] - Setting up 3 drone(s)...
+2025-10-14 18:44:44 - skymind_sim.layer_1_simulation.entities.drone.Drone_1 - [INFO] - Drone 1 created at position (14, 14).
+2025-10-14 18:44:44 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=1, position=(14, 14))' added to the scheduler.
+2025-10-14 18:44:44 - skymind_sim.layer_1_simulation.entities.drone.Drone_2 - [INFO] - Drone 2 created at position (33, 14).
+2025-10-14 18:44:44 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=2, position=(33, 14))' added to the scheduler.
+2025-10-14 18:44:44 - skymind_sim.layer_1_simulation.entities.drone.Drone_3 - [INFO] - Drone 3 created at position (44, 28).
+2025-10-14 18:44:44 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=3, position=(44, 28))' added to the scheduler.
+2025-10-14 18:44:44 - skymind_sim.layer_1_simulation.simulation - [INFO] - Simulation engine initialized successfully.
+2025-10-14 18:44:44 - skymind_main - [CRITICAL] - An unexpected critical error occurred: 'Scheduler' object has no attribute 'get_agent_count'
+Traceback (most recent call last):
+  File "D:\Payannameh\SkyMind_Sim\run_and_visualize.py", line 40, in main
+    simulation = Simulation(config)
+  File "D:\Payannameh\SkyMind_Sim\skymind_sim\layer_1_simulation\simulation.py", line 57, in __init__
+    self.logger.info(f"Grid: {self.grid.width}x{self.grid.height}, Drones: {self.scheduler.get_agent_count()}")
+                                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Scheduler' object has no attribute 'get_agent_count'
+2025-10-14 18:44:44 - skymind_main - [INFO] - Shutting down SkyMind Simulator.
+2025-10-14 18:46:39 - skymind_main - [INFO] - Logger 'skymind_main' configured with level INFO.
+2025-10-14 18:46:39 - skymind_main - [INFO] - Log output will be saved to: D:\Payannameh\SkyMind_Sim\data\simulation_logs\sim_run.log
+2025-10-14 18:46:39 - skymind_main - [INFO] - ========================================
+2025-10-14 18:46:39 - skymind_main - [INFO] -   SkyMind Simulator Application Starting  
+2025-10-14 18:46:39 - skymind_main - [INFO] - ========================================
+2025-10-14 18:46:39 - skymind_main - [INFO] - Initializing simulation...
+2025-10-14 18:46:39 - skymind_sim.layer_1_simulation.simulation - [INFO] - Initializing the simulation engine...
+2025-10-14 18:46:39 - skymind_sim.layer_1_simulation.world.grid - [INFO] - Grid created successfully with dimensions 50x30 and cell size 20px.
+2025-10-14 18:46:39 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Scheduler initialized.
+2025-10-14 18:46:39 - skymind_sim.layer_1_simulation.simulation - [INFO] - Setting up 3 drone(s)...
+2025-10-14 18:46:39 - skymind_sim.layer_1_simulation.entities.drone.Drone_1 - [INFO] - Drone 1 created at position (20, 20).
+2025-10-14 18:46:39 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=1, position=(20, 20))' added to the scheduler.
+2025-10-14 18:46:39 - skymind_sim.layer_1_simulation.entities.drone.Drone_2 - [INFO] - Drone 2 created at position (4, 14).
+2025-10-14 18:46:39 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=2, position=(4, 14))' added to the scheduler.
+2025-10-14 18:46:39 - skymind_sim.layer_1_simulation.entities.drone.Drone_3 - [INFO] - Drone 3 created at position (46, 1).
+2025-10-14 18:46:39 - skymind_sim.layer_1_simulation.scheduler - [INFO] - Agent 'Drone(id=3, position=(46, 1))' added to the scheduler.
+2025-10-14 18:46:39 - skymind_sim.layer_1_simulation.simulation - [INFO] - Simulation engine initialized successfully.
+2025-10-14 18:46:39 - skymind_sim.layer_1_simulation.simulation - [INFO] - Grid: 50x30, Drones: 3
+2025-10-14 18:46:39 - skymind_main - [INFO] - Initializing Pygame renderer...
+2025-10-14 18:46:39 - skymind_sim.layer_0_presentation.renderer - [INFO] - Initializing Pygame Renderer...
+2025-10-14 18:46:40 - skymind_sim.layer_0_presentation.renderer - [INFO] - Pygame Renderer initialized successfully.
+2025-10-14 18:46:40 - skymind_sim.layer_0_presentation.renderer - [INFO] - Loading assets...
+2025-10-14 18:46:40 - skymind_sim.layer_0_presentation.renderer - [INFO] - Assets loaded successfully.
+2025-10-14 18:46:40 - skymind_main - [INFO] - Starting the main application loop...
+2025-10-14 18:46:57 - skymind_main - [INFO] - Shutting down SkyMind Simulator.
