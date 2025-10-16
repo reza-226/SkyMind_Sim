@@ -1,101 +1,91 @@
-# ============================================================
-#  File: asset_loader.py
-#  Layer: L0-Presentation
-#  Author: Reza & AI Assistant | 2025-10-13
-# ============================================================
+# skymind_sim/layer_0_presentation/asset_loader.py
 
 import pygame
 import os
-import logging
 from typing import Dict, Optional, Tuple
 
+from skymind_sim.utils.log_manager import LogManager
+
 class AssetLoader:
-    """
-    کلاسی برای مدیریت، بارگذاری و کش کردن منابع (assets) مانند تصاویر و فونت‌ها.
-    این کار از بارگذاری مکرر فایل‌ها از دیسک جلوگیری کرده و عملکرد را بهبود می‌بخشد.
-    """
-    def __init__(self, base_path: str):
-        """
-        سازنده کلاس AssetLoader.
+    """A singleton class to manage loading and accessing game assets like images and fonts."""
+    _instance = None
 
-        Args:
-            base_path (str): مسیر پوشه اصلی assets.
-        """
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(AssetLoader, cls).__new__(cls)
+        return cls._instance
+
+    def __init__(self, base_path: str = 'assets'):
+        # Check if already initialized to prevent re-initialization
+        if hasattr(self, '_initialized') and self._initialized:
+            return
+            
+        self.logger = LogManager.get_logger(__name__)
         self.base_path = base_path
-        self.image_path = os.path.join(base_path, 'images')
-        self.font_path = os.path.join(base_path, 'fonts')
+        self.images: Dict[str, pygame.Surface] = {}
+        self.fonts: Dict[str, str] = {}  # Store font paths
+        self._loaded_fonts: Dict[Tuple[str, int], pygame.font.Font] = {} # Cache for loaded font objects
         
-        self._image_cache: Dict[str, pygame.Surface] = {}
-        self._font_cache: Dict[Tuple[str, int], pygame.font.Font] = {}
-        
-        self.logger = logging.getLogger(__name__)
-        logging.basicConfig(level=logging.INFO)
-        self.logger.info(f"AssetLoader initialized with base path: {self.base_path}")
+        self.default_font = pygame.font.get_default_font()
 
-    def get_image(self, filename: str, scale: Optional[Tuple[int, int]] = None) -> Optional[pygame.Surface]:
-        """
-        یک تصویر را بارگذاری کرده و در صورت نیاز مقیاس آن را تغییر می‌دهد.
-        تصاویر بارگذاری شده برای استفاده‌های بعدی کش می‌شوند.
+        # --- START OF CHANGE ---
+        self._load_assets() # This line was missing!
+        # --- END OF CHANGE ---
 
-        Args:
-            filename (str): نام فایل تصویر.
-            scale (Optional[Tuple[int, int]]): اندازه جدید (عرض، ارتفاع) برای تصویر.
+        self._initialized = True
+        self.logger.info(f"AssetLoader initialized with base path: '{self.base_path}'")
 
-        Returns:
-            Optional[pygame.Surface]: شیء تصویر بارگذاری شده یا None در صورت بروز خطا.
-        """
-        cache_key = filename
-        if cache_key in self._image_cache:
-            img = self._image_cache[cache_key]
-        else:
-            full_path = os.path.join(self.image_path, filename)
+    def _load_assets(self):
+        """Automatically load all assets from subdirectories."""
+        image_path = os.path.join(self.base_path, 'images')
+        font_path = os.path.join(self.base_path, 'fonts')
+
+        # Load images
+        if os.path.isdir(image_path):
+            for filename in os.listdir(image_path):
+                name, ext = os.path.splitext(filename)
+                if ext.lower() in ['.png', '.jpg', '.jpeg', '.bmp']:
+                    full_path = os.path.join(image_path, filename)
+                    try:
+                        self.images[name] = pygame.image.load(full_path).convert_alpha()
+                        self.logger.info(f"Loaded image: '{name}' from {full_path}")
+                    except pygame.error as e:
+                        self.logger.error(f"Failed to load image {full_path}: {e}")
+
+        # Load font paths
+        if os.path.isdir(font_path):
+            for filename in os.listdir(font_path):
+                name, ext = os.path.splitext(filename)
+                if ext.lower() in ['.ttf', '.otf']:
+                    full_path = os.path.join(font_path, filename)
+                    self.fonts[name] = full_path
+                    self.logger.info(f"Registered font: '{name}' from {full_path}")
+
+    def get_image(self, name: str) -> pygame.Surface:
+        """Retrieves a pre-loaded image by its name (filename without extension)."""
+        if name not in self.images:
+            self.logger.warning(f"Attempted to get non-existent image '{name}'")
+            # Return a placeholder surface to avoid crashes
+            placeholder = pygame.Surface((50, 50))
+            placeholder.fill((255, 0, 255)) # Bright pink to indicate missing texture
+            return placeholder
+        return self.images[name]
+
+    def get_font(self, name: str, size: int) -> pygame.font.Font:
+        """Retrieves a font object by name and size, loading it if not already cached."""
+        font_key = (name, size)
+        if font_key in self._loaded_fonts:
+            return self._loaded_fonts[font_key]
+
+        if name in self.fonts:
             try:
-                img = pygame.image.load(full_path).convert_alpha()
-                self._image_cache[cache_key] = img
+                font = pygame.font.Font(self.fonts[name], size)
+                self._loaded_fonts[font_key] = font
+                return font
             except pygame.error as e:
-                self.logger.error(f"Failed to load image '{full_path}': {e}")
-                return None
+                self.logger.error(f"Could not load font '{name}' at size {size}: {e}")
         
-        if scale:
-            try:
-                return pygame.transform.smoothscale(img, scale)
-            except Exception as e:
-                self.logger.error(f"Failed to scale image '{filename}' to {scale}: {e}")
-                return img
-        
-        return img
-
-    def get_font(self, filename: str, size: int) -> Optional[pygame.font.Font]:
-        """
-        یک فونت را با اندازه مشخص بارگذاری می‌کند.
-        فونت‌های بارگذاری شده برای استفاده‌های بعدی کش می‌شوند.
-
-        Args:
-            filename (str): نام فایل فونت.
-            size (int): اندازه فونت.
-
-        Returns:
-            Optional[pygame.font.Font]: شیء فونت بارگذاری شده یا None در صورت بروز خطا.
-        """
-        cache_key = (filename, size)
-        if cache_key in self._font_cache:
-            return self._font_cache[cache_key]
-        
-        full_path = os.path.join(self.font_path, filename)
-        try:
-            font = pygame.font.Font(full_path, size)
-            self._font_cache[cache_key] = font
-            return font
-        except pygame.error as e:
-            self.logger.error(f"Failed to load font '{full_path}' with size {size}: {e}")
-            return None
-        except FileNotFoundError:
-            self.logger.error(f"Font file not found: '{full_path}'")
-            try:
-                default_font = pygame.font.SysFont('Arial', size)
-                self.logger.warning(f"Using system default font 'Arial' as a fallback.")
-                self._font_cache[cache_key] = default_font
-                return default_font
-            except Exception as e_sys:
-                 self.logger.error(f"Could not even load system default font: {e_sys}")
-                 return None
+        self.logger.warning(f"Attempted to get non-existent font '{name}' with size {size}. Falling back to default.")
+        font = pygame.font.Font(self.default_font, size)
+        self._loaded_fonts[font_key] = font # Cache the default font as well
+        return font

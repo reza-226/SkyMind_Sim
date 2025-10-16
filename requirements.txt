@@ -24,5 +24,6 @@ python-bidi==0.6.6
 python-dateutil==2.9.0.post0
 PyYAML==6.0.3
 six==1.17.0
--e git+https://github.com/reza-226/SkyMind_Sim.git@bd76dd2a495c96985983e850ece1cf8eb2583bf4#egg=skymind_sim
+typing_extensions==4.15.0
 tzdata==2025.2
+-e .

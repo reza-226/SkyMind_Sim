@@ -1,74 +1,128 @@
-# مسیر: skymind_sim/layer_0_presentation/pygame_renderer.py
+# skymind_sim/layer_0_presentation/renderer.py
 
 import pygame
-from typing import Optional, Any, Dict, List, Tuple
+from typing import Tuple
 
-class PygameRenderer:
-    """
-    Handles all Pygame-related rendering, including the window, grid, and objects.
-    """
-    
-    # ثابت‌ها برای خوانایی بهتر
-    COLOR_BACKGROUND = (50, 50, 50)       # Dark Grey
-    COLOR_GRID_LINES = (80, 80, 80)     # Lighter Grey
-    COLOR_OBSTACLE = (200, 50, 50)        # Red
-    CELL_SIZE = 25                        # Size of each grid cell in pixels
+from skymind_sim.layer_0_presentation.asset_loader import AssetLoader
+from skymind_sim.layer_1_simulation.simulation import Simulation
+from skymind_sim.utils.log_manager import LogManager
 
-    def __init__(self, grid_width: int, grid_height: int, logger: Optional[Any] = None):
+# Define some colors
+COLOR_BACKGROUND = (25, 25, 35)
+COLOR_GRID_LINES = (50, 50, 60)
+COLOR_OBSTACLE = (100, 100, 110)
+COLOR_TEXT = (220, 220, 220)
+
+class Renderer:
+    """Handles all drawing operations for the simulation."""
+
+    def __init__(self, screen: pygame.Surface, asset_loader: AssetLoader, grid_dims: Tuple[int, int]):
         """
-        Initializes the Pygame window.
-        The screen size is calculated based on grid dimensions and CELL_SIZE.
+        Initializes the Renderer.
+        Args:
+            screen (pygame.Surface): The main display surface created with pygame.
+            asset_loader (AssetLoader): The asset loader instance.
+            grid_dims (Tuple[int, int]): The dimensions (width, height) of the simulation grid.
         """
-        self.logger = logger
-        self.grid_width = grid_width
-        self.grid_height = grid_height
+        self.logger = LogManager.get_logger(__name__)
         
-        # محاسبه ابعاد صفحه
-        screen_width = self.grid_width * self.CELL_SIZE
-        screen_height = self.grid_height * self.CELL_SIZE
-        
-        pygame.init()
-        pygame.display.set_caption("SkyMind Drone Simulation")
-        self.screen = pygame.display.set_mode((screen_width, screen_height))
-        
-        self.log(f"Pygame screen initialized. Size: {screen_width}x{screen_height}", "info")
+        # --- START OF CHANGES ---
+        self.screen = screen
+        self.width, self.height = self.screen.get_size()
+        # --- END OF CHANGES ---
 
-    def log(self, message: str, level: str = "info"):
-        if self.logger:
-            getattr(self.logger, level, self.logger.info)(message)
-        else:
-            print(f"RENDERER_{level.upper()}: {message}")
+        self.asset_loader = asset_loader
+        self.grid_width, self.grid_height = grid_dims
+        
+        self.font_main = self.asset_loader.get_font('Roboto-Regular', 16)
+        
+        self.drone_image_original = self.asset_loader.get_image('drone_icon')
+        
+        self._calculate_cell_size()
+        self.drone_image_scaled = None # Will be created after cell size is known
+        self._scale_assets()
+        
+        self.logger.info("Renderer initialized successfully.")
 
-    def render(self, world_state: Dict[str, Any]):
-        """Renders the entire simulation state based on the provided dictionary."""
-        self.screen.fill(self.COLOR_BACKGROUND)
+    def _calculate_cell_size(self):
+        """Calculate the optimal cell size to fit the grid in the window."""
+        # Subtract some padding
+        drawable_width = self.width * 0.9
+        drawable_height = self.height * 0.9
+        
+        cell_w = drawable_width / self.grid_width
+        cell_h = drawable_height / self.grid_height
+        
+        self.cell_size = int(min(cell_w, cell_h))
+        
+        self.grid_render_width = self.cell_size * self.grid_width
+        self.grid_render_height = self.cell_size * self.grid_height
+        
+        # Center the grid
+        self.grid_offset_x = (self.width - self.grid_render_width) // 2
+        self.grid_offset_y = (self.height - self.grid_render_height) // 2
+        
+        self.logger.info(f"Calculated cell size: {self.cell_size}px")
+
+    def _scale_assets(self):
+        """Scale assets based on the calculated cell size."""
+        if self.drone_image_original:
+            image_size = int(self.cell_size * 0.8) # 80% of cell size
+            self.drone_image_scaled = pygame.transform.scale(
+                self.drone_image_original, (image_size, image_size)
+            )
+            self.logger.info(f"Scaled drone image to {image_size}x{image_size}px.")
+
+    def render_all(self, simulation: Simulation):
+        """Render the entire simulation state."""
+        self.screen.fill(COLOR_BACKGROUND)
         self._draw_grid()
-        
-        # دریافت لیست موانع از world_state و رسم آنها
-        obstacles = world_state.get("obstacles", [])
-        self._draw_obstacles(obstacles)
-        
+        self._draw_obstacles(simulation.get_grid())
+        self._draw_drones(simulation)
         pygame.display.flip()
 
     def _draw_grid(self):
-        """Draws the grid lines on the screen."""
-        width, height = self.screen.get_size()
-        for x in range(0, width, self.CELL_SIZE):
-            pygame.draw.line(self.screen, self.COLOR_GRID_LINES, (x, 0), (x, height))
-        for y in range(0, height, self.CELL_SIZE):
-            pygame.draw.line(self.screen, self.COLOR_GRID_LINES, (0, y), (width, y))
+        """Draw the grid lines."""
+        for x in range(self.grid_width + 1):
+            start_pos = (self.grid_offset_x + x * self.cell_size, self.grid_offset_y)
+            end_pos = (self.grid_offset_x + x * self.cell_size, self.grid_offset_y + self.grid_render_height)
+            pygame.draw.line(self.screen, COLOR_GRID_LINES, start_pos, end_pos)
 
-    def _draw_obstacles(self, obstacles: List[Tuple[int, int]]):
-        """Draws obstacles on the grid."""
-        for ox, oy in obstacles:
+        for y in range(self.grid_height + 1):
+            start_pos = (self.grid_offset_x, self.grid_offset_y + y * self.cell_size)
+            end_pos = (self.grid_offset_x + self.grid_render_width, self.grid_offset_y + y * self.cell_size)
+            pygame.draw.line(self.screen, COLOR_GRID_LINES, start_pos, end_pos)
+
+    def _draw_obstacles(self, grid):
+        """Draw the obstacles on the grid."""
+        for obs in grid.get_obstacles():
+            # --- START OF CHANGE ---
+            # 'obs' is a tuple (x, y), so we use indices 0 and 1.
             rect = pygame.Rect(
-                ox * self.CELL_SIZE, 
-                oy * self.CELL_SIZE, 
-                self.CELL_SIZE, 
-                self.CELL_SIZE
+                self.grid_offset_x + obs[0] * self.cell_size,
+                self.grid_offset_y + obs[1] * self.cell_size,
+                self.cell_size,
+                self.cell_size
             )
-            pygame.draw.rect(self.screen, self.COLOR_OBSTACLE, rect)
+            # --- END OF CHANGE ---
+            pygame.draw.rect(self.screen, COLOR_OBSTACLE, rect)
+            
+    def _draw_drones(self, simulation: Simulation):
+        """Draw the drones on the grid."""
+        if not self.drone_image_scaled:
+            return
+
+        for drone in simulation.get_drones():
+            # Convert grid coordinates to pixel coordinates
+            pixel_x = self.grid_offset_x + drone.position[0] * self.cell_size
+            pixel_y = self.grid_offset_y + drone.position[1] * self.cell_size
+            
+            # Center the image in the cell
+            offset = (self.cell_size - self.drone_image_scaled.get_width()) // 2
+            
+            self.screen.blit(self.drone_image_scaled, (pixel_x + offset, pixel_y + offset))
 
     def close(self):
-        """Closes the Pygame window properly."""
-        pygame.quit()
+        """Perform any cleanup."""
+        # The main loop now handles pygame.quit()
+        self.logger.info("Renderer closed.")
