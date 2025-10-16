@@ -41,9 +41,8 @@ def main():
 
         # 4. Initialize Renderer and pass the already created screen to it.
         renderer = Renderer(
-            screen=screen, # Pass the screen object
-            asset_loader=asset_loader,
-            grid_dims=grid_dims
+              screen=screen,      # Pass the screen object
+              grid_dims=grid_dims # grid_dims is still needed
         )
         
         # --- END OF MAJOR CHANGES ---
