@@ -1,0 +1,4 @@
+{
+  "player_start_pos": [5, 5],
+  "comment": "Default starting position for the player's drone. [col, row]"
+}

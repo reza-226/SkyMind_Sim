@@ -1,0 +1,6 @@
+{
+  "log_level": "INFO",
+  "log_file": "data/simulation_logs/simulation.log",
+  "log_format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+  "console_log_level": "DEBUG"
+}

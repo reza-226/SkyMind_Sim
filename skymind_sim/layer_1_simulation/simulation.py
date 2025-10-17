@@ -1,139 +1,89 @@
 # skymind_sim/layer_1_simulation/simulation.py
 
-import json
-from skymind_sim.utils.log_manager import LogManager
-from skymind_sim.layer_1_simulation.world.grid import Grid
-from skymind_sim.layer_1_simulation.entities.drone import Drone
+import pygame
+import logging
+from skymind_sim.layer_1_simulation.world.world import World
+from skymind_sim.layer_0_presentation.renderer import Renderer
+from skymind_sim.layer_0_presentation.camera import Camera
+from skymind_sim.layer_0_presentation.input_handler import InputHandler
+from skymind_sim.utils.config_loader import ConfigLoader
 
 class Simulation:
-    """
-    Manages the overall simulation state, including the grid, drones, and time.
-    """
-    def __init__(self, map_file_path: str):
-        """
-        Initializes the simulation by loading a map and setting up the environment.
+    """Main class to run the simulation and manage the game loop."""
 
-        Args:
-            map_file_path (str): The path to the JSON file describing the map.
-        """
-        self.logger = LogManager.get_logger(__name__)
-        self.logger.info(f"Initializing simulation with map from: '{map_file_path}'")
+    def __init__(self, config_path=None):
+        self.logger = logging.getLogger(__name__)
+        self.logger.info("Initializing Simulation components...")
         
-        self.grid = None
-        self.drones = []
-        self.current_time = 0.0
+        # Load configurations
+        sim_config = ConfigLoader.get('simulation')
+        self.fps = sim_config.get('fps', 60)
+        self.should_run = True
+
+        # --- REORDERED INITIALIZATION ---
+
+        # 1. Initialize Renderer first to set up the Pygame display mode
+        self.renderer = Renderer()
         
-        self._load_map(map_file_path)
+        # 2. Initialize World and its entities (now that display mode is set)
+        self.world = World()
+        self.player_drone = self.world.get_player_drone()
         
-        self.logger.info(f"Simulation successfully initialized with map: '{map_file_path}'")
-
-    def _load_map(self, file_path: str):
-        """
-        Loads the map data from a JSON file to initialize the grid, obstacles, and drones.
-        This method is robust to handle position data as both a dictionary {'x': val, 'y': val}
-        and a list [val, val]. It also correctly handles the drones section whether it is a 
-        list of objects or a dictionary of objects.
-        """
-        try:
-            with open(file_path, 'r') as f:
-                map_data = json.load(f)
-
-            # Initialize Grid
-            grid_size = map_data['grid_size']
-            self.grid = Grid(width=grid_size['width'], height=grid_size['height'])
-            self.logger.info(f"Grid created with dimensions {grid_size['width']}x{grid_size['height']}.")
-
-            # Add Obstacles
-            obstacle_count = 0
-            if 'obstacles' in map_data:
-                for obstacle_data in map_data['obstacles']:
-                    pos = obstacle_data['position']
-                    if isinstance(pos, dict):
-                        obstacle_pos = (int(pos['x']), int(pos['y']))
-                    elif isinstance(pos, list) and len(pos) == 2:
-                        obstacle_pos = (int(pos[0]), int(pos[1]))
-                    else:
-                        self.logger.warning(f"Skipping obstacle with malformed position data: {pos}")
-                        continue
-                    
-                    self.grid.add_obstacle(obstacle_pos)
-                    obstacle_count += 1
-            self.logger.info(f"Added {obstacle_count} obstacles to the grid.")
-
-            # Initialize Drones
-            drone_count = 0
-            if 'drones' in map_data:
-                drones_section = map_data['drones']
-                
-                # Check if drones_section is a dictionary (like {"D1": ..., "D2": ...})
-                if isinstance(drones_section, dict):
-                    # Iterate over key-value pairs (e.g., 'D1', {'start_position': [1,1]})
-                    for drone_id, drone_info in drones_section.items():
-                        start_pos_data = drone_info['start_position']
-                        
-                        if isinstance(start_pos_data, dict):
-                            start_pos = (int(start_pos_data['x']), int(start_pos_data['y']))
-                        elif isinstance(start_pos_data, list) and len(start_pos_data) == 2:
-                            start_pos = (int(start_pos_data[0]), int(start_pos_data[1]))
-                        else:
-                            self.logger.warning(f"Skipping drone '{drone_id}' with malformed start_position: {start_pos_data}")
-                            continue
-                            
-                        drone = Drone(drone_id=drone_id, start_position=start_pos)
-                        self.drones.append(drone)
-                        drone_count += 1
-                
-                # Check if drones_section is a list (like [{"id": "D1", ...}])
-                elif isinstance(drones_section, list):
-                    for drone_data in drones_section:
-                        drone_id = drone_data['id']
-                        start_pos_data = drone_data['start_position']
-
-                        if isinstance(start_pos_data, dict):
-                            start_pos = (int(start_pos_data['x']), int(start_pos_data['y']))
-                        elif isinstance(start_pos_data, list) and len(start_pos_data) == 2:
-                            start_pos = (int(start_pos_data[0]), int(start_pos_data[1]))
-                        else:
-                            self.logger.warning(f"Skipping drone '{drone_id}' with malformed start_position: {start_pos_data}")
-                            continue
-                        
-                        drone = Drone(drone_id=drone_id, start_position=start_pos)
-                        self.drones.append(drone)
-                        drone_count += 1
-
-            self.logger.info(f"Initialized {drone_count} drones.")
-
-        except FileNotFoundError:
-            self.logger.error(f"Map file not found at: {file_path}")
-            raise
-        except json.JSONDecodeError:
-            self.logger.error(f"Error decoding JSON from map file: {file_path}")
-            raise
-        except (KeyError, IndexError) as e:
-            self.logger.error(f"Missing or malformed key/index in map file {file_path}: {e}")
-            raise
-
-    def get_grid(self) -> Grid:
-        """Returns the simulation grid."""
-        return self.grid
-
-    def get_drones(self) -> list[Drone]:
-        """Returns the list of drones in the simulation."""
-        return self.drones
-
-    def get_current_time(self) -> float:
-        """Returns the current simulation time in seconds."""
-        return self.current_time
-
-    def update(self, delta_time: float):
-        """
-        Update the state of all simulation entities.
+        # 3. Initialize Camera with all required dimensions
+        screen_size = self.renderer.get_screen_size()
+        world_pixel_size = self.world.grid.get_world_size_in_pixels()
+        self.camera = Camera(
+            target=self.player_drone,
+            screen_width=screen_size[0],
+            screen_height=screen_size[1],
+            world_width=world_pixel_size[0],
+            world_height=world_pixel_size[1]
+        )
         
-        Args:
-            delta_time (float): The time elapsed since the last update in seconds.
-        """
-        grid_dims = self.grid.get_dimensions()
-        for drone in self.drones:
-            # --- START OF CHANGE ---
-            # grid_dims is a tuple (width, height), so we access it with indices.
-            drone.update(delta_time, grid_dims[0], grid_dims[1])
+        # Update renderer with the camera it needs to use
+        self.renderer.set_camera(self.camera)
+
+        # 4. Initialize other components
+        self.input_handler = InputHandler()
+
+        # ------------------------------------
+        
+        self.clock = pygame.time.Clock()
+        self.logger.info("Simulation initialized successfully.")
+
+    def run(self):
+        """Starts the main simulation loop."""
+        self.logger.info("Simulation loop started.")
+        
+        while self.should_run:
+            dt = self.clock.tick(self.fps) / 1000.0
+            self._handle_events()
+            self._update(dt)
+            self._render()
+
+        self.logger.info("Simulation loop finished.")
+
+    def _handle_events(self):
+        """Processes user input and other events."""
+        events_result = self.input_handler.handle_events()
+        
+        if events_result["quit"]:
+            self.should_run = False
+        
+        self.movement_intent = events_result["movement_intent"]
+
+    def _update(self, dt: float):
+        """Updates the state of all simulation objects."""
+        if self.player_drone:
+            self.player_drone.move(self.movement_intent)
+        
+        self.world.update(dt)
+        self.camera.update(dt)
+
+    def _render(self):
+        """Renders the simulation state to the screen."""
+        self.renderer.render(self.world)
+
+    def stop(self):
+        """Stops the simulation."""
+        self.should_run = False

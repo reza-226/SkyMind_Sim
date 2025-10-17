@@ -1,4 +1,7 @@
 {
-    "cell_size": 40,
-    "line_color": [200, 200, 200]
+  "rows": 40,
+  "cols": 50,
+  "cell_size": 30,
+  "line_color": [40, 40, 40],
+  "background_color": [20, 20, 20]
 }

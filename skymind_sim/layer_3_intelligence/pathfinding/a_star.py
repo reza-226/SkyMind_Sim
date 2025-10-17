@@ -1,105 +1,85 @@
 # FILE: skymind_sim/layer_3_intelligence/pathfinding/a_star.py
 
 import heapq
-import logging
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
-# ایمپورت‌های جدید برای سازگاری با ساختار شما
 from skymind_sim.layer_1_simulation.world.grid import Grid, Cell
 
-logger = logging.getLogger(__name__)
+# === شروع تغییرات ===
+# 1. وارد کردن LogManager به جای Logger
+from skymind_sim.utils.log_manager import LogManager
 
-class Node:
-    """
-    کلاس کمکی برای A*. یک Cell را در خود نگه می‌دارد و هزینه‌های f, g, h را محاسبه می‌کند.
-    """
-    def __init__(self, parent=None, cell: Cell = None):
-        self.parent = parent
-        self.cell = cell
-
-        self.g = 0  # Cost from start to current node
-        self.h = 0  # Heuristic cost from current node to end
-        self.f = 0  # Total cost (f = g + h)
-
-    def __eq__(self, other):
-        return self.cell == other.cell
-
-    def __lt__(self, other):
-        return self.f < other.f
-
-    def __repr__(self):
-        # از مختصات سلول برای نمایش استفاده می‌کنیم
-        return f"Node(pos=({self.cell.x}, {self.cell.y}), f={self.f})"
+# 2. دریافت لاگر با استفاده از LogManager
+logger = LogManager.get_logger(__name__)
+# === پایان تغییرات ===
 
 
 class AStarPlanner:
     """
-    مسیریاب A* که با کلاس‌های Grid و Cell جدید شما کار می‌کند.
+    الگوریتم A* را برای پیدا کردن کوتاه‌ترین مسیر در یک گرید پیاده‌سازی می‌کند.
     """
-    def __init__(self, grid: Grid):
-        if not isinstance(grid, Grid):
-            raise TypeError(f"AStarPlanner expects a Grid object, but got {type(grid)}")
-        self.grid = grid
-        logger.info(f"AStarPlanner initialized with a grid of size ({self.grid.width}, {self.grid.height})")
 
-    def plan_path(self, start_coords: Tuple[int, int], end_coords: Tuple[int, int]) -> List[Tuple[int, int]]:
+    def _heuristic(self, a: Tuple[int, int], b: Tuple[int, int]) -> float:
+        """فاصله منهتن را به عنوان تابع هیوریستیک محاسبه می‌کند."""
+        return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+    def _reconstruct_path(self, came_from: dict, current: Cell) -> List[Tuple[int, int]]:
+        """مسیر نهایی را با دنبال کردن والدین هر گره از انتها به ابتدا بازسازی می‌کند."""
+        total_path = [current.position]
+        while current in came_from:
+            current = came_from[current]
+            total_path.insert(0, current.position)
+        return total_path
+
+    def find_path(self, grid: Grid, start: Tuple[int, int], end: Tuple[int, int]) -> Optional[List[Tuple[int, int]]]:
         """
-        محاسبه کوتاه‌ترین مسیر بین دو مختصات.
+        کوتاه‌ترین مسیر بین دو نقطه را با استفاده از A* پیدا می‌کند.
+
+        Args:
+            grid (Grid): گرید شبیه‌سازی که شامل موانع است.
+            start (Tuple[int, int]): مختصات گرید نقطه شروع.
+            end (Tuple[int, int]): مختصات گرید نقطه پایان.
+
+        Returns:
+            Optional[List[Tuple[int, int]]]: لیستی از مختصات گرید که مسیر را تشکیل می‌دهند، یا None اگر مسیری پیدا نشود.
         """
-        logger.debug(f"Planning path from {start_coords} to {end_coords}")
+        logger.debug(f"A* pathfinding started from {start} to {end}.")
+        grid.reset_pathfinding_data()
 
-        # گرفتن اشیاء Cell از روی مختصات
-        start_cell = self.grid.get_cell(start_coords[0], start_coords[1])
-        end_cell = self.grid.get_cell(end_coords[0], end_coords[1])
+        start_cell = grid.get_cell(start[0], start[1])
+        end_cell = grid.get_cell(end[0], end[1])
 
-        if not start_cell or start_cell.is_obstacle:
-            logger.warning(f"Start position {start_coords} is invalid or an obstacle.")
-            return []
-        if not end_cell or end_cell.is_obstacle:
-            logger.warning(f"End position {end_coords} is invalid or an obstacle.")
-            return []
-            
-        start_node = Node(None, start_cell)
-        end_node = Node(None, end_cell)
+        if not start_cell or not end_cell or start_cell.is_obstacle or end_cell.is_obstacle:
+            logger.warning("Start or end cell is invalid or an obstacle.")
+            return None
 
-        open_list = []
-        closed_set = set()
-        heapq.heappush(open_list, start_node)
+        open_set = []
+        heapq.heappush(open_set, (0, start_cell)) # (f_score, cell)
 
-        while open_list:
-            current_node = heapq.heappop(open_list)
-            closed_set.add(current_node.cell)
+        came_from = {}
+        start_cell.g_score = 0
+        start_cell.f_score = self._heuristic(start, end)
 
-            if current_node == end_node:
-                path = []
-                current = current_node
-                while current is not None:
-                    # مختصات سلول را به مسیر اضافه می‌کنیم
-                    path.append((current.cell.x, current.cell.y))
-                    current = current.parent
-                logger.info(f"Path found from {start_coords} to {end_coords}.")
-                return path[::-1]
+        open_set_hash = {start_cell}
 
-            # **استفاده از متد قدرتمند get_neighbors از کلاس Grid شما**
-            neighbors = self.grid.get_neighbors(current_node.cell)
-            
-            for neighbor_cell in neighbors:
-                if neighbor_cell in closed_set:
-                    continue
-                
-                # ساخت گره جدید برای همسایه
-                child_node = Node(current_node, neighbor_cell)
+        while open_set:
+            current_cell: Cell = heapq.heappop(open_set)[1]
+            open_set_hash.remove(current_cell)
 
-                # محاسبه هزینه‌ها
-                move_cost = 1.4 if child_node.cell.x != current_node.cell.x and child_node.cell.y != current_node.cell.y else 1
-                child_node.g = current_node.g + move_cost
-                child_node.h = ((child_node.cell.x - end_node.cell.x) ** 2) + ((child_node.cell.y - end_node.cell.y) ** 2)
-                child_node.f = child_node.g + child_node.h
+            if current_cell == end_cell:
+                logger.info(f"Path found from {start} to {end}.")
+                return self._reconstruct_path(came_from, current_cell)
 
-                if any(open_node for open_node in open_list if child_node == open_node and child_node.g >= open_node.g):
-                    continue
+            for neighbor_cell in grid.get_neighbors(current_cell):
+                tentative_g_score = current_cell.g_score + 1  # Cost to move is 1
 
-                heapq.heappush(open_list, child_node)
-
-        logger.warning(f"No path found from {start_coords} to {end_coords}.")
-        return []
+                if tentative_g_score < neighbor_cell.g_score:
+                    came_from[neighbor_cell] = current_cell
+                    neighbor_cell.g_score = tentative_g_score
+                    neighbor_cell.f_score = tentative_g_score + self._heuristic(neighbor_cell.position, end)
+                    if neighbor_cell not in open_set_hash:
+                        heapq.heappush(open_set, (neighbor_cell.f_score, neighbor_cell))
+                        open_set_hash.add(neighbor_cell)
+        
+        logger.warning(f"No path could be found from {start} to {end}.")
+        return None

@@ -1,36 +1,23 @@
-# Path: skymind_sim/layer_1_simulation/world/obstacle.py
-
-from typing import Tuple
+# FILE: skymind_sim/layer_1_simulation/world/obstacle.py
+from typing import List, Tuple
 
 class Obstacle:
-    """
-    Represents a single, static obstacle in the simulation world.
-    In a grid-based world, an obstacle occupies one or more cells.
-    For simplicity, we assume each obstacle occupies exactly one cell.
-    """
-    def __init__(self, position: Tuple[int, int]):
+    """Represents a collection of grid cells that are impassable."""
+    
+    def __init__(self, positions: List[Tuple[int, int]]):
         """
-        Initializes an obstacle at a specific grid position.
+        Initializes an obstacle with a list of grid coordinates it occupies.
 
         Args:
-            position (Tuple[int, int]): The (x, y) coordinates of the obstacle on the grid.
+            positions (List[Tuple[int, int]]): A list of (x, y) tuples representing
+                                               the grid cells occupied by the obstacle.
         """
-        if not isinstance(position, tuple) or len(position) != 2:
-            raise ValueError("Position must be a tuple of two integers (x, y).")
-        
-        self._position = position
+        # A list of (x, y) tuples for each cell the obstacle occupies
+        self.positions: List[Tuple[int, int]] = positions
 
-    def get_position(self) -> Tuple[int, int]:
-        """
-        Returns the position of the obstacle.
+    def get_positions(self) -> List[Tuple[int, int]]:
+        """Returns the list of grid positions occupied by the obstacle."""
+        return self.positions
 
-        Returns:
-            Tuple[int, int]: The (x, y) coordinates of the obstacle.
-        """
-        return self._position
-
-    def __repr__(self) -> str:
-        """
-        Provides a developer-friendly string representation of the obstacle.
-        """
-        return f"Obstacle(position={self._position})"
+    def __repr__(self):
+        return f"Obstacle(positions={self.positions})"

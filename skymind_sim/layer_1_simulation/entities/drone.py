@@ -1,62 +1,76 @@
 # skymind_sim/layer_1_simulation/entities/drone.py
 
-import random
+import pygame
+from pygame.math import Vector2
+import logging
+
+from skymind_sim.utils.config_loader import ConfigLoader
+from skymind_sim.layer_0_presentation.asset_loader import AssetLoader
 
 class Drone:
-    """
-    Represents a drone in the simulation. It has a position and can move.
-    """
-    def __init__(self, drone_id: int, start_position: tuple[int, int]):
+    """Represents a drone in the simulation."""
+
+    def __init__(self, drone_id: str, grid, position=(0.0, 0.0)):
+        self.logger = logging.getLogger(__name__)
+        self.id = drone_id
+        self.grid = grid
+        
+        # Position and Movement
+        self.position = Vector2(position)  # Grid coordinates (can be float for smooth movement)
+        self.velocity = Vector2(0, 0)
+        
+        # Load drone-specific configuration
+        config = ConfigLoader.get('drone')
+        self.speed = config.get('speed', 5.0)  # Grid units per second
+        self.image_name = config.get('default_image', 'drone_2.png')
+        fallback_radius = config.get('fallback_radius', 15.0)
+
+        try:
+            # Load the primary image
+            original_image = AssetLoader.get_image(self.image_name)
+            # Scale the image to fit the cell size
+            self.image = pygame.transform.scale(original_image, self.grid.cell_size)
+        except Exception as e:
+            self.logger.warning(
+                f"Failed to load image '{self.image_name}' for drone '{self.id}'. Using a placeholder. Error: {e}"
+            )
+            # Create a magenta placeholder surface if image fails to load
+            placeholder_size = (int(self.grid.cell_size[0] * 0.8), int(self.grid.cell_size[1] * 0.8))
+            self.image = pygame.Surface(placeholder_size)
+            self.image.fill((255, 0, 255))  # Magenta color
+        
+        self.rect = self.image.get_rect()
+        self.logger.info(f"Drone '{self.id}' initialized at grid_pos {list(self.position)}.")
+
+    def move(self, direction_intent: Vector2):
         """
-        Initializes a Drone.
+        Sets the drone's velocity based on a direction intent vector.
+        The direction_intent should be a normalized vector.
+        """
+        self.velocity = direction_intent * self.speed
+
+    def update(self, dt: float):
+        """
+        Updates the drone's state. Called once per frame.
         
         Args:
-            drone_id (int): A unique identifier for the drone.
-            start_position (tuple[int, int]): The starting (x, y) grid coordinates.
+            dt (float): Delta time, the time elapsed since the last frame in seconds.
         """
-        self.drone_id = drone_id
-        self.position = start_position
+        # Update position based on velocity and delta time
+        self.position += self.velocity * dt
         
-        # --- کدهای جدید ---
-        self._move_timer = 0.0  # Timer to control movement speed
-        self._move_interval = 0.5  # Move every 0.5 seconds
+        # Update the rect for rendering
+        pixel_pos = self.grid.grid_to_pixel(self.position)
+        self.rect.center = pixel_pos
 
-    def get_position(self) -> tuple[int, int]:
-        """Returns the current (x, y) position of the drone."""
-        return self.position
-
-    def update(self, delta_time: float, grid_width: int, grid_height: int):
+    def draw(self, surface: pygame.Surface, camera_offset: Vector2):
         """
-        Updates the drone's state. For now, it handles simple random movement.
+        Draws the drone on the given surface, adjusted by the camera offset.
         
         Args:
-            delta_time (float): The time elapsed since the last frame.
-            grid_width (int): The width of the grid to stay within bounds.
-            grid_height (int): The height of the grid to stay within bounds.
+            surface (pygame.Surface): The surface to draw on (usually the screen).
+            camera_offset (Vector2): The offset calculated by the camera.
         """
-        self._move_timer += delta_time
-        if self._move_timer >= self._move_interval:
-            self._move_timer = 0  # Reset timer
-            self._perform_random_move(grid_width, grid_height)
-
-    def _perform_random_move(self, grid_width: int, grid_height: int):
-        """
-        Calculates and applies a random one-step move (up, down, left, right).
-        Ensures the drone stays within the grid boundaries.
-        """
-        possible_moves = [
-            (0, 1),   # Down
-            (0, -1),  # Up
-            (1, 0),   # Right
-            (-1, 0)   # Left
-        ]
-        
-        dx, dy = random.choice(possible_moves)
-        
-        new_x = self.position[0] + dx
-        new_y = self.position[1] + dy
-
-        # Check boundaries
-        if 0 <= new_x < grid_width and 0 <= new_y < grid_height:
-            self.position = (new_x, new_y)
-            # Note: We are not checking for collisions with obstacles yet.
+        # Adjust the drone's rect position by the camera offset for rendering
+        draw_rect = self.rect.move(-camera_offset)
+        surface.blit(self.image, draw_rect)

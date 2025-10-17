@@ -2,60 +2,83 @@
 
 import logging
 import os
+import sys
 from logging.handlers import RotatingFileHandler
 from datetime import datetime
 
 class LogManager:
     """
-    یک کلاس استاتیک برای مدیریت متمرکز لاگر در کل پروژه.
+    کلاس Singleton برای مدیریت سراسری لاگ‌ها در برنامه.
+    این کلاس سیستم لاگینگ را با تنظیمات مشخص شده مقداردهی اولیه می‌کند
+    و یک متد استاتیک برای دریافت لاگر برای هر ماژول فراهم می‌کند.
     """
-    _logger_initialized = False
-    _log_directory = "data/simulation_logs"
-    _log_level = logging.INFO
-    _log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    _is_initialized = False
 
-    @staticmethod
-    def init_logger():
+    @classmethod
+    def initialize(cls):
         """
-        لاگر اصلی برنامه را مقداردهی اولیه می‌کند.
-        این متد باید فقط یک بار در ابتدای برنامه فراخوانی شود.
+        سیستم لاگینگ را بر اساس تنظیمات فایل پیکربندی، مقداردهی اولیه می‌کند.
+        این متد باید یک بار در ابتدای برنامه فراخوانی شود.
         """
-        if LogManager._logger_initialized:
+        if cls._is_initialized:
             return
 
-        # ایجاد پوشه لاگ در صورت عدم وجود
-        os.makedirs(LogManager._log_directory, exist_ok=True)
+        # <<<<< تغییر کلیدی: ایمپورت محلی برای شکستن چرخه وابستگی >>>>>
+        from skymind_sim.utils.config_loader import ConfigLoader
 
-        # ایجاد نام فایل لاگ بر اساس تاریخ و زمان فعلی
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        log_filename = f"simulation_{timestamp}.log"
-        log_file_path = os.path.join(LogManager._log_directory, log_filename)
+        try:
+            log_config = ConfigLoader.get('logging')
+            log_dir = log_config.get("log_directory", "data/simulation_logs")
+            log_level_str = log_config.get("level", "INFO").upper()
+            log_filename = log_config.get("filename", "simulation.log")
+            
+            # تبدیل نام سطح لاگ به مقدار عددی متناظر
+            log_level = getattr(logging, log_level_str, logging.INFO)
 
-        # تنظیمات اصلی لاگر
-        root_logger = logging.getLogger()
-        root_logger.setLevel(LogManager._log_level)
+            # اطمینان از وجود پوشه لاگ‌ها
+            os.makedirs(log_dir, exist_ok=True)
+            
+            # ایجاد نام فایل منحصر به فرد با timestamp
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            unique_log_filename = f"{log_filename.split('.')[0]}_{timestamp}.log"
+            log_path = os.path.join(log_dir, unique_log_filename)
 
-        formatter = logging.Formatter(LogManager._log_format)
+            # ایجاد یک فرمت استاندارد برای لاگ‌ها
+            log_format = logging.Formatter(
+                '%(asctime)s - %(name)s - [%(levelname)s] - %(message)s'
+            )
 
-        # Handler برای نمایش لاگ‌ها در کنسول
-        console_handler = logging.StreamHandler()
-        console_handler.setFormatter(formatter)
-        root_logger.addHandler(console_handler)
+            # تنظیم لاگر ریشه (Root Logger)
+            root_logger = logging.getLogger()
+            root_logger.setLevel(log_level)
+            
+            # حذف handlerهای قبلی برای جلوگیری از لاگ‌های تکراری
+            if root_logger.hasHandlers():
+                root_logger.handlers.clear()
 
-        # Handler برای ذخیره لاگ‌ها در فایل با قابلیت چرخش (rotation)
-        # فایل‌ها بعد از رسیدن به حجم 5MB، تا 5 نسخه پشتیبان خواهند داشت
-        file_handler = RotatingFileHandler(
-            log_file_path, maxBytes=5*1024*1024, backupCount=5
-        )
-        file_handler.setFormatter(formatter)
-        root_logger.addHandler(file_handler)
+            # ۱. Handler برای چاپ لاگ‌ها در کنسول (stdout)
+            console_handler = logging.StreamHandler(sys.stdout)
+            console_handler.setFormatter(log_format)
+            root_logger.addHandler(console_handler)
 
-        LogManager._logger_initialized = True
-        
-        # لاگ اولیه برای تایید صحت عملکرد
-        initial_logger = logging.getLogger(__name__)
-        initial_logger.info(f"Logger initialized. Log file: {log_file_path}")
+            # ۲. Handler برای ذخیره لاگ‌ها در فایل (با چرخش)
+            # فایل‌ها پس از رسیدن به حجم 1MB چرخش پیدا می‌کنند و تا 5 فایل پشتیبان نگهداری می‌شود.
+            file_handler = RotatingFileHandler(
+                log_path, maxBytes=1*1024*1024, backupCount=5, encoding='utf-8'
+            )
+            file_handler.setFormatter(log_format)
+            root_logger.addHandler(file_handler)
 
+            cls._is_initialized = True
+            
+            # اولین پیام لاگ پس از مقداردهی اولیه موفقیت‌آمیز
+            logging.info(f"LogManager initialized successfully. Log level: {log_level_str}. Logging to {log_path}")
+
+        except (KeyError, FileNotFoundError) as e:
+            # در صورت عدم وجود تنظیمات لاگ، یک لاگر پیش‌فرض راه‌اندازی می‌شود.
+            logging.basicConfig(level=logging.INFO, format='%(asctime)s - [%(levelname)s] - %(message)s')
+            logging.warning(f"Could not initialize LogManager from config. Using basic config. Reason: {e}")
+            cls._is_initialized = True
 
     @staticmethod
     def get_logger(name: str) -> logging.Logger:
@@ -63,15 +86,9 @@ class LogManager:
         یک نمونه لاگر برای ماژول مشخص شده برمی‌گرداند.
 
         Args:
-            name (str): نام ماژول که معمولاً __name__ است.
+            name (str): نام ماژول (معمولاً __name__).
 
         Returns:
-            logging.Logger: نمونه لاگر برای استفاده.
+            logging.Logger: نمونه لاگر پیکربندی شده.
         """
-        if not LogManager._logger_initialized:
-            # اگر لاگر هنوز init نشده، یک هشدار نمایش می‌دهد و آن را init می‌کند
-            # این کار برای جلوگیری از خطاهای احتمالی است
-            print("WARNING: Logger was not explicitly initialized. Auto-initializing now.")
-            LogManager.init_logger()
-            
         return logging.getLogger(name)

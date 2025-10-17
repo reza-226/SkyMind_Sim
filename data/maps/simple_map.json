@@ -1,21 +1,30 @@
 {
-  "grid_size": {
-    "width": 20,
-    "height": 15
-  },
+  "name": "Simple Test Map",
+  "grid_size": [40, 30],
   "obstacles": [
-    { "position": [5, 5] },
-    { "position": [5, 6] },
-    { "position": [5, 7] },
-    { "position": [6, 7] },
-    { "position": [7, 7] }
+    { "id": "obs1", "position": [10, 10], "size": [1, 1] },
+    { "id": "obs2", "position": [10, 11], "size": [1, 1] },
+    { "id": "obs3", "position": [10, 12], "size": [1, 1] },
+    { "id": "obs4", "position": [15, 20], "size": [3, 1] }
   ],
-  "drones": {
-    "D1": {
-      "start_position": [1, 1]
+  "drones": [
+    {
+      "id": "drone_1",
+      "start_position": [5, 5],
+      "energy_model": {
+        "initial_charge": 100.0,
+        "move_cost": 0.1,
+        "idle_drain": 0.01
+      }
     },
-    "D2": {
-      "start_position": [18, 13]
+    {
+      "id": "drone_2",
+      "start_position": [25, 15],
+      "energy_model": {
+        "initial_charge": 100.0,
+        "move_cost": 0.1,
+        "idle_drain": 0.01
+      }
     }
-  }
+  ]
 }

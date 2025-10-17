@@ -1,0 +1,5 @@
+{
+    "default_image": "drone_2.png",
+    "fallback_radius": 15.0,
+    "speed": 5.0
+}
